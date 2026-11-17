@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', upload.imageArray('images', 12), async (req, res, next) => {
+router.post('/', upload.image.array('images', 12), async (req, res, next) => {
   try {
     const files = req.files || [];
     if (!files.length) {

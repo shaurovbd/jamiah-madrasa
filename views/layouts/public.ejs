@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
+<head><meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= title ? title + ' — ' + site.name : site.name %></title>
 <meta name="description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : (site.tagline || site.name) %>">
@@ -20,6 +20,7 @@
       <% if (site.email) { %><span>✉ <a href="mailto:<%= site.email %>"><%= site.email %></a></span><% } %>
     </div>
     <div class="topbar-meta">
+          <a href="/routine">Class Routine</a>
       <a href="/results">Check Result</a>
       <a href="/admin">Staff Login</a>
     </div>
@@ -29,11 +30,7 @@
 <header class="masthead">
   <div class="wrap">
     <a class="brand" href="/">
-      <% if (site.logo) { %>
-        <img class="brand-logo" src="/uploads/<%= site.logo %>" alt="<%= site.name %>">
-      <% } else { %>
-        <span class="brand-mark">ج</span>
-      <% } %>
+      <span class="brand-mark">ج</span>
       <span class="brand-text">
         <strong><%= site.name %></strong>
         <small><%= site.tagline ? site.tagline.slice(0, 42) : 'Islamic Institute' %></small>

@@ -1,3 +1,66 @@
+<%
+/* ---------------------------------------------------------------- icons */
+const icons = {
+  user:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  layers:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 17 9 5 9-5"/><path d="m3 12 9 5 9-5"/></svg>',
+  pin:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  users:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  shield:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>',
+  home:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/></svg>',
+  cap:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>',
+  book:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>',
+  globe:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20Z"/></svg>',
+  scroll:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h11v14a4 4 0 0 1-4 4H7"/><path d="M8 3a3 3 0 0 0-3 3v2h3"/><path d="M5 17a4 4 0 0 0 4 4"/><path d="M11 8h5"/><path d="M11 12h5"/></svg>',
+  child:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M12 9v6"/><path d="m8 12 4-1 4 1"/><path d="m9 21 3-6 3 6"/></svg>',
+  star:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1L12 2Z"/></svg>',
+  monitor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>'
+};
+
+/* ------------------------------------------------- one labelled field */
+function field(o) {
+  const name = o.name;
+  const id = 'ja_' + name;
+  const val = h.esc(form[name] == null ? (o.value || '') : form[name]);
+  const req = o.req ? ' <span class="ja-req">*</span>' : '';
+  const reqAttr = o.req ? ' required' : '';
+  const ph = o.placeholder ? ' placeholder="' + h.esc(o.placeholder) + '"' : '';
+  const msgAttr = (o.msg ? ' data-msg="' + h.esc(o.msg) + '"' : '')
+                + (o.msgType ? ' data-msg-type="' + h.esc(o.msgType) + '"' : '');
+  let control;
+
+  if (o.type === 'textarea') {
+    control = '<textarea id="' + id + '" name="' + name + '"' + ph + reqAttr + msgAttr + '>' + val + '</textarea>';
+  } else if (o.type === 'select') {
+    const opts = (o.options || []).map(function (op) {
+      const sel = String(form[name] || '') === String(op.value) ? ' selected' : '';
+      return '<option value="' + h.esc(op.value) + '"' + sel + '>' + h.esc(op.label) + '</option>';
+    }).join('');
+    control = '<select id="' + id + '" name="' + name + '"' + reqAttr + msgAttr + '>' + opts + '</select>';
+  } else {
+    control = '<input id="' + id + '" name="' + name + '" type="' + (o.type || 'text') + '"'
+            + ' value="' + val + '"' + ph + reqAttr + msgAttr + '>';
+  }
+
+  return '<div class="ja-field' + (o.full ? ' ja-field--full' : '') + '">'
+       + '<label for="' + id + '">' + h.esc(o.bn)
+       + '<span class="ja-label-en">' + h.esc(o.en) + '</span>' + req + '</label>'
+       + control + '</div>';
+}
+
+/* --------------------------------------------------- one section header */
+function sectionHead(icon, bn, en) {
+  return '<div class="ja-section-head">'
+       + '<span class="ja-section-icon">' + icons[icon] + '</span>'
+       + '<span><span class="ja-section-title">' + h.esc(bn) + '</span>'
+       + '<span class="ja-section-sub">' + h.esc(en) + '</span></span></div>';
+}
+%>
+
+<!-- "layout extractStyles" in app.js hoists these into <head><meta charset="utf-8">, so they load
+     on /admission only rather than on every page of the site. -->
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admission.css">
+
 <div class="page-head">
   <div class="wrap">
     <div class="crumb"><a href="/">Home</a> / Admission</div>
@@ -7,148 +70,367 @@
 
 <section>
   <div class="wrap">
-    <% if (submitted) { %>
-      <div class="panel" style="max-width:640px;margin:0 auto;text-align:center">
-        <div style="width:64px;height:64px;margin:0 auto 1rem;border-radius:50%;background:var(--green-100);color:var(--green-700);display:grid;place-items:center;font-size:1.8rem">✓</div>
-        <h2>Application received</h2>
-        <p>Thank you, <strong><%= submitted.name %></strong>. Your application has been recorded.</p>
-        <p style="margin:1.4rem 0">
-          <span style="display:inline-block;background:var(--cream);border:1px dashed var(--gold);border-radius:8px;padding:.8rem 1.4rem">
-            <small style="display:block;text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:var(--muted)">Application Number</small>
-            <strong style="font-family:var(--serif);font-size:1.4rem;color:var(--green-800)"><%= submitted.applicationNo %></strong>
-          </span>
+
+  <% if (submitted) { %>
+    <div class="ja-wrap">
+      <div class="ja-done">
+        <div class="ja-done-mark">✓</div>
+        <h2>আবেদন গৃহীত হয়েছে</h2>
+        <p>ধন্যবাদ, <strong><%= submitted.name %></strong>। আপনার ভর্তি আবেদনটি আমাদের কাছে জমা হয়েছে।</p>
+        <p class="ja-done-no">
+          <small>Application Number</small>
+          <strong><%= submitted.applicationNo %></strong>
         </p>
-        <p style="color:var(--muted);font-size:.92rem">Please keep this number safe. Our office will contact the guardian on the phone number you provided to arrange the interview.</p>
-        <p style="margin-top:1.4rem"><a class="btn btn-green" href="/">Back to home</a></p>
+        <p style="color:var(--ja-muted);font-size:.93rem">
+          নম্বরটি সংরক্ষণ করে রাখুন। আমাদের ভর্তি অফিস আপনার দেওয়া মোবাইল নম্বরে যোগাযোগ করে
+          সাক্ষাৎকারের সময় জানিয়ে দেবে, ইনশাআল্লাহ।
+        </p>
+        <p style="margin-top:1.4rem"><a class="btn btn-green" href="/">হোমে ফিরে যান</a></p>
       </div>
-    <% } else { %>
-      <div class="grid g2" style="gap:2.5rem;align-items:start">
-        <div class="panel">
-          <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.join(' ') %></div><% } %>
-          <h2 style="margin-bottom:1.2rem">Applicant details</h2>
-          <form method="post" action="/admission">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <div class="form-grid">
-              <div class="field full">
-                <label for="name">Full name of applicant <span class="req">*</span></label>
-                <input id="name" name="name" type="text" required value="<%= form.name || '' %>">
-              </div>
-              <div class="field">
-                <label for="father_name">Father's name</label>
-                <input id="father_name" name="father_name" type="text" value="<%= form.father_name || '' %>">
-              </div>
-              <div class="field">
-                <label for="mother_name">Mother's name</label>
-                <input id="mother_name" name="mother_name" type="text" value="<%= form.mother_name || '' %>">
-              </div>
-              <div class="field">
-                <label for="dob">Date of birth</label>
-                <input id="dob" name="dob" type="date" value="<%= form.dob || '' %>">
-              </div>
-              <div class="field">
-                <label for="gender">Gender</label>
-                <select id="gender" name="gender">
-                  <option value="male" <%= form.gender === 'female' ? '' : 'selected' %>>Male</option>
-                  <option value="female" <%= form.gender === 'female' ? 'selected' : '' %>>Female</option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="guardian_phone">Guardian's phone <span class="req">*</span></label>
-                <input id="guardian_phone" name="guardian_phone" type="tel" required value="<%= form.guardian_phone || '' %>">
-              </div>
-              <div class="field">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" value="<%= form.email || '' %>">
-              </div>
-              <div class="field">
-                <label for="department_id">Department</label>
-                <select id="department_id" name="department_id">
-                  <option value="">— Select —</option>
-                  <% departments.forEach(function (d) { %>
-                    <option value="<%= d.id %>" <%= String(form.department_id) === String(d.id) ? 'selected' : '' %>><%= d.name %></option>
-                  <% }); %>
-                </select>
-              </div>
-              <div class="field">
-                <label for="class_id">Class applied for</label>
-                <select id="class_id" name="class_id">
-                  <option value="">— Select —</option>
-                  <% classes.forEach(function (c) { %>
-                    <option value="<%= c.id %>" data-dept="<%= c.department_id %>" <%= String(form.class_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option>
-                  <% }); %>
-                </select>
-              </div>
-              <div class="field full">
-                <label for="address">Present address</label>
-                <input id="address" name="address" type="text" value="<%= form.address || '' %>">
-              </div>
-              <div class="field full">
-                <label for="previous_institution">Previous institution (if any)</label>
-                <input id="previous_institution" name="previous_institution" type="text" value="<%= form.previous_institution || '' %>">
-              </div>
-              <div class="field full">
-                <label for="note">Anything else we should know</label>
-                <textarea id="note" name="note"><%= form.note || '' %></textarea>
-              </div>
-            </div>
-            <p style="margin-top:1.4rem"><button class="btn btn-green" type="submit">Submit application</button></p>
-          </form>
+    </div>
+
+  <% } else { %>
+    <div class="ja-wrap">
+
+      <div class="ja-head">
+        <h2>ভর্তি আবেদন ফরম</h2>
+        <p>নিচের তথ্যগুলো সঠিকভাবে পূরণ করুন। <span class="ja-req">*</span> চিহ্নিত ঘরগুলো আবশ্যক।</p>
+      </div>
+
+      <% if (errors && errors.length) { %>
+        <div class="ja-errors" role="alert">
+          <ul><% errors.forEach(function (e) { %><li><%= e %></li><% }); %></ul>
+        </div>
+      <% } %>
+
+      <div class="ja-stepper">
+        <div class="ja-stepper-track">
+          <div class="ja-stepper-line"></div>
+          <div class="ja-stepper-fill" id="jaStepperFill"></div>
+          <ol class="ja-stepper-list">
+            <% af.STEPS.forEach(function (s, i) { %>
+              <li class="ja-stepper-item<%= i === 0 ? ' is-active' : '' %>" data-step="<%= i %>">
+                <span class="ja-stepper-dot"><%= s.n %></span>
+                <span class="ja-stepper-label"><%= s.label %></span>
+              </li>
+            <% }); %>
+          </ol>
+        </div>
+        <p class="ja-stepper-caption" id="jaCaption">ধাপ ১ / ৬ · <%= af.STEPS[0].label %></p>
+      </div>
+
+      <form method="post" action="/admission" id="jamiah-admission-form" class="ja-form" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="ja-honeypot" aria-hidden="true">
+          <label for="ja_website">Website</label>
+          <input id="ja_website" name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
 
-        <aside>
-          <div class="card" style="margin-bottom:1.2rem">
-            <h3>How admission works</h3>
-            <ol style="padding-left:1.1rem;font-size:.92rem;color:var(--muted)">
-              <li style="margin-bottom:.5rem">Submit this form and note your application number.</li>
-              <li style="margin-bottom:.5rem">Our office calls the guardian to arrange an interview.</li>
-              <li style="margin-bottom:.5rem">The applicant sits a short oral assessment.</li>
-              <li>On acceptance, admission fee is paid and the seat is confirmed.</li>
-            </ol>
+        <!-- ------------------------------------------- 1. student -->
+        <div class="ja-step is-active" data-step="0">
+          <div class="ja-section">
+            <%- sectionHead('user', 'শিক্ষার্থীর তথ্য', 'Student Details') %>
+            <div class="ja-grid">
+              <%- field({ name:'full_name_bn', bn:'শিক্ষার্থীর নাম (বাংলা)', en:'Full Name (Bangla)', req:true }) %>
+              <%- field({ name:'full_name_en', bn:'শিক্ষার্থীর নাম (ইংরেজি)', en:'Full Name (English)' }) %>
+              <%- field({ name:'dob', bn:'জন্ম তারিখ', en:'Date of Birth', type:'date', req:true }) %>
+              <%- field({ name:'gender', bn:'লিঙ্গ', en:'Gender', type:'select',
+                          options:[{ value:'', label:'নির্বাচন করুন' }].concat(af.GENDERS.map(function (g) { return { value:g.value, label:g.label }; })) }) %>
+              <%- field({ name:'nationality', bn:'জাতীয়তা', en:'Nationality', value:'বাংলাদেশী' }) %>
+              <%- field({ name:'student_mobile', bn:'শিক্ষার্থীর মোবাইল', en:'Student Mobile', type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'email', bn:'ইমেইল', en:'Email', type:'email', req:true, full:true, placeholder:'you@example.com', msg:'ইমেইল ঠিকানা দিন। / Please enter your email address.', msgType:'সঠিক ইমেইল ঠিকানা দিন, যেমন you@example.com / Enter a valid email address, e.g. you@example.com' }) %>
+            </div>
           </div>
-          <% if (feeHeads && feeHeads.length) { %>
-          <div class="card">
-            <h3>Fees at a glance</h3>
-            <table class="data" style="font-size:.88rem">
-              <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead>
-              <tbody>
-                <% feeHeads.forEach(function (f) { %>
-                  <tr>
-                    <td><%= f.name %></td>
-                    <td><%= f.ftype.replace('_', ' ') %></td>
-                    <td style="text-align:right"><%= currency %> <%= Number(f.amount).toLocaleString('en-US') %></td>
-                  </tr>
-                <% }); %>
-              </tbody>
-            </table>
-            <p class="hint" style="margin-top:.7rem">Actual fees may vary by class. The office will confirm at the time of admission.</p>
+        </div>
+
+        <!-- ------------------------------- 2. department & campus -->
+        <div class="ja-step" data-step="1">
+          <div class="ja-section">
+            <%- sectionHead('layers', 'বিভাগ নির্বাচন করুন', 'Select Department') %>
+            <div class="ja-choice-grid">
+              <% af.DEPARTMENTS.forEach(function (d) { %>
+                <label class="ja-choice">
+                  <input type="radio" name="department" value="<%= d.key %>" <%= form.department === d.key ? 'checked' : '' %> required>
+                  <span class="ja-choice-body">
+                    <span class="ja-choice-icon"><%- icons[d.icon] %></span>
+                    <span class="ja-choice-title"><%= d.title %></span>
+                    <ul class="ja-choice-list">
+                      <% d.items.forEach(function (it) { %><li class="ja-choice-item"><%= it %></li><% }); %>
+                    </ul>
+                  </span>
+                </label>
+              <% }); %>
+            </div>
           </div>
-          <% } %>
-        </aside>
+
+          <div class="ja-section ja-section--gold">
+            <%- sectionHead('pin', 'ক্যাম্পাস নির্বাচন করুন', 'Select Campus') %>
+            <div class="ja-choice-grid ja-choice-grid--campus">
+              <% af.CAMPUSES.forEach(function (c) { %>
+                <label class="ja-choice ja-choice--campus">
+                  <input type="radio" name="campus" value="<%= c.key %>" <%= form.campus === c.key ? 'checked' : '' %> required>
+                  <span class="ja-choice-body">
+                    <span class="ja-choice-icon"><%- icons.pin %></span>
+                    <span class="ja-choice-title"><%= c.title %></span>
+                    <p class="ja-choice-desc"><%= c.desc %></p>
+                  </span>
+                </label>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+
+        <!-- -------------------------------------------- 3. parents -->
+        <div class="ja-step" data-step="2">
+          <div class="ja-section">
+            <%- sectionHead('users', 'পিতা-মাতার তথ্য', 'Parents Information') %>
+            <div class="ja-grid">
+              <%- field({ name:'father_name', bn:'পিতার নাম', en:"Father's Name", req:true }) %>
+              <%- field({ name:'father_mobile', bn:'পিতার মোবাইল', en:"Father's Mobile", type:'tel', req:true, placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'father_profession', bn:'পিতার পেশা', en:"Father's Profession" }) %>
+              <%- field({ name:'father_income', bn:'মাসিক আয়', en:'Monthly Income' }) %>
+              <%- field({ name:'mother_name', bn:'মাতার নাম', en:"Mother's Name" }) %>
+              <%- field({ name:'mother_mobile', bn:'মাতার মোবাইল', en:"Mother's Mobile", type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+            </div>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------- 4. guardian -->
+        <div class="ja-step" data-step="3">
+          <div class="ja-section">
+            <%- sectionHead('shield', 'অভিভাবকের তথ্য', 'Guardian Information') %>
+            <div class="ja-grid">
+              <%- field({ name:'guardian_name', bn:'অভিভাবকের নাম', en:"Guardian's Name" }) %>
+              <%- field({ name:'guardian_relation', bn:'সম্পর্ক', en:'Relation' }) %>
+              <%- field({ name:'guardian_mobile', bn:'অভিভাবকের মোবাইল', en:"Guardian's Mobile", type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'guardian_address', bn:'অভিভাবকের ঠিকানা', en:"Guardian's Address", type:'textarea', full:true }) %>
+            </div>
+          </div>
+        </div>
+
+        <!-- -------------------------------------------- 5. address -->
+        <div class="ja-step" data-step="4">
+          <div class="ja-section">
+            <%- sectionHead('home', 'বর্তমান ঠিকানা', 'Present Address') %>
+            <div class="ja-grid">
+              <%- field({ name:'present_house', bn:'বাসা', en:'House' }) %>
+              <%- field({ name:'present_moholla', bn:'মহল্লা', en:'Moholla' }) %>
+              <%- field({ name:'present_thana', bn:'থানা', en:'Thana' }) %>
+              <%- field({ name:'present_district', bn:'জেলা', en:'District' }) %>
+            </div>
+          </div>
+
+          <div class="ja-section ja-section--gold">
+            <%- sectionHead('pin', 'স্থায়ী ঠিকানা', 'Permanent Address') %>
+            <p style="margin:-.6rem 0 1rem">
+              <label style="font-size:.9rem;color:var(--ja-muted);display:inline-flex;align-items:center;gap:.45rem;cursor:pointer">
+                <input type="checkbox" id="jaSameAddress" style="width:auto;margin:0"> বর্তমান ঠিকানার অনুরূপ
+                <span class="ja-label-en">Same as present address</span>
+              </label>
+            </p>
+            <div class="ja-grid">
+              <%- field({ name:'permanent_village', bn:'গ্রাম', en:'Village' }) %>
+              <%- field({ name:'permanent_post', bn:'ডাকঘর', en:'Post Office' }) %>
+              <%- field({ name:'permanent_thana', bn:'থানা', en:'Thana' }) %>
+              <%- field({ name:'permanent_district', bn:'জেলা', en:'District' }) %>
+            </div>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------- 6. academic -->
+        <div class="ja-step" data-step="5">
+          <div class="ja-section">
+            <%- sectionHead('cap', 'শিক্ষাগত তথ্য', 'Academic History') %>
+            <div class="ja-grid">
+              <%- field({ name:'prev_inst_name', bn:'পূর্ববর্তী প্রতিষ্ঠানের নাম', en:'Previous Institution', full:true }) %>
+              <%- field({ name:'prev_class', bn:'পূর্ববর্তী শ্রেণী', en:'Previous Class' }) %>
+              <%- field({ name:'target_class', bn:'যে শ্রেণীতে ভর্তি হতে চান', en:'Target Class' }) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="ja-stepnav">
+          <button type="button" class="ja-navbtn ja-navbtn--prev" id="jaPrev" disabled>← পূর্ববর্তী</button>
+          <span class="ja-stepnav-count" id="jaCount">ধাপ ১ / ৬</span>
+          <button type="button" class="ja-navbtn ja-navbtn--next" id="jaNext">পরবর্তী →</button>
+        </div>
+
+        <div class="ja-actions" id="jaActions" hidden>
+          <button type="submit" class="ja-submit" id="jaSubmit">ভর্তি ফরম জমা দিন</button>
+          <p class="ja-actions-note">জমা দেওয়ার পর আমাদের ভর্তি অফিস আপনার সাথে যোগাযোগ করবে, ইনশাআল্লাহ।</p>
+        </div>
+      </form>
+    </div>
+  <% } %>
+
+    <div class="grid g2" style="gap:1.6rem;align-items:start;margin-top:3rem">
+      <div class="card">
+        <h3>How admission works</h3>
+        <ol style="padding-left:1.1rem;font-size:.92rem;color:var(--muted)">
+          <li style="margin-bottom:.5rem">Submit this form and note your application number.</li>
+          <li style="margin-bottom:.5rem">Our office calls the guardian to arrange an interview.</li>
+          <li style="margin-bottom:.5rem">The applicant sits a short oral assessment.</li>
+          <li>On acceptance, admission fee is paid and the seat is confirmed.</li>
+        </ol>
       </div>
-    <% } %>
+      <% if (feeHeads && feeHeads.length) { %>
+      <div class="card">
+        <h3>Fees at a glance</h3>
+        <table class="data" style="font-size:.88rem">
+          <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead>
+          <tbody>
+            <% feeHeads.forEach(function (f) { %>
+              <tr>
+                <td><%= f.name %></td>
+                <td><%= f.ftype.replace('_', ' ') %></td>
+                <td style="text-align:right"><%= currency %> <%= Number(f.amount).toLocaleString('en-US') %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:.7rem">Actual fees may vary by class. The office will confirm at the time of admission.</p>
+      </div>
+      <% } %>
+    </div>
+
   </div>
 </section>
 
 <script>
-  (function () {
-    var dept = document.getElementById('department_id'), cls = document.getElementById('class_id');
-    if (!dept || !cls) return;
-    var all = Array.prototype.slice.call(cls.options).map(function (o) {
-      return { value: o.value, text: o.text, dept: o.getAttribute('data-dept') };
+(function () {
+  var form = document.getElementById('jamiah-admission-form');
+  if (!form) return;
+
+  var BN = ['১', '২', '৩', '৪', '৫', '৬'];
+  var LABELS = <%- JSON.stringify(af.STEPS.map(function (s) { return s.label; })) %>;
+
+  var steps   = [].slice.call(form.querySelectorAll('.ja-step'));
+  var dots    = [].slice.call(document.querySelectorAll('.ja-stepper-item'));
+  var fill    = document.getElementById('jaStepperFill');
+  var caption = document.getElementById('jaCaption');
+  var count   = document.getElementById('jaCount');
+  var prevBtn = document.getElementById('jaPrev');
+  var nextBtn = document.getElementById('jaNext');
+  var actions = document.getElementById('jaActions');
+  var current = 0;
+
+  function show(i) {
+    current = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach(function (s, n) { s.classList.toggle('is-active', n === current); });
+    dots.forEach(function (d, n) {
+      d.classList.toggle('is-active', n === current);
+      d.classList.toggle('is-done', n < current);
     });
-    function filter() {
-      var d = dept.value, current = cls.value;
-      cls.innerHTML = '';
-      all.forEach(function (o) {
-        if (o.value === '' || !d || o.dept === d) {
-          var opt = document.createElement('option');
-          opt.value = o.value; opt.textContent = o.text; opt.setAttribute('data-dept', o.dept || '');
-          if (o.value === current) opt.selected = true;
-          cls.appendChild(opt);
+    fill.style.width = (current / (steps.length - 1) * 100) + '%';
+    caption.textContent = 'ধাপ ' + BN[current] + ' / ' + BN[steps.length - 1] + ' · ' + LABELS[current];
+    count.textContent = 'ধাপ ' + BN[current] + ' / ' + BN[steps.length - 1];
+    prevBtn.disabled = current === 0;
+    nextBtn.hidden = current === steps.length - 1;
+    actions.hidden = current !== steps.length - 1;
+  }
+
+  /* Validates only the fields on the step being left, so an applicant is
+     never blocked by a field they have not reached yet. */
+  function stepIsValid(i) {
+    var fields = [].slice.call(steps[i].querySelectorAll('input, select, textarea'));
+    var ok = true;
+    var firstBad = null;
+    var seenRadio = {};
+
+    fields.forEach(function (el) {
+      el.classList.remove('is-invalid');
+      if (el.setCustomValidity) el.setCustomValidity('');
+      if (!el.required) return;
+
+      if (el.type === 'radio') {
+        if (seenRadio[el.name]) return;
+        seenRadio[el.name] = true;
+        if (!form.querySelector('input[name="' + el.name + '"]:checked')) {
+          ok = false;
+          if (!firstBad) firstBad = el.closest('.ja-choice-grid') || el;
         }
-      });
+        return;
+      }
+
+      if (!el.checkValidity()) {
+        ok = false;
+        el.classList.add('is-invalid');
+        var jaMsg = el.validity.valueMissing
+          ? el.getAttribute('data-msg')
+          : (el.validity.typeMismatch || el.validity.patternMismatch)
+            ? (el.getAttribute('data-msg-type') || el.getAttribute('data-msg'))
+            : '';
+        if (jaMsg && el.setCustomValidity) el.setCustomValidity(jaMsg);
+        if (!firstBad) firstBad = el;
+      }
+    });
+
+    if (!ok && firstBad) {
+      firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (firstBad.focus) { try { firstBad.focus({ preventScroll: true }); } catch (e) {} }
+      if (firstBad.reportValidity) { try { firstBad.reportValidity(); } catch (e) {} }
     }
-    dept.addEventListener('change', filter);
-    filter();
-  })();
+    return ok;
+  }
+
+  nextBtn.addEventListener('click', function () {
+    if (!stepIsValid(current)) return;
+    show(current + 1);
+    document.querySelector('.ja-stepper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  prevBtn.addEventListener('click', function () {
+    show(current - 1);
+    document.querySelector('.ja-stepper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  /* Let a visitor jump back to any step they have already completed. */
+  dots.forEach(function (d, n) {
+    d.style.cursor = 'pointer';
+    d.addEventListener('click', function () {
+      if (n < current) show(n);
+      else if (n > current && stepIsValid(current)) show(current + 1);
+    });
+  });
+
+  /* Clear a custom validation message as soon as the visitor edits the field. */
+  document.addEventListener('input', function (e) {
+    var el = e.target;
+    if (el && el.setCustomValidity) { el.setCustomValidity(''); el.classList.remove('is-invalid'); }
+  });
+
+  /* "Same as present address" copies the four present-address boxes. */
+  var same = document.getElementById('jaSameAddress');
+  if (same) {
+    var PAIRS = [
+      ['ja_present_house', 'ja_permanent_village'],
+      ['ja_present_moholla', 'ja_permanent_post'],
+      ['ja_present_thana', 'ja_permanent_thana'],
+      ['ja_present_district', 'ja_permanent_district']
+    ];
+    same.addEventListener('change', function () {
+      if (!same.checked) return;
+      PAIRS.forEach(function (p) {
+        var from = document.getElementById(p[0]);
+        var to = document.getElementById(p[1]);
+        if (from && to) to.value = from.value;
+      });
+    });
+  }
+
+  form.addEventListener('submit', function (e) {
+    for (var i = 0; i < steps.length; i += 1) {
+      if (!stepIsValid(i)) {
+        e.preventDefault();
+        show(i);
+        return;
+      }
+    }
+    var btn = document.getElementById('jaSubmit');
+    if (btn) { btn.disabled = true; btn.textContent = 'জমা হচ্ছে…'; }
+  });
+
+  show(0);
+})();
 </script>

@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', upload.imageSingle('image'), async (req, res, next) => {
+router.post('/', upload.image.single('image'), async (req, res, next) => {
   try {
     const title = String(req.body.title || '').trim();
     const eventDate = h.orNull(req.body.event_date);

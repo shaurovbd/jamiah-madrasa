@@ -1,0 +1,75 @@
+<div class="page-bar"><h1>Class Routine</h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2>Periods &amp; times</h2></div>
+    <div class="card-body flush">
+      <% if (periods.length) { %>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th class="num">#</th><th>Period</th><th>Start</th><th>End</th><th>Type</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% periods.forEach(function (p) { %>
+                <tr>
+                  <td class="num"><%= p.sort_order %></td>
+                  <td><strong><%= p.name %></strong></td>
+                  <td><%= hhmm(p.start_time) %></td>
+                  <td><%= hhmm(p.end_time) %></td>
+                  <td><%= p.is_break ? 'Break / বিরতি' : 'Class' %></td>
+                  <td class="actions">
+                    <a class="btn btn-light btn-sm" href="/admin/routine/periods?edit=<%= p.id %>">Edit</a>
+                    <form method="post" action="/admin/routine/periods/<%= p.id %>" style="display:inline"
+                          data-confirm="Delete this period? Any routine slots using it are removed too.">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="_method" value="DELETE">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty">No periods yet. Add the first one to start building routines.</div>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? 'Edit period' : 'Add period' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/routine/periods">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="name">Period name <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required placeholder="১ম ঘণ্টা" value="<%= edit ? edit.name : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="start_time">Starts <span class="req">*</span></label>
+          <input id="start_time" name="start_time" type="time" required value="<%= edit ? hhmm(edit.start_time) : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="end_time">Ends <span class="req">*</span></label>
+          <input id="end_time" name="end_time" type="time" required value="<%= edit ? hhmm(edit.end_time) : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="sort_order">Order</label>
+          <input id="sort_order" name="sort_order" type="number" value="<%= edit ? edit.sort_order : (periods.length + 1) %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label style="font-weight:400">
+            <input type="checkbox" name="is_break" value="1" <%= edit && edit.is_break ? 'checked' : '' %>>
+            Break (বিরতি / নামায) — no subject is taught
+          </label>
+        </div>
+
+        <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add period' %></button>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/routine/periods">Cancel</a><% } %>
+      </form>
+    </div>
+  </div>
+</div>

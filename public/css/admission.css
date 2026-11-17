@@ -1,0 +1,226 @@
+/* Jamiah Scholars International — online admission form
+   Six-step bilingual (Bangla / English) application.
+   Loaded only on /admission, via the `style` local in the public layout. */
+
+.ja-wrap{
+  --ja-green:#0f4733;
+  --ja-green-dark:#0a3528;
+  --ja-green-soft:#e4f0ea;
+  --ja-gold:#c3952f;
+  --ja-gold-soft:#f6efdc;
+  --ja-line:#dfe5e2;
+  --ja-field-bg:#f8fafc;
+  --ja-field-line:#cbd5e1;
+  --ja-ink:#17201c;
+  --ja-muted:#6e7d76;
+  --ja-danger:#b4232a;
+  font-family:"Hind Siliguri","Noto Sans Bengali",var(--sans);
+  max-width:980px;margin:0 auto;
+}
+
+/* ------------------------------------------------------------ page head */
+.ja-head{text-align:center;margin-bottom:1.6rem}
+.ja-head h2{
+  font-family:"Hind Siliguri","Noto Sans Bengali",var(--serif);
+  color:var(--ja-green-dark);margin-bottom:.35rem;
+}
+.ja-head p{color:var(--ja-muted);margin:0;font-size:.98rem}
+.ja-head .ja-req{color:var(--ja-danger)}
+
+/* ------------------------------------------------------------- stepper */
+.ja-stepper{
+  background:var(--paper);border:1px solid var(--ja-line);border-radius:14px;
+  padding:1.25rem 1.5rem .9rem;margin-bottom:1.4rem;
+}
+.ja-stepper-track{position:relative}
+.ja-stepper-line{
+  position:absolute;left:6%;right:6%;top:18px;height:2px;
+  background:var(--ja-line);border-radius:2px;
+}
+.ja-stepper-fill{
+  position:absolute;left:6%;top:18px;height:2px;width:0;
+  background:var(--ja-green);border-radius:2px;transition:width .35s ease;
+}
+.ja-stepper-list{
+  position:relative;display:grid;grid-template-columns:repeat(6,1fr);
+  list-style:none;margin:0;padding:0;
+}
+.ja-stepper-item{text-align:center;display:flex;flex-direction:column;align-items:center;gap:.45rem}
+.ja-stepper-dot{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:var(--paper);border:2px solid var(--ja-line);color:var(--ja-muted);
+  font-weight:600;font-size:.95rem;transition:all .25s ease;
+}
+.ja-stepper-label{font-size:.82rem;color:var(--ja-muted);line-height:1.3}
+.ja-stepper-item.is-done .ja-stepper-dot{background:var(--ja-green-soft);border-color:var(--ja-green);color:var(--ja-green)}
+.ja-stepper-item.is-active .ja-stepper-dot{
+  background:var(--ja-green);border-color:var(--ja-green);color:#fff;
+  box-shadow:0 0 0 4px rgba(15,71,51,.12);
+}
+.ja-stepper-item.is-active .ja-stepper-label{color:var(--ja-green);font-weight:600}
+.ja-stepper-caption{
+  text-align:center;margin:.9rem 0 0;font-size:.88rem;color:var(--ja-muted);
+}
+
+/* ---------------------------------------------------------------- steps */
+.ja-step{display:none}
+.ja-step.is-active{display:block;animation:ja-fade .25s ease}
+@keyframes ja-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.ja-section{
+  background:var(--paper);border:1px solid var(--ja-line);border-top:3px solid var(--ja-green);
+  border-radius:12px;padding:1.4rem 1.5rem 1.6rem;margin-bottom:1.1rem;
+}
+.ja-section--gold{border-top-color:var(--ja-gold)}
+.ja-section-head{display:flex;align-items:center;gap:.8rem;margin-bottom:1.3rem}
+.ja-section-icon{
+  width:38px;height:38px;flex:0 0 38px;border-radius:10px;display:grid;place-items:center;
+  background:var(--ja-green-soft);color:var(--ja-green);
+}
+.ja-section--gold .ja-section-icon{background:var(--ja-gold-soft);color:#8a6713}
+.ja-section-icon svg{width:20px;height:20px}
+.ja-section-title{
+  font-family:"Hind Siliguri","Noto Sans Bengali",var(--sans);
+  display:block;font-size:1.12rem;font-weight:600;color:var(--ja-ink);line-height:1.3;margin:0;
+}
+.ja-section-sub{display:block;font-size:.76rem;color:var(--ja-muted);font-weight:400;letter-spacing:.01em}
+
+/* --------------------------------------------------------------- fields */
+.ja-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.4rem}
+.ja-field{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.ja-field--full{grid-column:1 / -1}
+.ja-field > label{font-size:.92rem;font-weight:600;color:#334155;line-height:1.35}
+.ja-label-en{font-weight:400;font-size:.78rem;color:#94a3b8;margin-left:.3rem}
+.ja-req{color:var(--ja-danger);margin-left:.15rem}
+.ja-field input,
+.ja-field select,
+.ja-field textarea{
+  font:inherit;font-size:.95rem;color:#0f172a;width:100%;
+  background:var(--ja-field-bg);border:1px solid var(--ja-field-line);border-radius:8px;
+  padding:.65rem .85rem;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.ja-field textarea{min-height:90px;resize:vertical}
+.ja-field input::placeholder,
+.ja-field textarea::placeholder{color:#a8b3bd}
+.ja-field input:focus,
+.ja-field select:focus,
+.ja-field textarea:focus{
+  outline:none;background:var(--paper);border-color:var(--ja-green);
+  box-shadow:0 0 0 3px rgba(15,71,51,.10);
+}
+.ja-field input.is-invalid,
+.ja-field select.is-invalid{border-color:var(--ja-danger);box-shadow:0 0 0 3px rgba(180,35,42,.10)}
+
+/* ------------------------------------------------- department / campus */
+.ja-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.ja-choice-grid--campus{grid-template-columns:repeat(2,1fr)}
+.ja-choice{position:relative;display:block;cursor:pointer;margin:0}
+.ja-choice input{position:absolute;opacity:0;width:0;height:0}
+.ja-choice-body{
+  display:block;height:100%;border:1.5px solid var(--ja-line);border-radius:12px;background:var(--paper);
+  padding:1.1rem 1.1rem 1.2rem;transition:all .18s ease;
+}
+.ja-choice:hover .ja-choice-body{border-color:#b9c7c1;transform:translateY(-1px)}
+.ja-choice input:focus-visible + .ja-choice-body{box-shadow:0 0 0 3px rgba(15,71,51,.18)}
+.ja-choice input:checked + .ja-choice-body{
+  border-color:var(--ja-green);background:#f4faf7;
+  box-shadow:0 0 0 3px rgba(15,71,51,.08);
+}
+.ja-choice-icon{
+  width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+  background:var(--ja-green-soft);color:var(--ja-green);margin-bottom:.7rem;
+}
+.ja-choice-icon svg{width:19px;height:19px}
+.ja-choice-title{display:block;font-size:1rem;font-weight:600;color:var(--ja-ink);line-height:1.35;margin:0 0 .55rem}
+.ja-choice-list{list-style:none;margin:0;padding:0}
+.ja-choice-item{
+  position:relative;padding-left:1rem;font-size:.86rem;color:var(--ja-muted);
+  line-height:1.6;margin-bottom:.15rem;
+}
+.ja-choice-item::before{
+  content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;
+  background:var(--ja-gold);
+}
+.ja-choice-desc{font-size:.86rem;color:var(--ja-muted);line-height:1.6;margin:0}
+.ja-choice input:checked + .ja-choice-body::after{
+  content:"✓";position:absolute;top:.75rem;right:.85rem;
+  width:21px;height:21px;border-radius:50%;background:var(--ja-green);color:#fff;
+  font-size:.72rem;display:grid;place-items:center;line-height:1;
+}
+.ja-choice--campus .ja-choice-icon{background:var(--ja-gold-soft);color:#8a6713}
+.ja-choice--campus input:checked + .ja-choice-body{border-color:var(--ja-gold);background:#fdfaf2}
+.ja-choice--campus input:checked + .ja-choice-body::after{background:var(--ja-gold)}
+
+/* ------------------------------------------------------------ step nav */
+.ja-stepnav{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.2rem .2rem 0;
+}
+.ja-stepnav-count{font-size:.88rem;color:var(--ja-muted)}
+.ja-navbtn{
+  font:inherit;font-size:.95rem;font-weight:600;cursor:pointer;
+  border-radius:8px;padding:.6rem 1.15rem;border:1.5px solid var(--ja-line);
+  background:var(--paper);color:var(--ja-muted);transition:all .15s ease;
+}
+.ja-navbtn:hover:not(:disabled){border-color:var(--ja-green);color:var(--ja-green)}
+.ja-navbtn:disabled{opacity:.4;cursor:not-allowed}
+.ja-navbtn--next{background:var(--ja-green);border-color:var(--ja-green);color:#fff}
+.ja-navbtn--next:hover{background:var(--ja-green-dark);border-color:var(--ja-green-dark);color:#fff}
+
+.ja-actions{text-align:center;padding-top:.4rem}
+.ja-submit{
+  font:inherit;font-size:1.02rem;font-weight:600;cursor:pointer;color:#fff;
+  background:var(--ja-green);border:1.5px solid var(--ja-green);border-radius:9px;
+  padding:.78rem 2.4rem;transition:all .15s ease;
+}
+.ja-submit:hover{background:var(--ja-green-dark);border-color:var(--ja-green-dark)}
+.ja-submit[disabled]{opacity:.6;cursor:progress}
+.ja-actions-note{margin:.85rem 0 0;font-size:.86rem;color:var(--ja-muted)}
+
+/* ------------------------------------------------------------- notices */
+.ja-errors{
+  background:#fdf2f2;border:1px solid #f0c8c8;border-left:3px solid var(--ja-danger);
+  border-radius:8px;padding:.9rem 1.1rem;margin-bottom:1.2rem;color:#7c1d22;
+}
+.ja-errors ul{margin:0;padding-left:1.15rem}
+.ja-errors li{font-size:.92rem;line-height:1.7}
+
+.ja-honeypot{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* ------------------------------------------------------------- success */
+.ja-done{
+  max-width:620px;margin:0 auto;text-align:center;background:var(--paper);
+  border:1px solid var(--ja-line);border-top:3px solid var(--ja-green);
+  border-radius:12px;padding:2.4rem 1.8rem;
+}
+.ja-done-mark{
+  width:66px;height:66px;margin:0 auto 1.1rem;border-radius:50%;
+  background:var(--ja-green-soft);color:var(--ja-green);
+  display:grid;place-items:center;font-size:1.9rem;
+}
+.ja-done h2{font-family:"Hind Siliguri","Noto Sans Bengali",var(--serif);color:var(--ja-green-dark)}
+.ja-done-no{
+  display:inline-block;background:var(--cream);border:1px dashed var(--ja-gold);
+  border-radius:9px;padding:.85rem 1.5rem;margin:1.2rem 0;
+}
+.ja-done-no small{
+  display:block;text-transform:uppercase;letter-spacing:.1em;
+  font-size:.68rem;color:var(--ja-muted);margin-bottom:.15rem;
+}
+.ja-done-no strong{font-size:1.4rem;color:var(--ja-green-dark);letter-spacing:.02em}
+
+/* ------------------------------------------------------------ responsive */
+@media (max-width:880px){
+  .ja-choice-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:680px){
+  .ja-grid{grid-template-columns:1fr}
+  .ja-choice-grid,.ja-choice-grid--campus{grid-template-columns:1fr}
+  .ja-section{padding:1.15rem 1.1rem 1.3rem}
+  .ja-stepper{padding:1rem .7rem .7rem}
+  .ja-stepper-line,.ja-stepper-fill{left:9%;right:9%;top:15px}
+  .ja-stepper-dot{width:30px;height:30px;font-size:.85rem}
+  .ja-stepper-label{font-size:.66rem}
+  .ja-navbtn{padding:.55rem .9rem;font-size:.9rem}
+  .ja-stepnav-count{font-size:.8rem}
+}

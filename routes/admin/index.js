@@ -70,6 +70,7 @@ router.use('/students',   requireRole('teacher', 'accountant'), require('./stude
 router.use('/admissions', requireRole('accountant'),            require('./admissions'));
 router.use('/staff',      requireRole('teacher', 'accountant'), require('./staff'));
 router.use('/academics',  requireRole('teacher'),               require('./academics'));
+router.use('/routine',    requireRole('teacher'),              require('./routine'));
 router.use('/attendance', requireRole('teacher'),               require('./attendance'));
 router.use('/exams',      requireRole('teacher'),               require('./exams'));
 router.use('/hifz',       requireRole('teacher'),               require('./hifz'));

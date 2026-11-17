@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
+<head><meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= title ? title + ' — Management' : 'Management' %> | <%= site.short %></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,11 +19,7 @@
 <div class="shell">
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <% if (site.logo) { %>
-        <img class="side-logo" src="/uploads/<%= site.logo %>" alt="<%= site.name %>">
-      <% } else { %>
-        <span class="mark">ج</span>
-      <% } %>
+      <span class="mark">ج</span>
       <a href="/admin">
         <strong><%= site.short %></strong>
         <small>Management</small>
@@ -44,6 +40,7 @@
       <% if (can('teacher')) { %>
       <div class="side-group">Academics</div>
       <a href="/admin/academics" class="<%= on('/admin/academics') %>"><span class="ic">▤</span> Classes &amp; Subjects</a>
+        <a href="/admin/routine" class="<%= on('/admin/routine') %>"><span class="ic">▦</span> Class Routine</a>
       <a href="/admin/attendance" class="<%= on('/admin/attendance') %>"><span class="ic">✓</span> Attendance</a>
       <a href="/admin/exams" class="<%= on('/admin/exams') %>"><span class="ic">◈</span> Exams &amp; Results</a>
       <a href="/admin/hifz" class="<%= on('/admin/hifz') %>"><span class="ic">❁</span> Hifz Progress</a>

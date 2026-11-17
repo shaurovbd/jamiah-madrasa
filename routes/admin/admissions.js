@@ -2,7 +2,9 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const af = require('../../lib/admission-form');
 
+const mailer = require('../../lib/mailer');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
@@ -49,7 +51,7 @@ router.get('/:id', async (req, res, next) => {
     ]);
     const last = await db.one('SELECT MAX(id) AS id FROM students');
     res.render('admin/admissions/view', {
-      title: app.application_no, app, classes, sections, years,
+      title: app.application_no, app, af, classes, sections, years,
       suggestedAdmissionNo: h.nextNo('ADM', last ? last.id : 0)
     });
   } catch (err) { next(err); }
@@ -87,6 +89,16 @@ router.post('/:id/approve', async (req, res, next) => {
       );
       return r.insertId;
     });
+
+    /* Let the applicant know they were admitted. Fire-and-forget so a
+       mail problem can never undo or delay the admission itself. */
+    mailer.notifyApproved({
+      applicationNo: app.application_no,
+      admissionNo: admissionNo,
+      name: app.name,
+      email: app.email,
+      department: app.department_key
+    }).catch(function () {});
 
     req.flash('success', `${app.name} has been admitted as ${admissionNo}.`);
     res.redirect(`/admin/students/${studentId}`);

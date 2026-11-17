@@ -1,0 +1,113 @@
+<div class="page-head no-print">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Class Routine</div>
+    <h1>ক্লাস রুটিন · Class Routine</h1>
+  </div>
+</div>
+
+<style>
+  .rt-table { width:100%; border-collapse:collapse; font-size:.92rem; background:#fff }
+  .rt-table th, .rt-table td { border:1px solid #d9dee2; padding:.6rem .5rem; vertical-align:top; text-align:center }
+  .rt-table thead th { background:#0b5d3b; color:#fff; white-space:nowrap }
+  .rt-table thead th small { display:block; font-weight:400; opacity:.85 }
+  .rt-period { background:#f4f6f7; white-space:nowrap; text-align:left }
+  .rt-period small { display:block; color:#6b7280; font-weight:400 }
+  .rt-break td { background:#fbf7ec; color:#8a6d3b; font-weight:600 }
+  .rt-free { color:#b6bcc2 }
+  .rt-sub { font-weight:600 }
+  .rt-meta { display:block; font-size:.82rem; color:#5b6670; margin-top:.15rem }
+  .rt-scroll { overflow-x:auto; margin-top:1.2rem }
+  @media print { .no-print { display:none !important } .rt-table thead th { background:#eee; color:#000 } }
+</style>
+
+<section>
+  <div class="wrap">
+    <div class="panel no-print" style="margin-bottom:0">
+      <p style="color:var(--muted);font-size:.93rem">
+        আপনার ক্লাস নির্বাচন করুন, সাপ্তাহিক রুটিন দেখানো হবে।
+        <span style="display:block">Choose your class to see the weekly routine. Friday is the weekly holiday.</span>
+      </p>
+      <form method="get" action="/routine">
+        <div class="form-grid">
+          <div class="field">
+            <label for="class_id">ক্লাস / Class <span class="req">*</span></label>
+            <select id="class_id" name="class_id" required>
+              <option value="">— Select —</option>
+              <% classes.forEach(function (c) { %>
+                <option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.dept_name ? c.dept_name + ' · ' : '' %><%= c.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <% if (sections.length) { %>
+            <div class="field">
+              <label for="section_id">শাখা / Section</label>
+              <select id="section_id" name="section_id">
+                <option value="">— All —</option>
+                <% sections.forEach(function (s) { %>
+                  <option value="<%= s.id %>" <%= sectionId === s.id ? 'selected' : '' %>><%= s.name %></option>
+                <% }); %>
+              </select>
+            </div>
+          <% } %>
+        </div>
+        <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit">রুটিন দেখুন / View routine</button></p>
+      </form>
+    </div>
+
+    <% if (classId && !periods.length) { %>
+      <div class="alert alert-info" style="margin-top:1.2rem">রুটিন এখনো প্রকাশ করা হয়নি। / The routine has not been published yet. Please check back later.</div>
+    <% } else if (classId && !found) { %>
+      <div class="alert alert-info" style="margin-top:1.2rem">
+        <% if (sections.length && !sectionId) { %>
+          এই ক্লাসের জন্য শাখা নির্বাচন করুন। / This class is split into sections — please choose your section above.
+        <% } else { %>
+          এই ক্লাসের রুটিন এখনো প্রকাশ করা হয়নি। / No routine has been published for this class yet. Please contact the office.
+        <% } %>
+      </div>
+    <% } else if (classId) { %>
+      <div class="rt-scroll">
+        <table class="rt-table">
+          <caption style="caption-side:top;text-align:left;padding:.6rem 0;font-weight:600">
+            <%= className %><%= sectionName ? ' · ' + sectionName : '' %>
+          </caption>
+          <thead>
+            <tr>
+              <th class="rt-period">সময় / Period</th>
+              <% DAYS.forEach(function (d) { %><th><%= d.bn %><small><%= d.en %></small></th><% }); %>
+            </tr>
+          </thead>
+          <tbody>
+            <% periods.forEach(function (p) { %>
+              <% if (p.is_break) { %>
+                <tr class="rt-break">
+                  <td class="rt-period"><strong><%= p.name %></strong><small><%= hhmm(p.start_time) %>–<%= hhmm(p.end_time) %></small></td>
+                  <td colspan="<%= DAYS.length %>"><%= p.name %></td>
+                </tr>
+              <% } else { %>
+                <tr>
+                  <td class="rt-period"><strong><%= p.name %></strong><small><%= hhmm(p.start_time) %>–<%= hhmm(p.end_time) %></small></td>
+                  <% DAYS.forEach(function (d) { %>
+                    <% var cell = grid[d.n + '_' + p.id]; %>
+                    <% if (cell && (cell.subject_name || cell.teacher_name || cell.room)) { %>
+                      <td>
+                        <span class="rt-sub"><%= cell.subject_name || '—' %></span>
+                        <% if (cell.teacher_name || cell.room) { %>
+                          <span class="rt-meta"><%= cell.teacher_name || '' %><%= cell.teacher_name && cell.room ? ' · ' : '' %><%= cell.room || '' %></span>
+                        <% } %>
+                      </td>
+                    <% } else { %>
+                      <td class="rt-free">—</td>
+                    <% } %>
+                  <% }); %>
+                </tr>
+              <% } %>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-print" style="margin-top:1.2rem">
+        <button class="btn btn-green" type="button" onclick="window.print()">প্রিন্ট / Print</button>
+      </p>
+    <% } %>
+  </div>
+</section>

@@ -1,0 +1,90 @@
+<div class="page-bar"><h1>Class Routine</h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<style>
+  .rt-table { width:100%; border-collapse:collapse; font-size:.86rem }
+  .rt-table th, .rt-table td { border:1px solid #dfe3e6; padding:.45rem; vertical-align:top }
+  .rt-table thead th { background:#f4f6f7; text-align:center; white-space:nowrap }
+  .rt-period { width:130px; white-space:nowrap; background:#fafbfc }
+  .rt-period small { display:block; color:#6b7280; font-weight:400 }
+  .rt-break td { background:#fbf7ec; text-align:center; color:#8a6d3b; font-weight:600 }
+  .rt-free { color:#9aa3ab }
+  .rt-busy { background:#f2f8f4 }
+  .rt-busy strong { display:block }
+  .rt-busy small { color:#4b5563 }
+  .rt-scroll { overflow-x:auto }
+  @media print { .page-bar, .tabs, .card-head, form.rt-pick, .rt-actions, .sidebar, .topbar { display:none !important } }
+</style>
+
+<div class="card">
+  <div class="card-head"><h2>Choose a teacher</h2></div>
+  <div class="card-body">
+    <form method="get" action="/admin/routine/teachers" class="rt-pick grid"
+          style="grid-template-columns:1fr auto;gap:.8rem;align-items:end">
+      <div class="field">
+        <label for="teacher_id">Teacher</label>
+        <select id="teacher_id" name="teacher_id" required>
+          <option value="">— Select —</option>
+          <% teachers.forEach(function (t) { %>
+            <option value="<%= t.id %>" <%= teacherId === t.id ? 'selected' : '' %>><%= t.name %><%= t.designation ? ' · ' + t.designation : '' %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="field"><button class="btn btn-primary" type="submit">Show week</button></div>
+    </form>
+  </div>
+</div>
+
+<% if (!teacherId) { %>
+  <div class="card"><div class="card-body">
+    <div class="empty">Pick a teacher to see their week across every class.</div>
+  </div></div>
+<% } else if (!periods.length) { %>
+  <div class="card"><div class="card-body">
+    <div class="empty">No periods are set up yet. Add them on the <a href="/admin/routine/periods">Periods &amp; Times</a> tab.</div>
+  </div></div>
+<% } else { %>
+  <div class="card">
+    <div class="card-head"><h2>Weekly load — <%= load %> period(s)</h2></div>
+    <div class="card-body flush">
+      <div class="rt-scroll">
+        <table class="rt-table">
+          <thead>
+            <tr>
+              <th class="rt-period">Period</th>
+              <% DAYS.forEach(function (d) { %><th><%= d.bn %><br><small><%= d.en %></small></th><% }); %>
+            </tr>
+          </thead>
+          <tbody>
+            <% periods.forEach(function (p) { %>
+              <% if (p.is_break) { %>
+                <tr class="rt-break">
+                  <td class="rt-period"><strong><%= p.name %></strong><small><%= hhmm(p.start_time) %>–<%= hhmm(p.end_time) %></small></td>
+                  <td colspan="<%= DAYS.length %>"><%= p.name %></td>
+                </tr>
+              <% } else { %>
+                <tr>
+                  <td class="rt-period"><strong><%= p.name %></strong><small><%= hhmm(p.start_time) %>–<%= hhmm(p.end_time) %></small></td>
+                  <% DAYS.forEach(function (d) { %>
+                    <% var cell = grid[d.n + '_' + p.id]; %>
+                    <% if (cell) { %>
+                      <td class="rt-busy">
+                        <strong><%= cell.subject_name || '—' %></strong>
+                        <small><%= cell.class_name %><%= cell.section_name ? ' (' + cell.section_name + ')' : '' %><%= cell.room ? ' · ' + cell.room : '' %></small>
+                      </td>
+                    <% } else { %>
+                      <td class="rt-free">—</td>
+                    <% } %>
+                  <% }); %>
+                </tr>
+              <% } %>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="rt-actions" style="margin-top:1rem">
+    <button class="btn btn-light" type="button" onclick="window.print()">Print</button>
+  </div>
+<% } %>

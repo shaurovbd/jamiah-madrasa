@@ -9,20 +9,55 @@
   <div class="card">
     <div class="card-head"><h2>Application details</h2></div>
     <div class="card-body">
+      <h3 class="sub-head">Student</h3>
       <dl class="kv">
-        <dt>Applicant</dt><dd><strong><%= app.name %></strong></dd>
-        <dt>Father's name</dt><dd><%= app.father_name || '—' %></dd>
-        <dt>Mother's name</dt><dd><%= app.mother_name || '—' %></dd>
+        <dt>Name (Bangla)</dt><dd><strong><%= app.name %></strong></dd>
+        <dt>Name (English)</dt><dd><%= app.name_en || '—' %></dd>
         <dt>Date of birth</dt><dd><%= app.dob ? h.fmtDate(app.dob) : '—' %></dd>
         <dt>Gender</dt><dd><%= app.gender %></dd>
-        <dt>Guardian phone</dt><dd><%= app.guardian_phone %></dd>
+        <dt>Nationality</dt><dd><%= app.nationality || '—' %></dd>
+        <dt>Student mobile</dt><dd><%= app.student_mobile || '—' %></dd>
         <dt>Email</dt><dd><%= app.email || '—' %></dd>
-        <dt>Address</dt><dd><%= app.address || '—' %></dd>
-        <dt>Previous institution</dt><dd><%= app.previous_institution || '—' %></dd>
-        <dt>Department applied for</dt><dd><%= app.dept_name || '—' %></dd>
-        <dt>Class applied for</dt><dd><%= app.class_name || '—' %></dd>
-        <dt>Note from guardian</dt><dd><%= app.note || '—' %></dd>
       </dl>
+
+      <h3 class="sub-head">Applied for</h3>
+      <dl class="kv">
+        <dt>Department</dt>
+        <dd><%= app.department_key ? af.deptLabel(app.department_key) : (app.dept_name || '—') %></dd>
+        <dt>Campus</dt><dd><%= app.campus ? af.campusLabel(app.campus) : '—' %></dd>
+        <dt>Target class</dt><dd><%= app.target_class || app.class_name || '—' %></dd>
+        <dt>Previous institution</dt><dd><%= app.previous_institution || '—' %></dd>
+        <dt>Previous class</dt><dd><%= app.prev_class || '—' %></dd>
+      </dl>
+
+      <h3 class="sub-head">Parents</h3>
+      <dl class="kv">
+        <dt>Father's name</dt><dd><%= app.father_name || '—' %></dd>
+        <dt>Father's mobile</dt><dd><%= app.father_mobile || '—' %></dd>
+        <dt>Father's profession</dt><dd><%= app.father_profession || '—' %></dd>
+        <dt>Monthly income</dt><dd><%= app.father_income || '—' %></dd>
+        <dt>Mother's name</dt><dd><%= app.mother_name || '—' %></dd>
+        <dt>Mother's mobile</dt><dd><%= app.mother_mobile || '—' %></dd>
+      </dl>
+
+      <h3 class="sub-head">Guardian</h3>
+      <dl class="kv">
+        <dt>Guardian's name</dt><dd><%= app.guardian_name || '—' %></dd>
+        <dt>Relation</dt><dd><%= app.guardian_relation || '—' %></dd>
+        <dt>Contact phone</dt><dd><%= app.guardian_phone %></dd>
+        <dt>Guardian's address</dt><dd><%= app.guardian_address || '—' %></dd>
+      </dl>
+
+      <h3 class="sub-head">Address</h3>
+      <dl class="kv">
+        <dt>Present</dt><dd><%= app.address || '—' %></dd>
+        <dt>Permanent</dt><dd><%= af.permanentAddress(app) || '—' %></dd>
+      </dl>
+
+      <% if (app.note) { %>
+        <h3 class="sub-head">Note from guardian</h3>
+        <p style="margin:0"><%= app.note %></p>
+      <% } %>
     </div>
   </div>
 
