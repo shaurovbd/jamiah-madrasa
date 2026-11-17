@@ -1,0 +1,21 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / <a href="/events">Events</a></div>
+    <h1><%= ev.title %></h1>
+  </div>
+</div>
+<section>
+  <div class="wrap narrow">
+    <div class="card" style="margin-bottom:1.6rem">
+      <div class="grid g3" style="gap:1rem">
+        <div><strong>Date</strong><br><%= h.fmtDate(ev.event_date) %><%= ev.end_date ? ' – ' + h.fmtDate(ev.end_date) : '' %></div>
+        <div><strong>Location</strong><br><%= ev.location || 'Campus' %></div>
+        <div><strong>Status</strong><br><%= new Date(ev.event_date) >= new Date(new Date().toDateString()) ? 'Upcoming' : 'Completed' %></div>
+      </div>
+    </div>
+    <article class="prose">
+      <% (ev.description || '').split(/\n{2,}/).forEach(function (para) { %><p><%= para %></p><% }); %>
+    </article>
+    <p style="margin-top:2rem"><a href="/events">← Back to events</a></p>
+  </div>
+</section>

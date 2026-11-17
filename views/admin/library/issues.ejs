@@ -1,0 +1,89 @@
+<div class="page-bar"><h1>Library</h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head">
+      <h2>Loans</h2><span class="spacer"></span>
+      <form method="get" action="/admin/library/issues">
+        <select name="status" onchange="this.form.submit()">
+          <% ['issued','returned','lost'].forEach(function (s) { %>
+            <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+          <% }); %>
+        </select>
+      </form>
+    </div>
+    <div class="card-body flush">
+      <% if (issues.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Book</th><th>Borrower</th><th>Issued</th><th>Due</th><th>Returned</th><th class="num">Fine</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% var todayStr = h.today();
+               issues.forEach(function (i) {
+                 var overdue = i.status === 'issued' && String(i.due_date).slice(0,10) < todayStr; %>
+              <tr>
+                <td><strong><%= i.title %></strong><br><small class="sub"><%= i.book_no %></small></td>
+                <td><%= i.student_name || i.staff_name || '—' %>
+                  <% if (i.admission_no) { %><br><small class="sub"><%= i.admission_no %></small><% } %></td>
+                <td><%= h.fmtDate(i.issue_date) %></td>
+                <td><%= h.fmtDate(i.due_date) %>
+                  <% if (overdue) { %><br><span class="badge badge-red">Overdue</span><% } %></td>
+                <td><%= i.return_date ? h.fmtDate(i.return_date) : '—' %></td>
+                <td class="num"><%= Number(i.fine) > 0 ? money(i.fine) : '—' %></td>
+                <td class="actions">
+                  <% if (i.status === 'issued') { %>
+                    <form method="post" action="/admin/library/issues/<%= i.id %>/return" style="display:flex;gap:.3rem;justify-content:flex-end">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="number" name="fine" step="0.01" min="0" value="0" style="width:80px" title="Fine">
+                      <button class="btn btn-primary btn-sm" type="submit">Return</button>
+                      <button class="btn btn-danger btn-sm" type="submit" name="lost" value="1">Lost</button>
+                    </form>
+                  <% } else { %>—<% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty"><p>No <%= filters.status %> loans.</p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Issue a book</h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/library/issues">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field" style="margin-bottom:.7rem">
+          <label for="book_id">Book <span class="req">*</span></label>
+          <select id="book_id" name="book_id" required>
+            <option value="">— Select —</option>
+            <% books.forEach(function (b) { %><option value="<%= b.id %>"><%= b.title %> (<%= b.available_copies %> free)</option><% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.7rem">
+          <label for="student_id">Student</label>
+          <select id="student_id" name="student_id">
+            <option value="">— None —</option>
+            <% students.forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %> (<%= s.admission_no %>)</option><% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.7rem">
+          <label for="staff_id">or Staff member</label>
+          <select id="staff_id" name="staff_id">
+            <option value="">— None —</option>
+            <% staff.forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %></option><% }); %>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem">
+          <div class="field"><label for="issue_date">Issued</label><input id="issue_date" name="issue_date" type="date" value="<%= h.today() %>"></div>
+          <div class="field"><label for="due_date">Due</label><input id="due_date" name="due_date" type="date"></div>
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%">Issue book</button>
+        <p class="hint" style="margin-top:.6rem">Leave the due date blank for a two-week loan.</p>
+      </form>
+    </div>
+  </div>
+</div>

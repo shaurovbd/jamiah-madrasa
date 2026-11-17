@@ -1,0 +1,119 @@
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Established <%= settings.established || '' %></span>
+    <h1><%= site.tagline || 'Rooted in Revelation, Reaching for Excellence' %></h1>
+    <p><%= settings.about_intro || '' %></p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/admission">Apply for Admission</a>
+      <a class="btn btn-ghost" href="/departments">Explore Departments</a>
+    </div>
+  </div>
+</section>
+
+<section class="dark tight">
+  <div class="wrap">
+    <div class="grid g4">
+      <div class="stat"><b><%= h.num(stats.students) %></b><span>Students</span></div>
+      <div class="stat"><b><%= h.num(stats.staff) %></b><span>Teachers &amp; Staff</span></div>
+      <div class="stat"><b><%= h.num(stats.huffaz) %></b><span>Huffaz Graduated</span></div>
+      <div class="stat"><b><%= h.num(stats.years) %></b><span>Years of Service</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">What We Teach</span>
+      <h2>Our Departments</h2>
+      <p>From a child's first letters of the Qur'an to the completion of the classical dars-e-nizami syllabus.</p>
+    </div>
+    <div class="grid g2">
+      <% departments.forEach(function (d, i) { %>
+        <a class="card card-link dept-card" href="/departments/<%= d.slug %>">
+          <span class="num"><%= String(i + 1).padStart(2, '0') %></span>
+          <h3><%= d.name %></h3>
+          <p><%= d.description ? d.description.slice(0, 180) : '' %></p>
+          <span class="more">Read more →</span>
+        </a>
+      <% }); %>
+      <% if (!departments.length) { %>
+        <p>Departments will appear here once they are added in the management panel.</p>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="grid g2" style="align-items:start;gap:3rem">
+      <div>
+        <span class="kicker" style="color:var(--green-600);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;font-weight:700">From the Principal</span>
+        <h2 style="margin-top:.6rem">A word of welcome</h2>
+        <p><%= settings.principal_message || '' %></p>
+        <% if (settings.principal_name) { %>
+          <p style="font-family:var(--serif);color:var(--ink);font-weight:600;margin-top:1.2rem">
+            <%= settings.principal_name %><br>
+            <span style="font-family:var(--sans);font-weight:400;font-size:.88rem;color:var(--muted)">Principal, <%= site.name %></span>
+          </p>
+        <% } %>
+        <a class="btn btn-outline" href="/about">About the institute</a>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1.2rem">
+          <h3 style="display:flex;align-items:center;gap:.5rem">Latest Notices</h3>
+          <% if (notices.length) { %>
+            <% notices.forEach(function (n) {
+                 var d = n.published_at || n.created_at; var dt = new Date(d); %>
+              <div class="notice-item">
+                <div class="notice-date">
+                  <b><%= String(dt.getDate()).padStart(2,'0') %></b>
+                  <span><%= h.MONTHS[dt.getMonth()].slice(0,3) %></span>
+                </div>
+                <div class="notice-body">
+                  <span class="tag"><%= n.category || 'General' %></span>
+                  <h4><a href="/notices/<%= n.slug %>"><%= n.title %></a></h4>
+                </div>
+              </div>
+            <% }); %>
+            <p style="margin-top:1rem"><a href="/notices">All notices →</a></p>
+          <% } else { %>
+            <p>No notices have been published yet.</p>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <h3>Upcoming Events</h3>
+          <% if (events.length) { %>
+            <% events.forEach(function (e) { %>
+              <div class="notice-item">
+                <div class="notice-date">
+                  <b><%= String(new Date(e.event_date).getDate()).padStart(2,'0') %></b>
+                  <span><%= h.MONTHS[new Date(e.event_date).getMonth()].slice(0,3) %></span>
+                </div>
+                <div class="notice-body">
+                  <h4><a href="/events/<%= e.slug %>"><%= e.title %></a></h4>
+                  <% if (e.location) { %><p><%= e.location %></p><% } %>
+                </div>
+              </div>
+            <% }); %>
+            <p style="margin-top:1rem"><a href="/events">All events →</a></p>
+          <% } else { %>
+            <p>No upcoming events are scheduled.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap" style="text-align:center;max-width:760px">
+    <h2>Admission is open</h2>
+    <p style="color:#a9c6ba;margin-bottom:1.8rem">Apply online in a few minutes. Our office will contact the guardian to arrange an interview and confirm the seat.</p>
+    <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-primary" href="/admission">Start an application</a>
+      <a class="btn btn-ghost" href="/contact">Talk to the office</a>
+    </div>
+  </div>
+</section>

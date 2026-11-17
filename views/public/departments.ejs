@@ -1,0 +1,28 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Departments</div>
+    <h1>Departments</h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="grid g2">
+      <% departments.forEach(function (d, i) { %>
+        <div class="card dept-card">
+          <span class="num"><%= String(i + 1).padStart(2, '0') %></span>
+          <h3><a href="/departments/<%= d.slug %>" style="color:inherit"><%= d.name %></a></h3>
+          <p><%= d.description || '' %></p>
+          <% if (d.classes && d.classes.length) { %>
+            <p style="margin-top:.9rem;font-size:.85rem;color:var(--ink)">
+              <strong>Classes:</strong> <%= d.classes.map(function (c) { return c.name; }).join(' · ') %>
+            </p>
+          <% } %>
+          <p style="margin-top:.5rem;font-size:.85rem"><strong><%= d.student_count %></strong> students enrolled</p>
+          <a class="more" href="/departments/<%= d.slug %>">View details →</a>
+        </div>
+      <% }); %>
+      <% if (!departments.length) { %><p>No departments have been added yet.</p><% } %>
+    </div>
+  </div>
+</section>

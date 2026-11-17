@@ -1,0 +1,62 @@
+<div class="page-bar">
+  <h1>Attendance</h1>
+  <span class="spacer"></span>
+  <% if (rows.length) { %><button class="btn btn-light no-print" onclick="window.print()">Print</button><% } %>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="card no-print" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/attendance/report">
+      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+        <select id="class_id" name="class_id" required>
+          <option value="">— Select —</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="period">Month</label>
+        <input id="period" name="period" type="month" value="<%= filters.period %>"></div>
+      <button class="btn btn-primary" type="submit">Show report</button>
+    </form>
+  </div>
+</div>
+
+<% if (filters.class_id && rows.length) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= h.fmtPeriod(filters.period) %></h2>
+      <span class="spacer"></span><span class="sub">P = present · A = absent · L = late · V = leave</span></div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table class="data compact">
+          <thead>
+            <tr>
+              <th>Roll</th><th>Name</th>
+              <% days.forEach(function (d) { %><th style="text-align:center;padding:.3rem"><%= d %></th><% }); %>
+              <th class="num">P</th><th class="num">A</th><th class="num">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach(function (r) { %>
+              <tr>
+                <td><%= r.roll_no || '—' %></td>
+                <td style="white-space:nowrap"><%= r.name %></td>
+                <% days.forEach(function (d) {
+                     var st = r.marks[d];
+                     var letter = st === 'present' ? 'P' : st === 'absent' ? 'A' : st === 'late' ? 'L' : st === 'leave' ? 'V' : '';
+                     var color = st === 'absent' ? '#b3261e' : st === 'leave' ? '#7a5a08' : st === 'late' ? '#1b4a85' : '#145c3a'; %>
+                  <td style="text-align:center;padding:.3rem;color:<%= letter ? color : '#c9cfcc' %>;font-weight:<%= letter ? 600 : 400 %>"><%= letter || '·' %></td>
+                <% }); %>
+                <td class="num"><%= r.present %></td>
+                <td class="num"><%= r.absent %></td>
+                <td class="num"><strong style="color:<%= r.percent >= 75 ? '#145c3a' : '#b3261e' %>"><%= r.percent %>%</strong></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% } else if (filters.class_id) { %>
+  <div class="card"><div class="card-body empty"><p>No attendance recorded for this class in <%= h.fmtPeriod(filters.period) %>.</p></div></div>
+<% } else { %>
+  <div class="card"><div class="card-body empty"><div class="big">▤</div><p>Choose a class and month.</p></div></div>
+<% } %>

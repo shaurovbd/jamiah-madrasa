@@ -1,0 +1,25 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Gallery</div>
+    <h1>Gallery</h1>
+  </div>
+</div>
+<section>
+  <div class="wrap">
+    <% if (images.length) { %>
+      <% albums.forEach(function (album) { %>
+        <h2 style="margin-top:1.5rem"><%= album %></h2>
+        <div class="grid g4" style="margin:1rem 0 2rem">
+          <% images.filter(function (i) { return (i.album || 'Campus') === album; }).forEach(function (img) { %>
+            <figure style="margin:0;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#fff">
+              <img src="/uploads/<%= img.image %>" alt="<%= img.title || album %>" style="width:100%;height:190px;object-fit:cover">
+              <% if (img.title) { %><figcaption style="padding:.6rem .8rem;font-size:.86rem;color:var(--muted)"><%= img.title %></figcaption><% } %>
+            </figure>
+          <% }); %>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="card"><p>No photographs have been uploaded yet.</p></div>
+    <% } %>
+  </div>
+</section>

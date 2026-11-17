@@ -1,0 +1,53 @@
+<div class="page-bar no-print">
+  <div><h1>Payment Receipt</h1><p class="sub"><%= payment.receipt_no %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/fees/invoice/<%= payment.invoice_id %>">← Invoice</a>
+  <button class="btn btn-primary" onclick="window.print()">Print receipt</button>
+</div>
+
+<div class="print-sheet">
+  <div class="print-head">
+    <h2><%= site.name %></h2>
+    <p class="muted"><%= site.address || '' %><%= site.phone ? ' · ' + site.phone : '' %></p>
+    <p style="margin:.5rem 0 0;font-weight:600">Fee Payment Receipt</p>
+  </div>
+
+  <table class="data compact" style="margin-bottom:1.2rem">
+    <tbody>
+      <tr><th style="width:140px">Receipt No</th><td><strong><%= payment.receipt_no %></strong></td>
+          <th style="width:120px">Date</th><td><%= h.fmtDate(payment.paid_on) %></td></tr>
+      <tr><th>Student</th><td><strong><%= payment.student %></strong></td>
+          <th>Admission No</th><td><%= payment.admission_no %></td></tr>
+      <tr><th>Father's name</th><td><%= payment.father_name || '—' %></td>
+          <th>Class</th><td><%= payment.class_name || '—' %></td></tr>
+      <tr><th>Invoice</th><td><%= payment.invoice_no %></td>
+          <th>Period</th><td><%= h.fmtPeriod(payment.period) %></td></tr>
+    </tbody>
+  </table>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Fee head</th><th class="num">Amount</th></tr></thead>
+      <tbody>
+        <% items.forEach(function (i) { %><tr><td><%= i.description %></td><td class="num"><%= money(i.amount) %></td></tr><% }); %>
+      </tbody>
+      <tfoot>
+        <tr><td>Invoice total</td><td class="num"><%= money(payment.total_amount) %></td></tr>
+        <% if (Number(payment.discount) > 0) { %><tr><td>Discount</td><td class="num">− <%= money(payment.discount) %></td></tr><% } %>
+        <tr style="background:#f1f5f3;font-weight:600"><td>Paid in this receipt</td><td class="num"><%= money(payment.amount) %></td></tr>
+        <tr><td>Total paid to date</td><td class="num"><%= money(payment.paid_amount) %></td></tr>
+        <tr><td><strong>Balance remaining</strong></td><td class="num"><strong><%= money(balance) %></strong></td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <p style="margin-top:1rem;font-size:.9rem">Payment method: <strong><%= payment.method %></strong><%= payment.note ? ' · ' + payment.note : '' %></p>
+
+  <div style="display:flex;justify-content:space-between;margin-top:3rem;font-size:.85rem;color:var(--a-muted)">
+    <div style="border-top:1px solid var(--a-line);padding-top:.4rem;width:200px;text-align:center">Guardian's signature</div>
+    <div style="border-top:1px solid var(--a-line);padding-top:.4rem;width:200px;text-align:center">
+      Received by<br><%= payment.received_by_name || '' %></div>
+  </div>
+  <p style="margin-top:1.4rem;font-size:.78rem;color:var(--a-muted);text-align:center">
+    This is a computer-generated receipt. Please keep it for your records.</p>
+</div>

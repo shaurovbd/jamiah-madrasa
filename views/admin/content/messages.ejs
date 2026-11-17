@@ -1,0 +1,44 @@
+<div class="page-bar">
+  <div><h1>Messages</h1><p class="sub"><%= h.num(unread) %> unread of <%= h.num(p.total) %></p></div>
+  <span class="spacer"></span>
+  <a class="btn <%= filters.unread ? 'btn-primary' : 'btn-light' %>" href="/admin/messages?unread=1">Unread only</a>
+  <a class="btn <%= filters.unread ? 'btn-light' : 'btn-primary' %>" href="/admin/messages">All</a>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <% if (messages.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Received</th><th>From</th><th>Subject &amp; message</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% messages.forEach(function (m) { %>
+              <tr style="<%= m.is_read ? '' : 'background:#fffdf5' %>">
+                <td style="white-space:nowrap"><%= h.fmtDate(m.created_at) %>
+                  <% if (!m.is_read) { %><br><span class="badge badge-amber">New</span><% } %></td>
+                <td><strong><%= m.name %></strong>
+                  <% if (m.phone) { %><br><small class="sub"><%= m.phone %></small><% } %>
+                  <% if (m.email) { %><br><small class="sub"><a href="mailto:<%= m.email %>"><%= m.email %></a></small><% } %></td>
+                <td style="max-width:520px">
+                  <% if (m.subject) { %><strong><%= m.subject %></strong><br><% } %>
+                  <span style="white-space:pre-wrap"><%= m.message %></span>
+                </td>
+                <td class="actions">
+                  <form method="post" action="/admin/messages/<%= m.id %>/read" style="display:inline">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn-light btn-sm" type="submit"><%= m.is_read ? 'Mark unread' : 'Mark read' %></button>
+                  </form>
+                  <form method="post" action="/admin/messages/<%= m.id %>" style="display:inline" data-confirm="Delete this message?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %><div class="empty"><div class="big">✉</div><p>No messages.</p></div><% } %>
+  </div>
+  <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+</div>

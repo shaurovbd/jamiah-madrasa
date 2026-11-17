@@ -1,0 +1,70 @@
+<div class="page-bar">
+  <div><h1>Marks entry</h1><p class="sub"><%= exam.name %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/exams/<%= exam.id %>">← Back to exam</a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/exams/<%= exam.id %>/marks">
+      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+        <select id="class_id" name="class_id" onchange="this.form.submit()" required>
+          <option value="">— Select —</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="subject_id">Subject <span class="req">*</span></label>
+        <select id="subject_id" name="subject_id" onchange="this.form.submit()" required>
+          <option value="">— Select —</option>
+          <% subjects.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.subject_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Load</button>
+    </form>
+  </div>
+</div>
+
+<% if (subject && students.length) { %>
+  <form method="post" action="/admin/exams/<%= exam.id %>/marks">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="class_id" value="<%= filters.class_id %>">
+    <input type="hidden" name="subject_id" value="<%= subject.id %>">
+    <div class="card">
+      <div class="card-head">
+        <h2><%= subject.name %></h2>
+        <span class="spacer"></span>
+        <span class="sub">Full marks <%= subject.full_marks %> · pass <%= subject.pass_marks %></span>
+      </div>
+      <div class="card-body flush">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Roll</th><th>Name</th><th style="width:150px">Marks</th><th style="width:110px">Absent</th><th>Grade</th></tr></thead>
+            <tbody>
+              <% students.forEach(function (s) {
+                   var pct = s.marks !== null && s.marks !== undefined ? (Number(s.marks) / Number(subject.full_marks)) * 100 : null;
+                   var g = pct === null ? null : h.gradeFor(pct); %>
+                <tr>
+                  <td><%= s.roll_no || '—' %></td>
+                  <td><strong><%= s.name %></strong></td>
+                  <td><input type="number" step="0.01" min="0" max="<%= subject.full_marks %>" name="marks[id<%= s.id %>]"
+                         value="<%= s.is_absent ? '' : (s.marks === null || s.marks === undefined ? '' : s.marks) %>"></td>
+                  <td><label class="chk"><input type="checkbox" name="absent[id<%= s.id %>]" value="1" <%= s.is_absent ? 'checked' : '' %>> Absent</label></td>
+                  <td><%= s.is_absent ? 'Absent' : (g ? g.grade : '—') %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--a-line)">
+        <button class="btn btn-primary" type="submit">Save marks</button>
+        <span class="sub" style="margin-left:.8rem">Leaving a box empty removes any mark already stored for that student.</span>
+      </div>
+    </div>
+  </form>
+<% } else if (filters.class_id && !subjects.length) { %>
+  <div class="card"><div class="card-body empty"><p>This class has no subjects yet.
+    <a href="/admin/academics/subjects?class_id=<%= filters.class_id %>">Add subjects</a> first.</p></div></div>
+<% } else if (subject) { %>
+  <div class="card"><div class="card-body empty"><p>No active students in this class.</p></div></div>
+<% } else { %>
+  <div class="card"><div class="card-body empty"><div class="big">◈</div><p>Choose a class and subject to enter marks.</p></div></div>
+<% } %>

@@ -1,0 +1,154 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Admission</div>
+    <h1>Online Admission</h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <% if (submitted) { %>
+      <div class="panel" style="max-width:640px;margin:0 auto;text-align:center">
+        <div style="width:64px;height:64px;margin:0 auto 1rem;border-radius:50%;background:var(--green-100);color:var(--green-700);display:grid;place-items:center;font-size:1.8rem">✓</div>
+        <h2>Application received</h2>
+        <p>Thank you, <strong><%= submitted.name %></strong>. Your application has been recorded.</p>
+        <p style="margin:1.4rem 0">
+          <span style="display:inline-block;background:var(--cream);border:1px dashed var(--gold);border-radius:8px;padding:.8rem 1.4rem">
+            <small style="display:block;text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;color:var(--muted)">Application Number</small>
+            <strong style="font-family:var(--serif);font-size:1.4rem;color:var(--green-800)"><%= submitted.applicationNo %></strong>
+          </span>
+        </p>
+        <p style="color:var(--muted);font-size:.92rem">Please keep this number safe. Our office will contact the guardian on the phone number you provided to arrange the interview.</p>
+        <p style="margin-top:1.4rem"><a class="btn btn-green" href="/">Back to home</a></p>
+      </div>
+    <% } else { %>
+      <div class="grid g2" style="gap:2.5rem;align-items:start">
+        <div class="panel">
+          <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.join(' ') %></div><% } %>
+          <h2 style="margin-bottom:1.2rem">Applicant details</h2>
+          <form method="post" action="/admission">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="name">Full name of applicant <span class="req">*</span></label>
+                <input id="name" name="name" type="text" required value="<%= form.name || '' %>">
+              </div>
+              <div class="field">
+                <label for="father_name">Father's name</label>
+                <input id="father_name" name="father_name" type="text" value="<%= form.father_name || '' %>">
+              </div>
+              <div class="field">
+                <label for="mother_name">Mother's name</label>
+                <input id="mother_name" name="mother_name" type="text" value="<%= form.mother_name || '' %>">
+              </div>
+              <div class="field">
+                <label for="dob">Date of birth</label>
+                <input id="dob" name="dob" type="date" value="<%= form.dob || '' %>">
+              </div>
+              <div class="field">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                  <option value="male" <%= form.gender === 'female' ? '' : 'selected' %>>Male</option>
+                  <option value="female" <%= form.gender === 'female' ? 'selected' : '' %>>Female</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="guardian_phone">Guardian's phone <span class="req">*</span></label>
+                <input id="guardian_phone" name="guardian_phone" type="tel" required value="<%= form.guardian_phone || '' %>">
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" value="<%= form.email || '' %>">
+              </div>
+              <div class="field">
+                <label for="department_id">Department</label>
+                <select id="department_id" name="department_id">
+                  <option value="">— Select —</option>
+                  <% departments.forEach(function (d) { %>
+                    <option value="<%= d.id %>" <%= String(form.department_id) === String(d.id) ? 'selected' : '' %>><%= d.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="field">
+                <label for="class_id">Class applied for</label>
+                <select id="class_id" name="class_id">
+                  <option value="">— Select —</option>
+                  <% classes.forEach(function (c) { %>
+                    <option value="<%= c.id %>" data-dept="<%= c.department_id %>" <%= String(form.class_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="address">Present address</label>
+                <input id="address" name="address" type="text" value="<%= form.address || '' %>">
+              </div>
+              <div class="field full">
+                <label for="previous_institution">Previous institution (if any)</label>
+                <input id="previous_institution" name="previous_institution" type="text" value="<%= form.previous_institution || '' %>">
+              </div>
+              <div class="field full">
+                <label for="note">Anything else we should know</label>
+                <textarea id="note" name="note"><%= form.note || '' %></textarea>
+              </div>
+            </div>
+            <p style="margin-top:1.4rem"><button class="btn btn-green" type="submit">Submit application</button></p>
+          </form>
+        </div>
+
+        <aside>
+          <div class="card" style="margin-bottom:1.2rem">
+            <h3>How admission works</h3>
+            <ol style="padding-left:1.1rem;font-size:.92rem;color:var(--muted)">
+              <li style="margin-bottom:.5rem">Submit this form and note your application number.</li>
+              <li style="margin-bottom:.5rem">Our office calls the guardian to arrange an interview.</li>
+              <li style="margin-bottom:.5rem">The applicant sits a short oral assessment.</li>
+              <li>On acceptance, admission fee is paid and the seat is confirmed.</li>
+            </ol>
+          </div>
+          <% if (feeHeads && feeHeads.length) { %>
+          <div class="card">
+            <h3>Fees at a glance</h3>
+            <table class="data" style="font-size:.88rem">
+              <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody>
+                <% feeHeads.forEach(function (f) { %>
+                  <tr>
+                    <td><%= f.name %></td>
+                    <td><%= f.ftype.replace('_', ' ') %></td>
+                    <td style="text-align:right"><%= currency %> <%= Number(f.amount).toLocaleString('en-US') %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <p class="hint" style="margin-top:.7rem">Actual fees may vary by class. The office will confirm at the time of admission.</p>
+          </div>
+          <% } %>
+        </aside>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var dept = document.getElementById('department_id'), cls = document.getElementById('class_id');
+    if (!dept || !cls) return;
+    var all = Array.prototype.slice.call(cls.options).map(function (o) {
+      return { value: o.value, text: o.text, dept: o.getAttribute('data-dept') };
+    });
+    function filter() {
+      var d = dept.value, current = cls.value;
+      cls.innerHTML = '';
+      all.forEach(function (o) {
+        if (o.value === '' || !d || o.dept === d) {
+          var opt = document.createElement('option');
+          opt.value = o.value; opt.textContent = o.text; opt.setAttribute('data-dept', o.dept || '');
+          if (o.value === current) opt.selected = true;
+          cls.appendChild(opt);
+        }
+      });
+    }
+    dept.addEventListener('change', filter);
+    filter();
+  })();
+</script>

@@ -1,0 +1,58 @@
+<div class="page-bar">
+  <div><h1>Teachers &amp; Staff</h1><p class="sub"><%= h.num(p.total) %> <%= filters.status %> · monthly payroll <%= money(payroll) %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-primary" href="/admin/staff/new">+ Add staff</a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/staff">
+      <div class="field grow"><label for="q">Search</label>
+        <input id="q" name="q" type="search" placeholder="Name, staff no, designation, phone" value="<%= filters.q %>"></div>
+      <div class="field"><label for="department_id">Department</label>
+        <select id="department_id" name="department_id"><option value="">All</option>
+          <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= filters.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
+          <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a class="btn btn-light" href="/admin/staff">Reset</a>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <% if (staff.length) { %>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Staff No</th><th>Name</th><th>Designation</th><th>Department</th><th>Phone</th><th>Joined</th><th class="num">Salary</th><th class="actions"></th></tr></thead>
+        <tbody>
+          <% staff.forEach(function (s) { %>
+            <tr>
+              <td><%= s.staff_no %></td>
+              <td><a href="/admin/staff/<%= s.id %>"><strong><%= s.name %></strong></a></td>
+              <td><%= s.designation || '—' %></td>
+              <td><%= s.dept_name || '—' %></td>
+              <td><%= s.phone || '—' %></td>
+              <td><%= s.join_date ? h.fmtDate(s.join_date) : '—' %></td>
+              <td class="num"><%= money(s.salary) %></td>
+              <td class="actions">
+                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>">View</a>
+                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>/edit">Edit</a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+      <div class="empty"><div class="big">☖</div><p>No staff match these filters.</p>
+        <a class="btn btn-primary" href="/admin/staff/new">Add a staff member</a></div>
+    <% } %>
+  </div>
+  <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+</div>

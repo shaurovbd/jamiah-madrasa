@@ -1,0 +1,60 @@
+<div class="page-bar">
+  <div><h1>Results</h1><p class="sub"><%= exam.name %><%= klass ? ' · ' + klass.name : '' %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light no-print" href="/admin/exams/<%= exam.id %>">← Back to exam</a>
+  <% if (ranking.length) { %><button class="btn btn-light no-print" onclick="window.print()">Print</button><% } %>
+</div>
+
+<div class="card no-print" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/exams/<%= exam.id %>/results">
+      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+        <select id="class_id" name="class_id" onchange="this.form.submit()" required>
+          <option value="">— Select —</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Show</button>
+    </form>
+  </div>
+</div>
+
+<% if (ranking.length) { %>
+  <div class="grid g4 no-print" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label">Appeared</div><div class="value"><%= ranking.length %></div></div>
+    <div class="stat-card"><div class="label">Passed</div><div class="value"><%= ranking.filter(function (r) { return r.result === 'Passed'; }).length %></div></div>
+    <div class="stat-card red"><div class="label">Failed</div><div class="value"><%= ranking.filter(function (r) { return r.result === 'Failed'; }).length %></div></div>
+    <div class="stat-card gold"><div class="label">Pass rate</div><div class="value"><%= Math.round((ranking.filter(function (r) { return r.result === 'Passed'; }).length / ranking.length) * 100) %>%</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Merit list</h2></div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th class="num">Position</th><th>Roll</th><th>Name</th><th class="num">Obtained</th><th class="num">Full</th><th class="num">%</th><th>Result</th><th class="actions no-print"></th></tr></thead>
+          <tbody>
+            <% ranking.forEach(function (r) { %>
+              <tr>
+                <td class="num"><strong><%= r.position %></strong></td>
+                <td><%= r.roll_no || '—' %></td>
+                <td><a href="/admin/students/<%= r.student_id %>"><%= r.name %></a></td>
+                <td class="num"><%= r.total %></td>
+                <td class="num"><%= r.full %></td>
+                <td class="num"><%= r.percent %></td>
+                <td><span class="badge badge-<%= r.result === 'Passed' ? 'green' : 'red' %>"><%= r.result %></span></td>
+                <td class="actions no-print">
+                  <a class="btn btn-light btn-sm" href="/admin/exams/<%= exam.id %>/marksheet/<%= r.student_id %>">Marksheet</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% } else if (filters.class_id) { %>
+  <div class="card"><div class="card-body empty"><p>No marks have been entered for this class yet.
+    <a href="/admin/exams/<%= exam.id %>/marks?class_id=<%= filters.class_id %>">Enter marks</a>.</p></div></div>
+<% } else { %>
+  <div class="card"><div class="card-body empty"><div class="big">▤</div><p>Choose a class to see the merit list.</p></div></div>
+<% } %>

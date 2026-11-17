@@ -1,0 +1,42 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Notices</div>
+    <h1>Notices</h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap narrow">
+    <% if (notices.length) { %>
+      <div class="card">
+        <% notices.forEach(function (n) { var dt = new Date(n.published_at || n.created_at); %>
+          <div class="notice-item">
+            <div class="notice-date">
+              <b><%= String(dt.getDate()).padStart(2,'0') %></b>
+              <span><%= h.MONTHS[dt.getMonth()].slice(0,3) %></span>
+            </div>
+            <div class="notice-body">
+              <span class="tag"><%= n.category || 'General' %></span>
+              <h4><a href="/notices/<%= n.slug %>"><%= n.title %></a></h4>
+              <p><%= (n.body || '').slice(0, 160) %><%= (n.body || '').length > 160 ? '…' : '' %></p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+
+      <% if (p.pages > 1) { %>
+        <div style="display:flex;gap:.4rem;justify-content:center;margin-top:1.6rem">
+          <% for (var i = 1; i <= p.pages; i++) { %>
+            <% if (i === p.current) { %>
+              <span class="btn btn-green btn-sm"><%= i %></span>
+            <% } else { %>
+              <a class="btn btn-outline btn-sm" href="/notices?page=<%= i %>"><%= i %></a>
+            <% } %>
+          <% } %>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="card"><p>No notices have been published yet.</p></div>
+    <% } %>
+  </div>
+</section>

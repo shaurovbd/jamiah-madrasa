@@ -1,0 +1,113 @@
+<div class="page-bar">
+  <div><h1>Fee Setup</h1><p class="sub">Fee heads, and the amount each class pays</p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/fees">← Invoices</a>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
+  <div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2>Fee heads</h2></div>
+      <div class="card-body flush">
+        <% if (heads.length) { %>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Name</th><th>Type</th><th class="num">Default amount</th><th>Active</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% heads.forEach(function (f) { %>
+                <tr>
+                  <td><strong><%= f.name %></strong></td>
+                  <td><%= f.ftype.replace('_', ' ') %></td>
+                  <td class="num"><%= money(f.amount) %></td>
+                  <td><span class="badge badge-<%= f.is_active ? 'green' : 'grey' %>"><%= f.is_active ? 'Yes' : 'No' %></span></td>
+                  <td class="actions">
+                    <a class="btn btn-light btn-sm" href="/admin/fees/structure?edit=<%= f.id %><%= classId ? '&class_id=' + classId : '' %>">Edit</a>
+                    <form method="post" action="/admin/fees/heads/<%= f.id %>" style="display:inline" data-confirm="Delete <%= f.name %>? It is removed from every class structure.">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %><div class="empty"><p>No fee heads yet. Add one on the right.</p></div><% } %>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Class fee structure</h2>
+        <span class="spacer"></span>
+        <form method="get" action="/admin/fees/structure">
+          <select name="class_id" onchange="this.form.submit()">
+            <option value="">Choose a class…</option>
+            <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+          </select>
+        </form>
+      </div>
+      <div class="card-body">
+        <% if (classId && structure.length) { %>
+          <form method="post" action="/admin/fees/structure">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="class_id" value="<%= classId %>">
+            <p class="sub" style="margin-bottom:.9rem">Amounts for <strong><%= klass ? klass.name : '' %></strong>. Leave a box empty to exclude that head from this class.</p>
+            <div class="table-wrap">
+              <table class="data">
+                <thead><tr><th>Fee head</th><th>Type</th><th class="num">Default</th><th style="width:170px">Amount for this class</th></tr></thead>
+                <tbody>
+                  <% structure.forEach(function (s) { %>
+                    <tr>
+                      <td><strong><%= s.name %></strong></td>
+                      <td><%= s.ftype.replace('_', ' ') %></td>
+                      <td class="num"><%= money(s.default_amount) %></td>
+                      <td><input type="number" step="0.01" min="0" name="amount[id<%= s.fee_head_id %>]" value="<%= s.amount === null || s.amount === undefined ? '' : s.amount %>"></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">Save fee structure</button></div>
+            <p class="hint" style="margin-top:.8rem">A head whose name contains "hostel" is billed only to boarding students.</p>
+          </form>
+        <% } else if (classId) { %>
+          <div class="empty"><p>No active fee heads to assign.</p></div>
+        <% } else { %>
+          <div class="empty"><div class="big">⚙</div><p>Choose a class to set its fee amounts.</p></div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= editHead ? 'Edit fee head' : 'Add fee head' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/fees/heads">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (editHead) { %><input type="hidden" name="id" value="<%= editHead.id %>"><% } %>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="name">Name <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required value="<%= editHead ? editHead.name : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="ftype">Type</label>
+          <select id="ftype" name="ftype">
+            <% ['monthly','one_time','annual'].forEach(function (t) { %>
+              <option value="<%= t %>" <%= editHead && editHead.ftype === t ? 'selected' : '' %>><%= t.replace('_',' ') %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="amount">Default amount</label>
+          <input id="amount" name="amount" type="number" step="0.01" min="0" value="<%= editHead ? editHead.amount : 0 %>">
+        </div>
+        <label class="chk" style="margin-bottom:.9rem">
+          <input type="checkbox" name="is_active" value="1" <%= editHead ? (editHead.is_active ? 'checked' : '') : 'checked' %>> Active
+        </label>
+        <div><button class="btn btn-primary" type="submit"><%= editHead ? 'Save changes' : 'Add fee head' %></button>
+        <% if (editHead) { %><a class="btn btn-light" href="/admin/fees/structure">Cancel</a><% } %></div>
+      </form>
+    </div>
+  </div>
+</div>

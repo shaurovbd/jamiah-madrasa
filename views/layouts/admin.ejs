@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title ? title + ' — Management' : 'Management' %> | <%= site.short %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+<%- typeof style !== 'undefined' ? style : '' %>
+</head>
+<body>
+<%
+  const role = user ? user.role : 'guest';
+  const can = (...roles) => role === 'admin' || roles.includes(role);
+  const on = (p) => currentPath === p || (p !== '/admin' && currentPath.startsWith(p)) ? 'active' : '';
+%>
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <span class="mark">ج</span>
+      <a href="/admin">
+        <strong><%= site.short %></strong>
+        <small>Management</small>
+      </a>
+    </div>
+    <nav class="side-nav">
+      <a href="/admin" class="<%= currentPath === '/admin' ? 'active' : '' %>"><span class="ic">▣</span> Dashboard</a>
+
+      <% if (can('teacher','accountant')) { %>
+      <div class="side-group">People</div>
+      <a href="/admin/students" class="<%= on('/admin/students') %>"><span class="ic">☗</span> Students</a>
+      <% if (can('accountant')) { %>
+      <a href="/admin/admissions" class="<%= on('/admin/admissions') %>"><span class="ic">✎</span> Admissions</a>
+      <% } %>
+      <a href="/admin/staff" class="<%= on('/admin/staff') %>"><span class="ic">☖</span> Staff</a>
+      <% } %>
+
+      <% if (can('teacher')) { %>
+      <div class="side-group">Academics</div>
+      <a href="/admin/academics" class="<%= on('/admin/academics') %>"><span class="ic">▤</span> Classes &amp; Subjects</a>
+      <a href="/admin/attendance" class="<%= on('/admin/attendance') %>"><span class="ic">✓</span> Attendance</a>
+      <a href="/admin/exams" class="<%= on('/admin/exams') %>"><span class="ic">◈</span> Exams &amp; Results</a>
+      <a href="/admin/hifz" class="<%= on('/admin/hifz') %>"><span class="ic">❁</span> Hifz Progress</a>
+      <% } %>
+
+      <% if (can('accountant')) { %>
+      <div class="side-group">Finance</div>
+      <a href="/admin/fees" class="<%= currentPath === '/admin/fees' || currentPath.startsWith('/admin/fees/invoice') || currentPath.startsWith('/admin/fees/generate') ? 'active' : '' %>"><span class="ic">▦</span> Fee Invoices</a>
+      <a href="/admin/fees/structure" class="<%= on('/admin/fees/structure') %>"><span class="ic">⚙</span> Fee Setup</a>
+      <a href="/admin/fees/dues" class="<%= on('/admin/fees/dues') %>"><span class="ic">!</span> Dues Report</a>
+      <a href="/admin/ledger" class="<%= on('/admin/ledger') %>"><span class="ic">₪</span> Income &amp; Expense</a>
+      <% } %>
+
+      <% if (can('librarian')) { %>
+      <div class="side-group">Facilities</div>
+      <a href="/admin/library" class="<%= on('/admin/library') %>"><span class="ic">▥</span> Library</a>
+      <% if (can('accountant')) { %>
+      <a href="/admin/hostel" class="<%= on('/admin/hostel') %>"><span class="ic">⌂</span> Hostel</a>
+      <% } %>
+      <% } %>
+
+      <% if (role === 'admin') { %>
+      <div class="side-group">Website</div>
+      <a href="/admin/notices" class="<%= on('/admin/notices') %>"><span class="ic">◉</span> Notices</a>
+      <a href="/admin/events" class="<%= on('/admin/events') %>"><span class="ic">◷</span> Events</a>
+      <a href="/admin/gallery" class="<%= on('/admin/gallery') %>"><span class="ic">▣</span> Gallery</a>
+      <a href="/admin/pages" class="<%= on('/admin/pages') %>"><span class="ic">▭</span> Pages</a>
+      <a href="/admin/messages" class="<%= on('/admin/messages') %>"><span class="ic">✉</span> Messages</a>
+
+      <div class="side-group">System</div>
+      <a href="/admin/users" class="<%= on('/admin/users') %>"><span class="ic">☘</span> Users</a>
+      <a href="/admin/settings" class="<%= on('/admin/settings') %>"><span class="ic">⚙</span> Settings</a>
+      <% } %>
+
+      <div class="side-group">&nbsp;</div>
+      <a href="/" target="_blank"><span class="ic">↗</span> View Website</a>
+      <a href="/logout"><span class="ic">⏻</span> Sign out</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="sidebar-toggle" id="sideToggle" aria-label="Menu">☰</button>
+      <span class="page-title"><%= title || 'Management' %></span>
+      <span class="spacer"></span>
+      <% if (user) { %>
+        <span class="who"><b><%= user.name %></b><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></span>
+        <span class="avatar"><%= user.name.charAt(0).toUpperCase() %></span>
+      <% } %>
+    </div>
+
+    <div class="content">
+      <% if (flash.success && flash.success.length) { %><div class="alert alert-success"><%= flash.success.join(' ') %></div><% } %>
+      <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.join(' ') %></div><% } %>
+      <% if (flash.info && flash.info.length) { %><div class="alert alert-info"><%= flash.info.join(' ') %></div><% } %>
+      <%- body %>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var t = document.getElementById('sideToggle'), s = document.getElementById('sidebar');
+    if (t && s) t.addEventListener('click', function () { s.classList.toggle('open'); });
+    document.querySelectorAll('form[data-confirm]').forEach(function (f) {
+      f.addEventListener('submit', function (e) {
+        if (!window.confirm(f.getAttribute('data-confirm'))) e.preventDefault();
+      });
+    });
+  })();
+</script>
+<%- typeof script !== 'undefined' ? script : '' %>
+</body>
+</html>

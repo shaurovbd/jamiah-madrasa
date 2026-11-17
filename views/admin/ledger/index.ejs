@@ -1,0 +1,156 @@
+<div class="page-bar">
+  <div><h1>Income &amp; Expense</h1><p class="sub"><%= h.fmtPeriod(filters.period) %></p></div>
+  <span class="spacer"></span>
+  <form method="get" action="/admin/ledger" style="display:flex;gap:.5rem;align-items:center">
+    <input type="month" name="period" value="<%= filters.period %>" onchange="this.form.submit()">
+  </form>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label">Ledger income</div><div class="value" style="font-size:1.35rem"><%= money(summary.income) %></div></div>
+  <div class="stat-card red"><div class="label">Ledger expense</div><div class="value" style="font-size:1.35rem"><%= money(summary.expense) %></div></div>
+  <div class="stat-card <%= summary.balance >= 0 ? '' : 'red' %>"><div class="label">Net balance</div>
+    <div class="value" style="font-size:1.35rem"><%= money(summary.balance) %></div></div>
+  <div class="stat-card gold"><div class="label">Fees collected</div><div class="value" style="font-size:1.35rem"><%= money(summary.feeIncome) %></div>
+    <div class="foot">Recorded separately in Fees</div></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
+  <div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2>Entries</h2><span class="spacer"></span>
+        <form method="get" action="/admin/ledger" style="display:flex;gap:.5rem">
+          <input type="hidden" name="period" value="<%= filters.period %>">
+          <select name="etype" onchange="this.form.submit()">
+            <option value="">All types</option>
+            <option value="income" <%= filters.etype === 'income' ? 'selected' : '' %>>Income</option>
+            <option value="expense" <%= filters.etype === 'expense' ? 'selected' : '' %>>Expense</option>
+          </select>
+          <select name="category_id" onchange="this.form.submit()">
+            <option value="">All categories</option>
+            <% categories.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.category_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+          </select>
+        </form>
+      </div>
+      <div class="card-body flush">
+        <% if (entries.length) { %>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Reference</th><th>By</th><th class="num">Income</th><th class="num">Expense</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% entries.forEach(function (e) { %>
+                <tr>
+                  <td style="white-space:nowrap"><%= h.fmtDate(e.edate) %></td>
+                  <td><%= e.category_name || '—' %></td>
+                  <td><%= e.description || '—' %></td>
+                  <td><%= e.reference || '—' %></td>
+                  <td><%= e.created_by_name || '—' %></td>
+                  <td class="num" style="color:#145c3a"><%= e.etype === 'income' ? money(e.amount) : '' %></td>
+                  <td class="num" style="color:#b3261e"><%= e.etype === 'expense' ? money(e.amount) : '' %></td>
+                  <td class="actions">
+                    <a class="btn btn-light btn-sm" href="/admin/ledger?period=<%= filters.period %>&edit=<%= e.id %>">Edit</a>
+                    <form method="post" action="/admin/ledger/<%= e.id %>" style="display:inline" data-confirm="Delete this entry?">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } else { %><div class="empty"><div class="big">₪</div><p>No entries for <%= h.fmtPeriod(filters.period) %>.</p></div><% } %>
+      </div>
+      <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+    </div>
+
+    <% if (byCategory.length) { %>
+    <div class="card">
+      <div class="card-head"><h2>By category</h2></div>
+      <div class="card-body">
+        <% byCategory.forEach(function (c) { %>
+          <div class="bar-row">
+            <span class="name"><%= c.name %></span>
+            <span class="bar-track"><span class="bar-fill" style="width:<%= Math.round((Number(c.total) / maxCat) * 100) %>%;background:<%= c.ctype === 'income' ? 'var(--a-green)' : '#b3261e' %>"></span></span>
+            <span class="val" style="flex:0 0 110px"><%= money(c.total) %></span>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2><%= edit ? 'Edit entry' : 'New entry' %></h2></div>
+      <div class="card-body">
+        <form method="post" action="/admin/ledger">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+          <div class="field" style="margin-bottom:.8rem">
+            <label for="etype">Type</label>
+            <select id="etype" name="etype">
+              <option value="expense" <%= edit && edit.etype === 'expense' ? 'selected' : '' %>>Expense</option>
+              <option value="income" <%= edit && edit.etype === 'income' ? 'selected' : '' %>>Income</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:.8rem">
+            <label for="category_id">Category</label>
+            <select id="category_id" name="category_id">
+              <option value="">— None —</option>
+              <% categories.forEach(function (c) { %>
+                <option value="<%= c.id %>" <%= edit && edit.category_id === c.id ? 'selected' : '' %>><%= c.name %> (<%= c.ctype %>)</option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:.8rem">
+            <label for="amount">Amount <span class="req">*</span></label>
+            <input id="amount" name="amount" type="number" step="0.01" min="0.01" required value="<%= edit ? edit.amount : '' %>">
+          </div>
+          <div class="field" style="margin-bottom:.8rem">
+            <label for="edate">Date</label>
+            <input id="edate" name="edate" type="date" value="<%= edit ? h.inputDate(edit.edate) : h.today() %>">
+          </div>
+          <div class="field" style="margin-bottom:.8rem">
+            <label for="description">Description</label>
+            <input id="description" name="description" type="text" value="<%= edit ? edit.description || '' : '' %>">
+          </div>
+          <div class="field" style="margin-bottom:.9rem">
+            <label for="reference">Reference / voucher</label>
+            <input id="reference" name="reference" type="text" value="<%= edit ? edit.reference || '' : '' %>">
+          </div>
+          <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add entry' %></button>
+          <% if (edit) { %><a class="btn btn-light" href="/admin/ledger?period=<%= filters.period %>">Cancel</a><% } %>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Categories</h2></div>
+      <div class="card-body">
+        <form method="post" action="/admin/ledger/categories" style="display:flex;gap:.4rem;margin-bottom:.9rem">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input name="name" type="text" placeholder="New category" required>
+          <select name="ctype" style="width:110px"><option value="expense">Expense</option><option value="income">Income</option></select>
+          <button class="btn btn-light" type="submit">Add</button>
+        </form>
+        <table class="data compact">
+          <tbody>
+            <% categories.forEach(function (c) { %>
+              <tr>
+                <td><%= c.name %></td>
+                <td><span class="badge badge-<%= c.ctype === 'income' ? 'green' : 'grey' %>"><%= c.ctype %></span></td>
+                <td class="actions">
+                  <form method="post" action="/admin/ledger/categories/<%= c.id %>" style="display:inline" data-confirm="Delete this category? Entries keep their amounts but lose the category.">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">×</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

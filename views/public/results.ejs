@@ -1,0 +1,112 @@
+<div class="page-head no-print">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / Results</div>
+    <h1>Check Examination Result</h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap narrow">
+    <div class="panel no-print" style="margin-bottom:2rem">
+      <p style="color:var(--muted);font-size:.93rem"><%= settings.result_notice || 'Enter your roll number and select the examination to view your result.' %></p>
+      <form method="post" action="/results">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-grid">
+          <div class="field">
+            <label for="exam_id">Examination <span class="req">*</span></label>
+            <select id="exam_id" name="exam_id" required>
+              <option value="">— Select —</option>
+              <% exams.forEach(function (e) { %>
+                <option value="<%= e.id %>" <%= String(form.exam_id) === String(e.id) ? 'selected' : '' %>><%= e.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field">
+            <label for="class_id">Class <span class="req">*</span></label>
+            <select id="class_id" name="class_id" required>
+              <option value="">— Select —</option>
+              <% classes.forEach(function (c) { %>
+                <option value="<%= c.id %>" <%= String(form.class_id) === String(c.id) ? 'selected' : '' %>><%= c.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="roll_no">Roll number <span class="req">*</span></label>
+            <input id="roll_no" name="roll_no" type="text" required value="<%= form.roll_no || '' %>">
+          </div>
+        </div>
+        <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit">View result</button></p>
+      </form>
+
+      <% if (!exams.length) { %>
+        <div class="alert alert-info" style="margin-top:1.2rem">No examination results have been published yet. Please check back later.</div>
+      <% } %>
+    </div>
+
+    <% if (notFound && exams.length) { %>
+      <div class="alert alert-error no-print">No result found for that roll number in the selected class and examination. Please check the details, or contact the office.</div>
+    <% } %>
+
+    <% if (sheet) { %>
+      <div class="result-sheet">
+        <div class="result-head">
+          <h2><%= site.name %></h2>
+          <p style="margin:0;color:var(--muted);font-size:.9rem"><%= site.address || '' %></p>
+          <p style="margin:.5rem 0 0;font-weight:600"><%= sheet.exam.name %> — Academic Transcript</p>
+        </div>
+
+        <div class="result-meta">
+          <div><b>Student</b><%= sheet.student.name %></div>
+          <div><b>Roll</b><%= sheet.student.roll_no || '—' %></div>
+          <div><b>Admission No</b><%= sheet.student.admission_no %></div>
+          <div><b>Class</b><%= sheet.student.class_name || '—' %><%= sheet.student.section_name ? ' (' + sheet.student.section_name + ')' : '' %></div>
+          <div><b>Department</b><%= sheet.student.dept_name || '—' %></div>
+          <div><b>Father's Name</b><%= sheet.student.father_name || '—' %></div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr><th>Subject</th><th style="text-align:right">Full Marks</th><th style="text-align:right">Obtained</th><th>Grade</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <% sheet.subjects.forEach(function (s) { %>
+                <tr>
+                  <td><%= s.subject %></td>
+                  <td style="text-align:right"><%= s.full_marks %></td>
+                  <td style="text-align:right"><%= s.is_absent ? 'Absent' : (s.marks === null ? '—' : s.marks) %></td>
+                  <td><%= s.grade %></td>
+                  <td><%= s.is_absent ? 'Absent' : (s.marks === null ? '—' : (s.passed ? 'Pass' : 'Fail')) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+            <tfoot>
+              <tr style="font-weight:600;background:var(--cream)">
+                <td>Total</td>
+                <td style="text-align:right"><%= sheet.summary.total_full %></td>
+                <td style="text-align:right"><%= sheet.summary.total_obtained %></td>
+                <td colspan="2"><%= sheet.summary.percent %>%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:1.4rem;align-items:center">
+          <div><small style="display:block;color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.08em">Grade</small>
+            <span class="grade-pill <%= sheet.summary.result === 'Failed' ? 'fail' : '' %>"><%= sheet.summary.grade %></span></div>
+          <div><small style="display:block;color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.08em">GPA</small>
+            <strong style="font-size:1.1rem"><%= sheet.summary.gpa.toFixed(2) %></strong></div>
+          <div><small style="display:block;color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.08em">Result</small>
+            <strong style="font-size:1.1rem;color:<%= sheet.summary.result === 'Failed' ? '#b3261e' : 'var(--green-700)' %>"><%= sheet.summary.result %></strong></div>
+          <div style="margin-left:auto" class="no-print">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">Print this result</button>
+          </div>
+        </div>
+
+        <p style="margin-top:1.6rem;font-size:.8rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.8rem">
+          This is a computer-generated transcript and does not require a signature. For any correction, contact the examination office.
+        </p>
+      </div>
+    <% } %>
+  </div>
+</section>

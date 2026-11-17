@@ -1,0 +1,43 @@
+<div class="page-bar"><div><h1>Gallery</h1><p class="sub">Photographs shown on the website gallery page</p></div></div>
+
+<div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2><%= images.length %> image<%= images.length === 1 ? '' : 's' %></h2></div>
+    <div class="card-body">
+      <% if (images.length) { %>
+        <div class="grid g4">
+          <% images.forEach(function (img) { %>
+            <div style="border:1px solid var(--a-line);border-radius:8px;overflow:hidden;background:#fff">
+              <img src="/uploads/<%= img.image %>" alt="<%= img.title || '' %>" style="width:100%;height:130px;object-fit:cover">
+              <div style="padding:.5rem .6rem">
+                <div style="font-size:.82rem;color:var(--a-ink);font-weight:600"><%= img.title || '—' %></div>
+                <div class="sub" style="font-size:.76rem"><%= img.album %></div>
+                <form method="post" action="/admin/gallery/<%= img.id %>" style="margin-top:.4rem" data-confirm="Delete this image?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                  <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %><div class="empty"><div class="big">▣</div><p>No photographs uploaded yet.</p></div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Upload images</h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/gallery" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field" style="margin-bottom:.7rem"><label for="album">Album</label>
+          <input id="album" name="album" type="text" placeholder="Campus" value="Campus"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="title">Caption (applied to all)</label>
+          <input id="title" name="title" type="text"></div>
+        <div class="field" style="margin-bottom:.9rem"><label for="images">Images <span class="req">*</span></label>
+          <input id="images" name="images" type="file" accept="image/*" multiple required>
+          <span class="hint">Up to 12 files, 4 MB each. JPG, PNG, WebP or GIF.</span></div>
+        <button class="btn btn-primary" type="submit" style="width:100%">Upload</button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,167 @@
+<div class="page-bar">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="sub"><%= h.fmtPeriod(period) %> · <%= site.name %></p>
+  </div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/" target="_blank">View website ↗</a>
+  <% if (can('accountant')) { %>
+    <a class="btn btn-primary" href="/admin/fees/generate">Generate monthly invoices</a>
+  <% } %>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <% if (can('teacher','accountant')) { %>
+  <div class="stat-card">
+    <div class="label">Active Students</div>
+    <div class="value"><%= h.num(stats.students) %></div>
+    <div class="foot"><a href="/admin/students">Manage students</a></div>
+  </div>
+  <div class="stat-card blue">
+    <div class="label">Teachers &amp; Staff</div>
+    <div class="value"><%= h.num(stats.staffCount) %></div>
+    <div class="foot"><a href="/admin/staff">Manage staff</a></div>
+  </div>
+  <% } %>
+  <% if (can('accountant')) { %>
+  <div class="stat-card gold">
+    <div class="label">Pending Applications</div>
+    <div class="value"><%= h.num(stats.pendingAdmissions) %></div>
+    <div class="foot"><a href="/admin/admissions?status=pending">Review applications</a></div>
+  </div>
+  <% } %>
+  <% if (can('accountant')) { %>
+  <div class="stat-card red">
+    <div class="label">Outstanding Dues</div>
+    <div class="value" style="font-size:1.4rem"><%= money(stats.totalDue) %></div>
+    <div class="foot"><a href="/admin/fees/dues">Dues report</a></div>
+  </div>
+  <% } %>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.3rem">
+  <% if (can('teacher')) { %>
+  <div class="stat-card">
+    <div class="label">Present Today</div>
+    <div class="value"><%= h.num(stats.presentToday) %></div>
+    <div class="foot"><%= h.num(stats.absentToday) %> absent · <a href="/admin/attendance">Take attendance</a></div>
+  </div>
+  <% } %>
+  <% if (can('accountant')) { %>
+  <div class="stat-card gold">
+    <div class="label">Billed This Month</div>
+    <div class="value" style="font-size:1.4rem"><%= money(stats.monthBilled) %></div>
+    <div class="foot"><a href="/admin/fees">Fee invoices</a></div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Collected This Month</div>
+    <div class="value" style="font-size:1.4rem"><%= money(stats.monthCollected) %></div>
+    <div class="foot"><a href="/admin/ledger">Income &amp; expense</a></div>
+  </div>
+  <% } %>
+  <% if (can('librarian')) { %>
+  <div class="stat-card blue">
+    <div class="label">Books On Loan</div>
+    <div class="value"><%= h.num(stats.booksOut) %></div>
+    <div class="foot"><a href="/admin/library">Library</a></div>
+  </div>
+  <% } %>
+</div>
+
+<div class="grid g2" style="align-items:start">
+  <% if (can('teacher','accountant')) { %>
+  <div class="card">
+    <div class="card-head"><h2>Students by department</h2></div>
+    <div class="card-body">
+      <% if (byDepartment.length) { %>
+        <% byDepartment.forEach(function (d) { %>
+          <div class="bar-row">
+            <span class="name"><%= d.name %></span>
+            <span class="bar-track"><span class="bar-fill" style="width:<%= Math.round((Number(d.c) / maxDept) * 100) %>%"></span></span>
+            <span class="val"><%= h.num(d.c) %></span>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="empty">No departments yet. <a href="/admin/academics">Add one</a>.</div>
+      <% } %>
+    </div>
+  </div>
+
+  <% } %>
+  <% if (can('accountant')) { %>
+  <div class="card">
+    <div class="card-head">
+      <h2>Recent applications</h2>
+      <span class="spacer"></span>
+      <a class="btn btn-light btn-sm" href="/admin/admissions">All</a>
+    </div>
+    <div class="card-body flush">
+      <% if (recentAdmissions.length) { %>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead><tr><th>No.</th><th>Applicant</th><th>Class</th><th>Status</th></tr></thead>
+            <tbody>
+              <% recentAdmissions.forEach(function (a) { %>
+                <tr>
+                  <td><a href="/admin/admissions"><%= a.application_no %></a></td>
+                  <td><%= a.name %></td>
+                  <td><%= a.class_name || '—' %></td>
+                  <td><span class="badge badge-<%= a.status === 'approved' ? 'green' : (a.status === 'rejected' ? 'red' : 'amber') %>"><%= a.status %></span></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %><div class="empty">No applications yet.</div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head" >
+      <h2>Recent fee payments</h2>
+      <span class="spacer"></span>
+      <a class="btn btn-light btn-sm" href="/admin/fees">All</a>
+    </div>
+    <div class="card-body flush">
+      <% if (recentPayments.length) { %>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead><tr><th>Receipt</th><th>Student</th><th>Date</th><th class="num">Amount</th></tr></thead>
+            <tbody>
+              <% recentPayments.forEach(function (p) { %>
+                <tr>
+                  <td><%= p.receipt_no %></td>
+                  <td><%= p.student %></td>
+                  <td><%= h.fmtDate(p.paid_on) %></td>
+                  <td class="num"><%= money(p.amount) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %><div class="empty">No payments recorded yet.</div><% } %>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>Upcoming events</h2>
+      <span class="spacer"></span>
+      <% if (user.role === 'admin') { %><a class="btn btn-light btn-sm" href="/admin/events">Manage</a><% } %>
+    </div>
+    <div class="card-body">
+      <% if (upcomingEvents.length) { %>
+        <% upcomingEvents.forEach(function (e) { %>
+          <div style="display:flex;gap:.8rem;padding:.5rem 0;border-bottom:1px dashed var(--a-line)">
+            <div style="flex:0 0 72px;color:var(--a-muted);font-size:.84rem"><%= h.fmtDate(e.event_date) %></div>
+            <div><strong style="color:var(--a-ink)"><%= e.title %></strong><% if (e.location) { %><br><small style="color:var(--a-muted)"><%= e.location %></small><% } %></div>
+          </div>
+        <% }); %>
+      <% } else { %><div class="empty">Nothing scheduled.</div><% } %>
+      <% if (stats.unreadMessages > 0 && user.role === 'admin') { %>
+        <p style="margin-top:1rem"><a class="btn btn-gold btn-sm" href="/admin/messages"><%= stats.unreadMessages %> unread message<%= stats.unreadMessages > 1 ? 's' : '' %></a></p>
+      <% } %>
+    </div>
+  </div>
+</div>

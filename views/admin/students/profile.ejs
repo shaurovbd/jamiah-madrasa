@@ -1,0 +1,167 @@
+<div class="page-bar">
+  <div><h1><%= student.name %></h1><p class="sub"><%= student.admission_no %> · <%= student.class_name || 'No class' %><%= student.section_name ? ' / ' + student.section_name : '' %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/students">← All students</a>
+  <a class="btn btn-primary" href="/admin/students/<%= student.id %>/edit">Edit</a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <div class="profile-head">
+      <% if (student.photo) { %>
+        <img class="photo-lg" src="/uploads/<%= student.photo %>" alt="<%= student.name %>">
+      <% } else { %>
+        <div class="photo-ph"><%= student.name.charAt(0).toUpperCase() %></div>
+      <% } %>
+      <div style="flex:1;min-width:240px">
+        <h2 style="margin-bottom:.2rem"><%= student.name %></h2>
+        <p class="sub" style="margin-bottom:.6rem">
+          <%= student.dept_name || '—' %> ·
+          <span class="badge badge-<%= student.status === 'active' ? 'green' : 'grey' %>"><%= student.status %></span>
+          <% if (student.is_resident) { %> <span class="badge badge-blue">Boarder</span><% } %>
+        </p>
+        <dl class="kv">
+          <dt>Roll number</dt><dd><%= student.roll_no || '—' %></dd>
+          <dt>Father's name</dt><dd><%= student.father_name || '—' %></dd>
+          <dt>Guardian phone</dt><dd><%= student.guardian_phone || '—' %></dd>
+          <dt>Date of birth</dt><dd><%= student.dob ? h.fmtDate(student.dob) : '—' %></dd>
+          <dt>Admitted</dt><dd><%= student.admission_date ? h.fmtDate(student.admission_date) : '—' %></dd>
+          <dt>Address</dt><dd><%= student.address || '—' %></dd>
+        </dl>
+      </div>
+      <div style="min-width:190px">
+        <div class="stat-card <%= dues > 0 ? 'red' : '' %>" style="margin-bottom:.7rem">
+          <div class="label">Outstanding dues</div>
+          <div class="value" style="font-size:1.25rem"><%= money(dues) %></div>
+        </div>
+        <% if (student.hifz_para_completed > 0) { %>
+          <div class="stat-card gold">
+            <div class="label">Hifz completed</div>
+            <div class="value" style="font-size:1.25rem"><%= student.hifz_para_completed %> / 30 para</div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label">Days recorded</div><div class="value"><%= h.num(att.total || 0) %></div></div>
+  <div class="stat-card"><div class="label">Present</div><div class="value"><%= h.num(att.present || 0) %></div>
+    <div class="foot"><%= att.total ? Math.round((Number(att.present||0) / Number(att.total)) * 100) : 0 %>% attendance</div></div>
+  <div class="stat-card red"><div class="label">Absent</div><div class="value"><%= h.num(att.absent || 0) %></div></div>
+  <div class="stat-card gold"><div class="label">On leave</div><div class="value"><%= h.num(att.onleave || 0) %></div></div>
+</div>
+
+<div class="grid g2" style="align-items:start">
+  <div class="card">
+    <div class="card-head"><h2>Examination results</h2></div>
+    <div class="card-body flush">
+      <% if (results.length) { %>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead><tr><th>Exam</th><th class="num">Marks</th><th class="num">%</th><th>Grade</th><th>Result</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% results.forEach(function (r) { %>
+                <tr>
+                  <td><%= r.exam.name %></td>
+                  <td class="num"><%= r.summary.total_obtained %>/<%= r.summary.total_full %></td>
+                  <td class="num"><%= r.summary.percent %></td>
+                  <td><%= r.summary.grade %></td>
+                  <td><span class="badge badge-<%= r.summary.result === 'Passed' ? 'green' : 'red' %>"><%= r.summary.result %></span></td>
+                  <td class="actions"><a class="btn btn-light btn-sm" href="/admin/exams/<%= r.exam.id %>/marksheet/<%= student.id %>">Marksheet</a></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %><div class="empty">No marks recorded yet.</div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Fee invoices</h2><span class="spacer"></span>
+      <a class="btn btn-light btn-sm" href="/admin/fees?q=<%= encodeURIComponent(student.admission_no) %>">All</a></div>
+    <div class="card-body flush">
+      <% if (invoices.length) { %>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead><tr><th>Period</th><th class="num">Billed</th><th class="num">Paid</th><th>Status</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% invoices.forEach(function (i) { %>
+                <tr>
+                  <td><%= h.fmtPeriod(i.period) %></td>
+                  <td class="num"><%= money(Number(i.total_amount) - Number(i.discount)) %></td>
+                  <td class="num"><%= money(i.paid_amount) %></td>
+                  <td><span class="badge badge-<%= i.status === 'paid' ? 'green' : (i.status === 'partial' ? 'amber' : 'red') %>"><%= i.status %></span></td>
+                  <td class="actions"><a class="btn btn-light btn-sm" href="/admin/fees/invoice/<%= i.id %>">Open</a></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %><div class="empty">No invoices yet.</div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Recent Hifz entries</h2><span class="spacer"></span>
+      <a class="btn btn-light btn-sm" href="/admin/hifz/student/<%= student.id %>">Full record</a></div>
+    <div class="card-body flush">
+      <% if (hifz.length) { %>
+        <div class="table-wrap">
+          <table class="data compact">
+            <thead><tr><th>Date</th><th>Sabak</th><th>Sabqi</th><th>Manzil</th><th>Rating</th></tr></thead>
+            <tbody>
+              <% hifz.forEach(function (x) { %>
+                <tr>
+                  <td><%= h.fmtDate(x.pdate) %></td>
+                  <td><%= x.sabak_surah || '—' %> <%= x.sabak_from ? x.sabak_from + '–' + (x.sabak_to || '') : '' %></td>
+                  <td><%= x.sabqi_para || '—' %></td>
+                  <td><%= x.manzil_para || '—' %></td>
+                  <td><span class="badge badge-<%= x.rating === 'excellent' ? 'green' : (x.rating === 'weak' ? 'red' : 'grey') %>"><%= x.rating %></span></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %><div class="empty">No Hifz entries recorded.</div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Hostel &amp; library</h2></div>
+    <div class="card-body">
+      <h3 style="font-size:.9rem">Hostel</h3>
+      <% if (hostel) { %>
+        <p>Room <strong><%= hostel.room_no %></strong><%= hostel.block ? ' · ' + hostel.block : '' %>, allocated <%= h.fmtDate(hostel.allocated_on) %>.</p>
+      <% } else { %><p class="sub">Not allocated a hostel room.</p><% } %>
+
+      <h3 style="font-size:.9rem;margin-top:1.2rem">Books on loan</h3>
+      <% if (issues.length) { %>
+        <table class="data compact">
+          <thead><tr><th>Title</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody>
+            <% issues.forEach(function (b) { %>
+              <tr><td><%= b.title %></td><td><%= h.fmtDate(b.due_date) %></td>
+                <td><span class="badge badge-<%= b.status === 'returned' ? 'green' : 'amber' %>"><%= b.status %></span></td></tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } else { %><p class="sub">No library activity.</p><% } %>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1.1rem;border-color:#edc2bd">
+  <div class="card-body" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+    <div><strong style="color:#8c2016">Delete this student</strong>
+      <p class="sub" style="margin:0">Removes the student together with their attendance, marks, Hifz entries and invoices. This cannot be undone.</p></div>
+    <span class="spacer"></span>
+    <form method="post" action="/admin/students/<%= student.id %>" data-confirm="Delete <%= student.name %> and every linked record? This cannot be undone.">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="_method" value="DELETE">
+      <button class="btn btn-danger" type="submit">Delete student</button>
+    </form>
+  </div>
+</div>

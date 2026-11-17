@@ -1,0 +1,62 @@
+<div class="page-bar">
+  <div><h1>Notices</h1><p class="sub">Published notices appear on the website home page and the notices page</p></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2>All notices</h2></div>
+    <div class="card-body flush">
+      <% if (notices.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Title</th><th>Category</th><th>Published</th><th>Status</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% notices.forEach(function (n) { %>
+              <tr>
+                <td><strong><%= n.title %></strong><br><small class="sub">/notices/<%= n.slug %></small></td>
+                <td><%= n.category || 'General' %></td>
+                <td><%= n.published_at ? h.fmtDate(n.published_at) : h.fmtDate(n.created_at) %></td>
+                <td><span class="badge badge-<%= n.is_published ? 'green' : 'grey' %>"><%= n.is_published ? 'Live' : 'Draft' %></span></td>
+                <td class="actions">
+                  <% if (n.is_published) { %><a class="btn btn-light btn-sm" href="/notices/<%= n.slug %>" target="_blank">View</a><% } %>
+                  <a class="btn btn-light btn-sm" href="/admin/notices?edit=<%= n.id %>">Edit</a>
+                  <form method="post" action="/admin/notices/<%= n.id %>" style="display:inline" data-confirm="Delete this notice?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty"><div class="big">◉</div><p>No notices yet.</p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? 'Edit notice' : 'New notice' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/notices" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+        <div class="field" style="margin-bottom:.7rem"><label for="title">Title <span class="req">*</span></label>
+          <input id="title" name="title" type="text" required value="<%= edit ? edit.title : '' %>"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="category">Category</label>
+          <input id="category" name="category" type="text" placeholder="General" value="<%= edit ? edit.category || '' : '' %>"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="body">Body</label>
+          <textarea id="body" name="body" style="min-height:160px"><%= edit ? edit.body || '' : '' %></textarea>
+          <span class="hint">Leave a blank line between paragraphs.</span></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="published_at">Publish date</label>
+          <input id="published_at" name="published_at" type="date" value="<%= edit ? h.inputDate(edit.published_at) : h.today() %>"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="attachment">Attachment (PDF or image)</label>
+          <input id="attachment" name="attachment" type="file" accept="image/*,application/pdf"></div>
+        <label class="chk" style="margin-bottom:.9rem">
+          <input type="checkbox" name="is_published" value="1" <%= edit ? (edit.is_published ? 'checked' : '') : 'checked' %>> Publish on the website</label>
+        <div><button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create notice' %></button>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/notices">Cancel</a><% } %></div>
+      </form>
+    </div>
+  </div>
+</div>

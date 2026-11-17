@@ -1,0 +1,61 @@
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/">Home</a> / About</div>
+    <h1><%= about ? about.title : 'About Us' %></h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <div class="grid g2" style="gap:3rem;align-items:start">
+      <div class="prose">
+        <% if (about) { %><p><%= about.body %></p><% } %>
+        <% if (mission) { %>
+          <h2><%= mission.title %></h2>
+          <p><%= mission.body %></p>
+        <% } %>
+        <% if (facilities) { %>
+          <h2><%= facilities.title %></h2>
+          <p><%= facilities.body %></p>
+        <% } %>
+      </div>
+      <aside>
+        <div class="card" style="margin-bottom:1.2rem">
+          <h3>At a glance</h3>
+          <table class="data" style="font-size:.9rem">
+            <tr><th>Established</th><td><%= settings.established || '—' %></td></tr>
+            <tr><th>Location</th><td><%= site.address || '—' %></td></tr>
+            <tr><th>Phone</th><td><%= site.phone || '—' %></td></tr>
+            <tr><th>Email</th><td><%= site.email || '—' %></td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Admission</h3>
+          <p>Applications are accepted online throughout the year for all departments.</p>
+          <a class="btn btn-green btn-sm" href="/admission" style="margin-top:.6rem">Apply now</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<% if (leaders && leaders.length) { %>
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">Our People</span>
+      <h2>Teachers &amp; Management</h2>
+    </div>
+    <div class="grid g3">
+      <% leaders.forEach(function (p) { %>
+        <div class="card" style="text-align:center">
+          <div style="width:64px;height:64px;margin:0 auto .8rem;border-radius:50%;background:var(--green-700);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:1.5rem"><%= p.name.charAt(0) %></div>
+          <h3 style="font-size:1.05rem;margin-bottom:.15rem"><%= p.name %></h3>
+          <p style="color:var(--green-700);font-weight:600;font-size:.86rem;margin-bottom:.3rem"><%= p.designation || '' %></p>
+          <p style="font-size:.85rem"><%= p.qualification || '' %></p>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>

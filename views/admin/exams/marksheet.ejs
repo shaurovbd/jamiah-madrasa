@@ -1,0 +1,64 @@
+<div class="page-bar no-print">
+  <div><h1>Marksheet</h1><p class="sub"><%= sheet.student.name %> · <%= sheet.exam.name %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/exams/<%= sheet.exam.id %>/results?class_id=<%= sheet.student.class_id %>">← Back to results</a>
+  <button class="btn btn-primary" onclick="window.print()">Print</button>
+</div>
+
+<div class="print-sheet">
+  <div class="print-head">
+    <h2><%= site.name %></h2>
+    <p class="muted"><%= site.address || '' %><%= site.phone ? ' · ' + site.phone : '' %></p>
+    <p style="margin:.5rem 0 0;font-weight:600"><%= sheet.exam.name %> — Academic Transcript</p>
+  </div>
+
+  <table class="data compact" style="margin-bottom:1.2rem">
+    <tbody>
+      <tr><th style="width:150px">Student</th><td><strong><%= sheet.student.name %></strong></td>
+          <th style="width:130px">Admission No</th><td><%= sheet.student.admission_no %></td></tr>
+      <tr><th>Father's name</th><td><%= sheet.student.father_name || '—' %></td>
+          <th>Roll</th><td><%= sheet.student.roll_no || '—' %></td></tr>
+      <tr><th>Class</th><td><%= sheet.student.class_name || '—' %><%= sheet.student.section_name ? ' / ' + sheet.student.section_name : '' %></td>
+          <th>Department</th><td><%= sheet.student.dept_name || '—' %></td></tr>
+    </tbody>
+  </table>
+
+  <div class="table-wrap">
+    <table class="data">
+      <thead><tr><th>Subject</th><th class="num">Full Marks</th><th class="num">Pass Marks</th><th class="num">Obtained</th><th>Grade</th><th>Status</th></tr></thead>
+      <tbody>
+        <% sheet.subjects.forEach(function (s) { %>
+          <tr>
+            <td><%= s.subject %></td>
+            <td class="num"><%= s.full_marks %></td>
+            <td class="num"><%= s.pass_marks %></td>
+            <td class="num"><%= s.is_absent ? 'Absent' : (s.marks === null ? '—' : s.marks) %></td>
+            <td><%= s.grade %></td>
+            <td><%= s.is_absent ? 'Absent' : (s.marks === null ? '—' : (s.passed ? 'Pass' : 'Fail')) %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+      <tfoot>
+        <tr style="font-weight:600;background:#f1f5f3">
+          <td>Total</td><td class="num"><%= sheet.summary.total_full %></td><td></td>
+          <td class="num"><%= sheet.summary.total_obtained %></td>
+          <td colspan="2"><%= sheet.summary.percent %>%</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="grid g4" style="margin-top:1.3rem">
+    <div class="stat-card"><div class="label">Percentage</div><div class="value" style="font-size:1.3rem"><%= sheet.summary.percent %>%</div></div>
+    <div class="stat-card gold"><div class="label">Grade</div><div class="value" style="font-size:1.3rem"><%= sheet.summary.grade %></div></div>
+    <div class="stat-card"><div class="label">GPA</div><div class="value" style="font-size:1.3rem"><%= sheet.summary.gpa.toFixed(2) %></div></div>
+    <div class="stat-card <%= sheet.summary.result === 'Failed' ? 'red' : '' %>">
+      <div class="label">Result</div><div class="value" style="font-size:1.3rem"><%= sheet.summary.result %></div></div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:3.5rem;font-size:.85rem;color:var(--a-muted)">
+    <div style="border-top:1px solid var(--a-line);padding-top:.4rem;width:180px;text-align:center">Class Teacher</div>
+    <div style="border-top:1px solid var(--a-line);padding-top:.4rem;width:180px;text-align:center">Examination Controller</div>
+    <div style="border-top:1px solid var(--a-line);padding-top:.4rem;width:180px;text-align:center">Principal</div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="page-bar"><div><h1>Website Pages</h1>
+  <p class="sub">The About page pulls in "about", "mission" and "facilities". Other pages are reachable at /page/&lt;address&gt;</p></div></div>
+
+<div class="grid" style="grid-template-columns:1fr 360px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2>Pages</h2></div>
+    <div class="card-body flush">
+      <% if (pages.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Title</th><th>Address</th><th>Status</th><th>Updated</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% pages.forEach(function (pg) { %>
+              <tr>
+                <td><strong><%= pg.title %></strong></td>
+                <td>/page/<%= pg.slug %></td>
+                <td><span class="badge badge-<%= pg.is_published ? 'green' : 'grey' %>"><%= pg.is_published ? 'Live' : 'Draft' %></span></td>
+                <td><%= h.fmtDate(pg.updated_at) %></td>
+                <td class="actions">
+                  <% if (pg.is_published) { %><a class="btn btn-light btn-sm" href="/page/<%= pg.slug %>" target="_blank">View</a><% } %>
+                  <a class="btn btn-light btn-sm" href="/admin/pages?edit=<%= pg.id %>">Edit</a>
+                  <form method="post" action="/admin/pages/<%= pg.id %>" style="display:inline" data-confirm="Delete this page?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty"><p>No pages yet.</p></div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? 'Edit page' : 'New page' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/pages">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+        <div class="field" style="margin-bottom:.7rem"><label for="title">Title <span class="req">*</span></label>
+          <input id="title" name="title" type="text" required value="<%= edit ? edit.title : '' %>"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="slug">Address</label>
+          <input id="slug" name="slug" type="text" value="<%= edit ? edit.slug : '' %>" placeholder="auto from title"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="body">Content</label>
+          <textarea id="body" name="body" style="min-height:260px"><%= edit ? edit.body || '' : '' %></textarea></div>
+        <label class="chk" style="margin-bottom:.9rem">
+          <input type="checkbox" name="is_published" value="1" <%= edit ? (edit.is_published ? 'checked' : '') : 'checked' %>> Published</label>
+        <div><button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create page' %></button>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/pages">Cancel</a><% } %></div>
+      </form>
+    </div>
+  </div>
+</div>

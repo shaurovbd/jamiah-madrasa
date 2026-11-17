@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title ? title + ' — ' + site.name : site.name %></title>
+<meta name="description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : (site.tagline || site.name) %>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<%- typeof style !== 'undefined' ? style : '' %>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="topbar-meta">
+      <% if (site.phone) { %><span>☏ <%= site.phone %></span><% } %>
+      <% if (site.email) { %><span>✉ <a href="mailto:<%= site.email %>"><%= site.email %></a></span><% } %>
+    </div>
+    <div class="topbar-meta">
+      <a href="/results">Check Result</a>
+      <a href="/admin">Staff Login</a>
+    </div>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <span class="brand-mark">ج</span>
+      <span class="brand-text">
+        <strong><%= site.name %></strong>
+        <small><%= site.tagline ? site.tagline.slice(0, 42) : 'Islamic Institute' %></small>
+      </span>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+    <nav class="main" id="mainNav">
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a>
+      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>">About</a>
+      <a href="/departments" class="<%= currentPath.startsWith('/departments') ? 'active' : '' %>">Departments</a>
+      <a href="/notices" class="<%= currentPath.startsWith('/notices') ? 'active' : '' %>">Notices</a>
+      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>">Events</a>
+      <a href="/gallery" class="<%= currentPath.startsWith('/gallery') ? 'active' : '' %>">Gallery</a>
+      <a href="/contact" class="<%= currentPath.startsWith('/contact') ? 'active' : '' %>">Contact</a>
+      <a href="/admission" class="nav-cta">Apply Now</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<%- body %>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4><%= site.name %></h4>
+        <p><%= settings.about_intro || 'An Islamic educational institution dedicated to the Qur’an and the sacred sciences.' %></p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="/about">About Us</a></li>
+          <li><a href="/departments">Departments</a></li>
+          <li><a href="/admission">Admission</a></li>
+          <li><a href="/results">Check Result</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Information</h4>
+        <ul>
+          <li><a href="/notices">Notices</a></li>
+          <li><a href="/events">Events</a></li>
+          <li><a href="/gallery">Gallery</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reach Us</h4>
+        <ul>
+          <% if (site.address) { %><li><%= site.address %></li><% } %>
+          <% if (site.phone) { %><li><%= site.phone %></li><% } %>
+          <% if (site.email) { %><li><a href="mailto:<%= site.email %>"><%= site.email %></a></li><% } %>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <%= new Date().getFullYear() %> <%= site.name %>. All rights reserved.</span>
+      <span><a href="/admin">Staff &amp; Management Login</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var t = document.getElementById('menuToggle'), n = document.getElementById('mainNav');
+    if (t && n) t.addEventListener('click', function () { n.classList.toggle('open'); });
+  })();
+</script>
+<%- typeof script !== 'undefined' ? script : '' %>
+</body>
+</html>

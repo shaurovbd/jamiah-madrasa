@@ -1,0 +1,59 @@
+<div class="page-bar">
+  <div><h1>Admission Applications</h1><p class="sub">Submitted through the website admission form</p></div>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <a class="stat-card gold" href="/admin/admissions?status=pending" style="text-decoration:none">
+    <div class="label">Pending</div><div class="value"><%= h.num(counts.pending || 0) %></div></a>
+  <a class="stat-card" href="/admin/admissions?status=approved" style="text-decoration:none">
+    <div class="label">Approved</div><div class="value"><%= h.num(counts.approved || 0) %></div></a>
+  <a class="stat-card red" href="/admin/admissions?status=rejected" style="text-decoration:none">
+    <div class="label">Rejected</div><div class="value"><%= h.num(counts.rejected || 0) %></div></a>
+  <a class="stat-card blue" href="/admin/admissions" style="text-decoration:none">
+    <div class="label">All applications</div><div class="value"><%= h.num(p.total) %></div></a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/admissions">
+      <div class="field grow"><label for="q">Search</label>
+        <input id="q" name="q" type="search" placeholder="Name, application no, phone" value="<%= filters.q %>"></div>
+      <div class="field"><label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="">All</option>
+          <% ['pending','approved','rejected'].forEach(function (s) { %>
+            <option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+          <% }); %>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a class="btn btn-light" href="/admin/admissions">Reset</a>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <% if (applications.length) { %>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Application</th><th>Applicant</th><th>Father</th><th>Applied for</th><th>Phone</th><th>Received</th><th>Status</th><th class="actions"></th></tr></thead>
+        <tbody>
+          <% applications.forEach(function (a) { %>
+            <tr>
+              <td><a href="/admin/admissions/<%= a.id %>"><%= a.application_no %></a></td>
+              <td><strong><%= a.name %></strong></td>
+              <td><%= a.father_name || '—' %></td>
+              <td><%= a.class_name || a.dept_name || '—' %></td>
+              <td><%= a.guardian_phone %></td>
+              <td><%= h.fmtDate(a.applied_at) %></td>
+              <td><span class="badge badge-<%= a.status === 'approved' ? 'green' : (a.status === 'rejected' ? 'red' : 'amber') %>"><%= a.status %></span></td>
+              <td class="actions"><a class="btn btn-light btn-sm" href="/admin/admissions/<%= a.id %>">Open</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %><div class="empty"><div class="big">✎</div><p>No applications match these filters.</p></div><% } %>
+  </div>
+  <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+</div>

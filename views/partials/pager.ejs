@@ -1,0 +1,17 @@
+<% if (p && p.pages > 1) { %>
+  <div class="pager">
+    <span>Showing <%= Math.min(p.offset + 1, p.total) %>–<%= Math.min(p.offset + p.perPage, p.total) %> of <%= h.num(p.total) %></span>
+    <span class="spacer"></span>
+    <% if (p.current > 1) { %><a href="<%= h.qs(query, { page: p.current - 1 }) %>">‹ Prev</a><% } %>
+    <%
+      var from = Math.max(1, p.current - 2), to = Math.min(p.pages, from + 4);
+      from = Math.max(1, to - 4);
+      for (var i = from; i <= to; i++) { %>
+      <% if (i === p.current) { %><span class="cur"><%= i %></span>
+      <% } else { %><a href="<%= h.qs(query, { page: i }) %>"><%= i %></a><% } %>
+    <% } %>
+    <% if (p.current < p.pages) { %><a href="<%= h.qs(query, { page: p.current + 1 }) %>">Next ›</a><% } %>
+  </div>
+<% } else if (p) { %>
+  <div class="pager"><span><%= h.num(p.total) %> record<%= p.total === 1 ? '' : 's' %></span></div>
+<% } %>

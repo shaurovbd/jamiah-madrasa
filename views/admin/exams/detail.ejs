@@ -1,0 +1,51 @@
+<div class="page-bar">
+  <div><h1><%= exam.name %></h1>
+    <p class="sub"><%= exam.year_name || 'No academic year' %><%= exam.start_date ? ' · ' + h.fmtDate(exam.start_date) : '' %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/exams">← All exams</a>
+  <form method="post" action="/admin/exams/<%= exam.id %>/publish" style="display:inline"
+        data-confirm="<%= exam.is_published ? 'Hide these results from the public website?' : 'Publish these results so students can look them up on the website?' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="publish" value="<%= exam.is_published ? '0' : '1' %>">
+    <button class="btn <%= exam.is_published ? 'btn-light' : 'btn-gold' %>" type="submit">
+      <%= exam.is_published ? 'Unpublish results' : 'Publish results' %>
+    </button>
+  </form>
+</div>
+
+<% if (exam.is_published) { %>
+  <div class="alert alert-success">Results are live. Students can look them up at <a href="/results" target="_blank">/results</a> using their roll number.</div>
+<% } %>
+
+<div class="card">
+  <div class="card-head"><h2>Marks entry by class</h2><span class="spacer"></span>
+    <span class="sub">Enter marks subject by subject, then review the class result.</span></div>
+  <div class="card-body flush">
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Class</th><th>Department</th><th class="num">Students</th><th class="num">Subjects</th><th>Progress</th><th class="actions"></th></tr></thead>
+        <tbody>
+          <% classes.forEach(function (c) {
+               var pct = c.student_count ? Math.round((c.marked_count / c.student_count) * 100) : 0; %>
+            <tr>
+              <td><strong><%= c.name %></strong></td>
+              <td><%= c.dept_name || '—' %></td>
+              <td class="num"><%= c.student_count %></td>
+              <td class="num"><%= c.subject_count %></td>
+              <td style="min-width:170px">
+                <div class="bar-row" style="margin:0">
+                  <span class="bar-track"><span class="bar-fill" style="width:<%= pct %>%"></span></span>
+                  <span class="val"><%= pct %>%</span>
+                </div>
+              </td>
+              <td class="actions">
+                <a class="btn btn-primary btn-sm" href="/admin/exams/<%= exam.id %>/marks?class_id=<%= c.id %>">Enter marks</a>
+                <a class="btn btn-light btn-sm" href="/admin/exams/<%= exam.id %>/results?class_id=<%= c.id %>">Results</a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

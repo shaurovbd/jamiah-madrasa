@@ -1,0 +1,63 @@
+<div class="page-bar">
+  <div><h1><%= member.name %></h1><p class="sub"><%= member.staff_no %> · <%= member.designation || 'Staff' %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/staff">← All staff</a>
+  <a class="btn btn-primary" href="/admin/staff/<%= member.id %>/edit">Edit</a>
+</div>
+
+<div class="grid g2" style="align-items:start">
+  <div class="card">
+    <div class="card-body">
+      <div class="profile-head" style="margin-bottom:1.2rem">
+        <% if (member.photo) { %><img class="photo-lg" src="/uploads/<%= member.photo %>" alt="<%= member.name %>">
+        <% } else { %><div class="photo-ph"><%= member.name.charAt(0).toUpperCase() %></div><% } %>
+        <div>
+          <h2 style="margin-bottom:.2rem"><%= member.name %></h2>
+          <p class="sub"><%= member.designation || '—' %> · <span class="badge badge-<%= member.status === 'active' ? 'green' : 'grey' %>"><%= member.status %></span></p>
+        </div>
+      </div>
+      <dl class="kv">
+        <dt>Department</dt><dd><%= member.dept_name || '—' %></dd>
+        <dt>Qualification</dt><dd><%= member.qualification || '—' %></dd>
+        <dt>Phone</dt><dd><%= member.phone || '—' %></dd>
+        <dt>Email</dt><dd><%= member.email || '—' %></dd>
+        <dt>Address</dt><dd><%= member.address || '—' %></dd>
+        <dt>Joined</dt><dd><%= member.join_date ? h.fmtDate(member.join_date) : '—' %></dd>
+        <dt>Monthly salary</dt><dd><%= money(member.salary) %></dd>
+        <dt>Panel account</dt><dd><%= member.username ? member.username + ' (' + member.role + ')' : 'No login' %></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Teaching responsibilities</h2></div>
+    <div class="card-body">
+      <h3 style="font-size:.9rem">Class teacher of</h3>
+      <% if (sections.length) { %>
+        <p><%= sections.map(function (s) { return (s.class_name || '') + ' / ' + s.name; }).join(', ') %></p>
+      <% } else { %><p class="sub">Not assigned as a class teacher.</p><% } %>
+
+      <h3 style="font-size:.9rem;margin-top:1.2rem">Subjects taught</h3>
+      <% if (subjects.length) { %>
+        <table class="data compact">
+          <thead><tr><th>Subject</th><th>Class</th></tr></thead>
+          <tbody>
+            <% subjects.forEach(function (s) { %><tr><td><%= s.name %></td><td><%= s.class_name || '—' %></td></tr><% }); %>
+          </tbody>
+        </table>
+      <% } else { %><p class="sub">No subjects assigned.</p><% } %>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1.1rem;border-color:#edc2bd">
+  <div class="card-body" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+    <div><strong style="color:#8c2016">Remove this staff member</strong>
+      <p class="sub" style="margin:0">Classes and subjects they are assigned to will simply lose the assignment.</p></div>
+    <span class="spacer"></span>
+    <form method="post" action="/admin/staff/<%= member.id %>" data-confirm="Remove <%= member.name %> from the staff list?">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+      <button class="btn btn-danger" type="submit">Remove</button>
+    </form>
+  </div>
+</div>

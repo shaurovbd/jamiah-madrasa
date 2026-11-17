@@ -1,0 +1,50 @@
+<div class="page-bar">
+  <div><h1>Dues Report</h1><p class="sub"><%= rows.length %> student<%= rows.length === 1 ? '' : 's' %> owing <%= money(totalDue) %> in total</p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light no-print" href="/admin/fees">← Invoices</a>
+  <% if (rows.length) { %><button class="btn btn-light no-print" onclick="window.print()">Print</button><% } %>
+</div>
+
+<div class="card no-print" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/fees/dues">
+      <div class="field"><label for="class_id">Class</label>
+        <select id="class_id" name="class_id" onchange="this.form.submit()">
+          <option value="">All classes</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <% if (rows.length) { %>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Roll</th><th>Student</th><th>Class</th><th>Guardian phone</th><th class="num">Unpaid invoices</th><th>Oldest</th><th class="num">Total due</th><th class="actions no-print"></th></tr></thead>
+        <tbody>
+          <% rows.forEach(function (r) { %>
+            <tr>
+              <td><%= r.roll_no || '—' %></td>
+              <td><a href="/admin/students/<%= r.id %>"><strong><%= r.name %></strong></a><br><small class="sub"><%= r.admission_no %></small></td>
+              <td><%= r.class_name || '—' %></td>
+              <td><%= r.guardian_phone || '—' %></td>
+              <td class="num"><%= r.invoice_count %></td>
+              <td><%= h.fmtPeriod(r.oldest_period) %></td>
+              <td class="num"><strong style="color:#b3261e"><%= money(r.due) %></strong></td>
+              <td class="actions no-print"><a class="btn btn-primary btn-sm" href="/admin/fees?q=<%= encodeURIComponent(r.admission_no) %>&status=unpaid">Collect</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+        <tfoot>
+          <tr style="background:#f1f5f3;font-weight:600"><td colspan="6">Total outstanding</td><td class="num"><%= money(totalDue) %></td><td class="no-print"></td></tr>
+        </tfoot>
+      </table>
+    </div>
+    <% } else { %>
+      <div class="empty"><div class="big">✓</div><p>No outstanding dues<%= filters.class_id ? ' in this class' : '' %>.</p></div>
+    <% } %>
+  </div>
+</div>

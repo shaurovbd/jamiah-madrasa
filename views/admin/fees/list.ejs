@@ -1,0 +1,63 @@
+<div class="page-bar">
+  <div><h1>Fee Invoices</h1>
+    <p class="sub">Billed <%= money(totals.billed) %> · collected <%= money(totals.collected) %> · outstanding <%= money(totals.billed - totals.collected) %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/fees/dues">Dues report</a>
+  <a class="btn btn-primary" href="/admin/fees/generate">Generate invoices</a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/fees">
+      <div class="field grow"><label for="q">Search</label>
+        <input id="q" name="q" type="search" placeholder="Student, admission no, invoice no" value="<%= filters.q %>"></div>
+      <div class="field"><label for="period">Period</label>
+        <select id="period" name="period"><option value="">All months</option>
+          <% periods.forEach(function (x) { %><option value="<%= x.period %>" <%= filters.period === x.period ? 'selected' : '' %>><%= h.fmtPeriod(x.period) %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="class_id">Class</label>
+        <select id="class_id" name="class_id"><option value="">All</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="status">Status</label>
+        <select id="status" name="status"><option value="">All</option>
+          <% ['unpaid','partial','paid'].forEach(function (s) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option><% }); %>
+        </select></div>
+      <button class="btn btn-primary" type="submit">Filter</button>
+      <a class="btn btn-light" href="/admin/fees">Reset</a>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body flush">
+    <% if (invoices.length) { %>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr><th>Invoice</th><th>Student</th><th>Class</th><th>Period</th><th class="num">Payable</th><th class="num">Paid</th><th class="num">Balance</th><th>Status</th><th class="actions"></th></tr></thead>
+        <tbody>
+          <% invoices.forEach(function (i) {
+               var payable = Number(i.total_amount) - Number(i.discount);
+               var balance = payable - Number(i.paid_amount); %>
+            <tr>
+              <td><a href="/admin/fees/invoice/<%= i.id %>"><%= i.invoice_no %></a></td>
+              <td><a href="/admin/students/<%= i.student_id %>"><%= i.student %></a><br><small class="sub"><%= i.admission_no %></small></td>
+              <td><%= i.class_name || '—' %></td>
+              <td><%= h.fmtPeriod(i.period) %></td>
+              <td class="num"><%= money(payable) %></td>
+              <td class="num"><%= money(i.paid_amount) %></td>
+              <td class="num"><strong style="color:<%= balance > 0 ? '#b3261e' : '#145c3a' %>"><%= money(balance) %></strong></td>
+              <td><span class="badge badge-<%= i.status === 'paid' ? 'green' : (i.status === 'partial' ? 'amber' : 'red') %>"><%= i.status %></span></td>
+              <td class="actions"><a class="btn btn-<%= i.status === 'paid' ? 'light' : 'primary' %> btn-sm" href="/admin/fees/invoice/<%= i.id %>"><%= i.status === 'paid' ? 'View' : 'Collect' %></a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+      <div class="empty"><div class="big">▦</div><p>No invoices match these filters.</p>
+        <a class="btn btn-primary" href="/admin/fees/generate">Generate this month's invoices</a></div>
+    <% } %>
+  </div>
+  <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+</div>

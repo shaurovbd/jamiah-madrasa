@@ -1,0 +1,68 @@
+<div class="page-bar"><h1>Examinations</h1></div>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2>All examinations</h2></div>
+    <div class="card-body flush">
+      <% if (exams.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Examination</th><th>Year</th><th>Dates</th><th class="num">Students marked</th><th>Published</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% exams.forEach(function (e) { %>
+              <tr>
+                <td><a href="/admin/exams/<%= e.id %>"><strong><%= e.name %></strong></a></td>
+                <td><%= e.year_name || '—' %></td>
+                <td><%= e.start_date ? h.fmtDate(e.start_date) : '—' %><%= e.end_date ? ' – ' + h.fmtDate(e.end_date) : '' %></td>
+                <td class="num"><%= e.student_count %></td>
+                <td><span class="badge badge-<%= e.is_published ? 'green' : 'grey' %>"><%= e.is_published ? 'Published' : 'Draft' %></span></td>
+                <td class="actions">
+                  <a class="btn btn-light btn-sm" href="/admin/exams/<%= e.id %>">Open</a>
+                  <a class="btn btn-light btn-sm" href="/admin/exams?edit=<%= e.id %>">Edit</a>
+                  <form method="post" action="/admin/exams/<%= e.id %>" style="display:inline" data-confirm="Delete <%= e.name %> and all marks recorded for it?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty"><div class="big">◈</div><p>No examinations created yet.</p></div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? 'Edit examination' : 'New examination' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/exams">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="name">Name <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required placeholder="Annual Examination 2026" value="<%= edit ? edit.name : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="academic_year_id">Academic year</label>
+          <select id="academic_year_id" name="academic_year_id">
+            <option value="">— None —</option>
+            <% years.forEach(function (y) { %>
+              <option value="<%= y.id %>" <%= edit ? (edit.academic_year_id === y.id ? 'selected' : '') : (y.is_current ? 'selected' : '') %>><%= y.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="start_date">Starts</label>
+          <input id="start_date" name="start_date" type="date" value="<%= edit ? h.inputDate(edit.start_date) : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.9rem">
+          <label for="end_date">Ends</label>
+          <input id="end_date" name="end_date" type="date" value="<%= edit ? h.inputDate(edit.end_date) : '' %>">
+        </div>
+        <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create examination' %></button>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/exams">Cancel</a><% } %>
+      </form>
+    </div>
+  </div>
+</div>

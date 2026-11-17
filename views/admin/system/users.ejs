@@ -1,0 +1,104 @@
+<div class="page-bar"><div><h1>Users</h1><p class="sub">Who can sign in to the management panel, and what they can reach</p></div></div>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2>Accounts</h2></div>
+      <div class="card-body flush">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Last signed in</th><th>Status</th><th class="actions"></th></tr></thead>
+            <tbody>
+              <% users.forEach(function (u) { %>
+                <tr>
+                  <td><strong><%= u.name %></strong><% if (u.email) { %><br><small class="sub"><%= u.email %></small><% } %></td>
+                  <td><%= u.username %><% if (u.id === user.id) { %> <span class="badge badge-blue">You</span><% } %></td>
+                  <td><span class="badge badge-<%= u.role === 'admin' ? 'green' : 'grey' %>"><%= u.role %></span></td>
+                  <td><%= u.last_login ? h.fmtDate(u.last_login) : 'Never' %></td>
+                  <td><span class="badge badge-<%= u.is_active ? 'green' : 'red' %>"><%= u.is_active ? 'Active' : 'Disabled' %></span></td>
+                  <td class="actions">
+                    <a class="btn btn-light btn-sm" href="/admin/users?edit=<%= u.id %>">Edit</a>
+                    <% if (u.id !== user.id) { %>
+                      <form method="post" action="/admin/users/<%= u.id %>" style="display:inline" data-confirm="Delete the account for <%= u.name %>?">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                        <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>What each role can reach</h2></div>
+      <div class="card-body">
+        <table class="data compact">
+          <thead><tr><th>Role</th><th>Access</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Admin</strong></td><td>Everything, including users, settings and the website content.</td></tr>
+            <tr><td><strong>Teacher</strong></td><td>Students, staff list, classes and subjects, attendance, exams and marks, Hifz progress.</td></tr>
+            <tr><td><strong>Accountant</strong></td><td>Students, admissions, staff list, fees, invoices, dues, ledger and hostel.</td></tr>
+            <tr><td><strong>Librarian</strong></td><td>The library catalogue and book loans.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2><%= edit ? 'Edit user' : 'New user' %></h2></div>
+      <div class="card-body">
+        <form method="post" action="/admin/users">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+          <div class="field" style="margin-bottom:.7rem"><label for="name">Full name <span class="req">*</span></label>
+            <input id="name" name="name" type="text" required value="<%= edit ? edit.name : '' %>"></div>
+          <div class="field" style="margin-bottom:.7rem"><label for="username">Username <span class="req">*</span></label>
+            <input id="username" name="username" type="text" required autocomplete="off" value="<%= edit ? edit.username : '' %>"></div>
+          <div class="field" style="margin-bottom:.7rem"><label for="email">Email</label>
+            <input id="email" name="email" type="email" value="<%= edit ? edit.email || '' : '' %>"></div>
+          <div class="field" style="margin-bottom:.7rem"><label for="role">Role</label>
+            <select id="role" name="role">
+              <% ROLES.forEach(function (r) { %><option value="<%= r %>" <%= edit && edit.role === r ? 'selected' : '' %>><%= r.charAt(0).toUpperCase() + r.slice(1) %></option><% }); %>
+            </select></div>
+          <div class="field" style="margin-bottom:.7rem">
+            <label for="password">Password <% if (!edit) { %><span class="req">*</span><% } %></label>
+            <input id="password" name="password" type="password" autocomplete="new-password" minlength="8">
+            <span class="hint"><%= edit ? 'Leave blank to keep the current password.' : 'At least 8 characters.' %></span>
+          </div>
+          <% if (!edit) { %>
+          <div class="field" style="margin-bottom:.7rem"><label for="staff_id">Link to staff record</label>
+            <select id="staff_id" name="staff_id"><option value="">— None —</option>
+              <% staff.filter(function (s) { return !s.user_id; }).forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %></option><% }); %>
+            </select></div>
+          <% } %>
+          <label class="chk" style="margin-bottom:.9rem">
+            <input type="checkbox" name="is_active" value="1" <%= edit ? (edit.is_active ? 'checked' : '') : 'checked' %>> Account active</label>
+          <div><button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create account' %></button>
+          <% if (edit) { %><a class="btn btn-light" href="/admin/users">Cancel</a><% } %></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Change my password</h2></div>
+      <div class="card-body">
+        <form method="post" action="/admin/users/password">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field" style="margin-bottom:.7rem"><label for="current_password">Current password</label>
+            <input id="current_password" name="current_password" type="password" autocomplete="current-password" required></div>
+          <div class="field" style="margin-bottom:.7rem"><label for="new_password">New password</label>
+            <input id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="8" required></div>
+          <div class="field" style="margin-bottom:.9rem"><label for="confirm_password">Confirm new password</label>
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required></div>
+          <button class="btn btn-light" type="submit">Change password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

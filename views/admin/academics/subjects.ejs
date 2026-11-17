@@ -1,0 +1,85 @@
+<div class="page-bar"><h1>Academic Structure</h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head">
+      <h2>Subjects</h2>
+      <span class="spacer"></span>
+      <form method="get" action="/admin/academics/subjects" style="display:flex;gap:.5rem;align-items:center">
+        <select name="class_id" onchange="this.form.submit()">
+          <option value="">All classes</option>
+          <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
+        </select>
+      </form>
+    </div>
+    <div class="card-body flush">
+      <% if (subjects.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Class</th><th>Subject</th><th>Code</th><th>Teacher</th><th class="num">Full</th><th class="num">Pass</th><th class="actions"></th></tr></thead>
+          <tbody>
+            <% subjects.forEach(function (s) { %>
+              <tr>
+                <td><%= s.class_name || '—' %></td>
+                <td><strong><%= s.name %></strong></td>
+                <td><%= s.code || '—' %></td>
+                <td><%= s.teacher_name || '—' %></td>
+                <td class="num"><%= s.full_marks %></td>
+                <td class="num"><%= s.pass_marks %></td>
+                <td class="actions">
+                  <a class="btn btn-light btn-sm" href="/admin/academics/subjects?class_id=<%= classId || '' %>&edit=<%= s.id %>">Edit</a>
+                  <form method="post" action="/admin/academics/subjects/<%= s.id %>" style="display:inline" data-confirm="Delete <%= s.name %>? Marks recorded for it will be removed.">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty">No subjects for this selection.</div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? 'Edit subject' : 'Add subject' %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/academics/subjects">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="class_id_f">Class <span class="req">*</span></label>
+          <select id="class_id_f" name="class_id" required>
+            <option value="">— Select —</option>
+            <% classes.forEach(function (c) { %>
+              <option value="<%= c.id %>" <%= (edit ? edit.class_id === c.id : classId === c.id) ? 'selected' : '' %>><%= c.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="name">Subject name <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required value="<%= edit ? edit.name : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="code">Code</label>
+          <input id="code" name="code" type="text" value="<%= edit ? edit.code || '' : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="teacher_id">Subject teacher</label>
+          <select id="teacher_id" name="teacher_id">
+            <option value="">— None —</option>
+            <% teachers.forEach(function (t) { %><option value="<%= t.id %>" <%= edit && edit.teacher_id === t.id ? 'selected' : '' %>><%= t.name %></option><% }); %>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+          <div class="field"><label for="full_marks">Full marks</label><input id="full_marks" name="full_marks" type="number" value="<%= edit ? edit.full_marks : 100 %>"></div>
+          <div class="field"><label for="pass_marks">Pass marks</label><input id="pass_marks" name="pass_marks" type="number" value="<%= edit ? edit.pass_marks : 33 %>"></div>
+        </div>
+        <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add subject' %></button>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/academics/subjects">Cancel</a><% } %>
+      </form>
+    </div>
+  </div>
+</div>
