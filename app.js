@@ -8,7 +8,6 @@
 require('dotenv').config();
 
 const path = require('path');
-const crypto = require('crypto');
 const express = require('express');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
@@ -18,6 +17,8 @@ const methodOverride = require('method-override');
 
 const helpers = require('./lib/helpers');
 const settingsLib = require('./lib/settings');
+const csrf = require('./lib/csrf');
+const maps = require('./lib/maps');
 
 const app = express();
 
@@ -88,11 +89,7 @@ app.use(flash());
 
 // ---------------------------------------------------------------- csrf
 // Small per-session token; checked on every state-changing request.
-app.use((req, res, next) => {
-  if (!req.session.csrf) req.session.csrf = crypto.randomBytes(24).toString('hex');
-  res.locals.csrfToken = req.session.csrf;
-  next();
-});
+app.use(csrf.ensure);
 
 // ---------------------------------------------------------------- locals
 app.use(async (req, res, next) => {
@@ -107,9 +104,12 @@ app.use(async (req, res, next) => {
       phone: settings.phone || '',
       email: settings.email || '',
       facebook: settings.facebook || '',
-      youtube: settings.youtube || ''
+      youtube: settings.youtube || '',
+      logo: settings.logo || ''
     };
     res.locals.currency = settings.currency_symbol || 'Tk';
+    // Whatever the client pasted into Settings, turned into one safe URL.
+    res.locals.mapUrl = maps.embedUrl(settings.google_map);
     res.locals.user = req.session.user || null;
     res.locals.flash = {
       success: req.flash('success'),
@@ -128,19 +128,10 @@ app.use(async (req, res, next) => {
 });
 
 // Verify the CSRF token only after the locals above exist, so the rejection
-// page itself has everything the layout needs to render.
-app.use((req, res, next) => {
-  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-  const sent = (req.body && req.body._csrf) || req.get('x-csrf-token');
-  if (sent && sent === req.session.csrf) return next();
-  res.status(403);
-  return res.render('error', {
-    layout: 'layouts/public',
-    title: 'Session expired',
-    message: 'Your session expired or the form was submitted from an unexpected place. Please go back, reload the page and try again.',
-    status: 403
-  });
-});
+// page itself has everything the layout needs to render. Upload forms send
+// multipart bodies, which nothing has parsed yet at this point, so those are
+// checked a moment later by lib/csrf.afterUpload() - see lib/upload.js.
+app.use(csrf.verify);
 
 // ---------------------------------------------------------------- routes
 app.use('/', require('./routes/public'));

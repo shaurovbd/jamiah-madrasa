@@ -26,7 +26,24 @@ async function seedSettings() {
     principal_name: '',
     principal_message: 'Welcome to Jamiah Scholars International, where classical Islamic scholarship meets contemporary academic rigour. Our students memorise the Qur’an, study the sacred sciences, and grow into people of character who serve their communities with knowledge and sincerity.',
     about_intro: 'Jamiah Scholars International is an Islamic educational institution offering Hifzul Qur’an, Nazera, Maktab and the full Kitab syllabus alongside essential general education.',
-    result_notice: 'Enter your roll number and select the examination to view your result.'
+    result_notice: 'Enter your roll number and select the examination to view your result.',
+
+    // Moved out of the templates so the client can edit them. The office hours
+    // below are the wording that used to be typed into views/public/contact.ejs.
+    office_hours: 'Saturday \u2013 Thursday, 8:00 am to 4:00 pm.\nFriday closed.',
+    google_map: '',
+    logo: '',
+
+    // Home page statistics. Empty means "count it from the records", which is
+    // what the site did before these became editable.
+    stat_students: '',
+    stat_students_label: '',
+    stat_teachers: '',
+    stat_teachers_label: '',
+    stat_huffaz: '',
+    stat_huffaz_label: '',
+    stat_years: '',
+    stat_years_label: ''
   };
   for (const [k, v] of Object.entries(defaults)) {
     await db.run('INSERT IGNORE INTO settings (skey, svalue) VALUES (?, ?)', [k, v]);

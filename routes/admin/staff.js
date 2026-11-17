@@ -45,7 +45,7 @@ router.get('/new', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', upload.image.single('photo'), async (req, res, next) => {
+router.post('/', upload.imageSingle('photo'), async (req, res, next) => {
   try {
     const b = req.body;
     if (!String(b.name || '').trim() || !String(b.staff_no || '').trim()) {
@@ -94,7 +94,13 @@ router.get('/:id/edit', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.put('/:id', upload.image.single('photo'), async (req, res, next) => {
+/**
+ * The edit form sends multipart/form-data. Nothing has parsed that body where
+ * method-override runs, so a hidden _method=PUT cannot be seen there and the
+ * request stays a POST. Both verbs are registered and the form sends no
+ * _method, so the edit works either way.
+ */
+const saveStaffMember = async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     const b = req.body;
@@ -112,7 +118,10 @@ router.put('/:id', upload.image.single('photo'), async (req, res, next) => {
     req.flash('success', 'Staff record updated.');
     res.redirect(`/admin/staff/${id}`);
   } catch (err) { next(err); }
-});
+};
+
+router.post('/:id', upload.imageSingle('photo'), saveStaffMember);
+router.put('/:id', upload.imageSingle('photo'), saveStaffMember);
 
 router.delete('/:id', async (req, res, next) => {
   try {

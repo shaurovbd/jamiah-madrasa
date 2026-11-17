@@ -3,26 +3,25 @@ const express = require('express');
 const db = require('../config/db');
 const h = require('../lib/helpers');
 const { buildMarksheet } = require('../lib/results');
+const statsLib = require('../lib/stats');
 
 const router = express.Router();
 
 /* ------------------------------------------------------------------ home */
 router.get('/', async (req, res, next) => {
   try {
-    const [departments, notices, events, studentCount, staffCount, huffaz] = await Promise.all([
+    const [departments, notices, events, siteStats] = await Promise.all([
       db.query('SELECT * FROM departments ORDER BY sort_order, id LIMIT 6'),
       db.query(`SELECT title, slug, category, body, published_at, created_at FROM notices
                  WHERE is_published = 1 ORDER BY COALESCE(published_at, DATE(created_at)) DESC, id DESC LIMIT 5`),
       db.query(`SELECT title, slug, event_date, location FROM events
                  WHERE is_published = 1 AND event_date >= CURDATE() ORDER BY event_date ASC LIMIT 3`),
-      db.scalar("SELECT COUNT(*) AS c FROM students WHERE status = 'active'"),
-      db.scalar("SELECT COUNT(*) AS c FROM staff WHERE status = 'active'"),
-      db.scalar('SELECT COALESCE(SUM(hifz_para_completed >= 30), 0) AS c FROM students')
+      // Numbers typed in Settings win; a box left empty is counted from the records.
+      statsLib.forHome(res.locals.settings)
     ]);
     res.render('public/home', {
       title: '', metaDescription: res.locals.settings.about_intro || '',
-      departments, notices, events,
-      stats: { students: studentCount, staff: staffCount, huffaz, years: Math.max(1, new Date().getFullYear() - Number(res.locals.settings.established || new Date().getFullYear())) }
+      departments, notices, events, siteStats
     });
   } catch (err) { next(err); }
 });

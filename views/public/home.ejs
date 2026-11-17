@@ -13,10 +13,9 @@
 <section class="dark tight">
   <div class="wrap">
     <div class="grid g4">
-      <div class="stat"><b><%= h.num(stats.students) %></b><span>Students</span></div>
-      <div class="stat"><b><%= h.num(stats.staff) %></b><span>Teachers &amp; Staff</span></div>
-      <div class="stat"><b><%= h.num(stats.huffaz) %></b><span>Huffaz Graduated</span></div>
-      <div class="stat"><b><%= h.num(stats.years) %></b><span>Years of Service</span></div>
+      <% siteStats.forEach(function (s) { %>
+        <div class="stat"><b><%= s.value %></b><span><%= s.label %></span></div>
+      <% }); %>
     </div>
   </div>
 </section>

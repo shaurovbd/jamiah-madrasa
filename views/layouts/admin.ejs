@@ -19,7 +19,11 @@
 <div class="shell">
   <aside class="sidebar" id="sidebar">
     <div class="side-brand">
-      <span class="mark">ج</span>
+      <% if (site.logo) { %>
+        <img class="side-logo" src="/uploads/<%= site.logo %>" alt="<%= site.name %>">
+      <% } else { %>
+        <span class="mark">ج</span>
+      <% } %>
       <a href="/admin">
         <strong><%= site.short %></strong>
         <small>Management</small>

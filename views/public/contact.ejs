@@ -51,9 +51,24 @@
         </div>
         <div class="card">
           <h3>Office hours</h3>
-          <p>Saturday – Thursday, 8:00 am to 4:00 pm.<br>Friday closed.</p>
+          <p>
+            <% (settings.office_hours || 'Saturday – Thursday, 8:00 am to 4:00 pm.\nFriday closed.')
+                 .split(/\r?\n/).filter(function (l) { return l.trim() !== ''; })
+                 .forEach(function (line, i, all) { %><%= line %><% if (i < all.length - 1) { %><br><% } %><% }); %>
+          </p>
         </div>
       </aside>
     </div>
   </div>
 </section>
+
+<% if (mapUrl) { %>
+<section class="alt tight">
+  <div class="wrap">
+    <div class="map-embed">
+      <iframe src="<%= mapUrl %>" title="<%= site.name %> location"
+              loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+<% } %>

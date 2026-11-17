@@ -29,7 +29,11 @@
 <header class="masthead">
   <div class="wrap">
     <a class="brand" href="/">
-      <span class="brand-mark">ج</span>
+      <% if (site.logo) { %>
+        <img class="brand-logo" src="/uploads/<%= site.logo %>" alt="<%= site.name %>">
+      <% } else { %>
+        <span class="brand-mark">ج</span>
+      <% } %>
       <span class="brand-text">
         <strong><%= site.name %></strong>
         <small><%= site.tagline ? site.tagline.slice(0, 42) : 'Islamic Institute' %></small>

@@ -7,7 +7,6 @@
 
 <form method="post" action="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>" enctype="multipart/form-data">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <% if (!isNew) { %><input type="hidden" name="_method" value="PUT"><% } %>
 
   <div class="card" style="margin-bottom:1.1rem">
     <div class="card-head"><h2>Identity</h2></div>

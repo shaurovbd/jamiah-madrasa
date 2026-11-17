@@ -38,7 +38,8 @@ built to run on cPanel shared hosting with the "Setup Node.js App" (Phusion Pass
 - **Library** — catalogue, issue and return, fines
 - **Hostel** — rooms, capacity and allocations
 - **Website content** — notices, events, gallery, pages, contact messages
-- **System** — users and roles, institution settings
+- **System** — users and roles, and institution settings: name, contact details, logo, Google Map,
+  office hours, social links, currency, and the four home-page statistics
 
 ### Roles
 | Role | Can reach |
@@ -101,7 +102,7 @@ public/css/            style.css (website) and admin.css (panel)
 public/uploads/        Uploaded photographs and attachments (not in git)
 ```
 
-### Two things worth knowing before you change the code
+### Three things worth knowing before you change the code
 
 **Bulk-edit grids name their inputs `field[id<N>]`, not `field[<N>]`.** A purely numeric
 key is parsed as an array index and the array is then compacted, which silently renumbers
@@ -110,4 +111,17 @@ Hifz entry and the fee structure form.
 
 **Forms send `_method` to stand in for PUT and DELETE.** `method-override` is configured
 with a function that reads the parsed body; passing it a plain string would read the query
-string instead and every edit and delete would fall through to a 404.
+string instead and every edit and delete would fall through to a 404. This only works for
+urlencoded forms — see the next point.
+
+**Upload forms are multipart, and nothing parses a multipart body before the routes run.**
+`express.urlencoded()` ignores `multipart/form-data`, so where the global CSRF gate and
+`method-override` run, `req.body` is still empty. Two consequences, both already handled:
+
+- The CSRF token cannot be read globally, so `lib/csrf.verify` lets multipart requests past
+  and `lib/csrf.afterUpload` checks them immediately after multer has parsed the fields. Always
+  reach for the guarded chains in `lib/upload.js` (`imageSingle`, `imageArray`, `docSingle`)
+  rather than multer directly — they carry that check, and they verify the file's leading bytes
+  really match an image or PDF before anything is kept.
+- A hidden `_method=PUT` in a multipart form is invisible too, so the student and staff edit
+  forms post plainly and their routes are registered on both `post` and `put`.

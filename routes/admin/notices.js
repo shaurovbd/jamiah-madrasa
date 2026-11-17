@@ -29,7 +29,7 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', upload.doc.single('attachment'), async (req, res, next) => {
+router.post('/', upload.docSingle('attachment'), async (req, res, next) => {
   try {
     const title = String(req.body.title || '').trim();
     if (!title) { req.flash('error', 'A title is required.'); return res.redirect('/admin/notices'); }

@@ -1,5 +1,7 @@
 <div class="page-bar">
   <div><h1>Settings</h1><p class="sub">Institution details used across the website, receipts and marksheets</p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/" target="_blank">Preview website &#8599;</a>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.1rem">
@@ -9,28 +11,112 @@
   <div class="stat-card"><div class="label">Examinations</div><div class="value"><%= h.num(counts.exams || 0) %></div></div>
 </div>
 
-<form method="post" action="/admin/settings">
+<form method="post" action="/admin/settings" enctype="multipart/form-data">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-  <div class="card">
-    <div class="card-head"><h2>Institution details</h2></div>
-    <div class="card-body">
-      <div class="form-grid two">
-        <% FIELDS.forEach(function (f) {
-             var key = f[0], label = f[1], type = f[2]; %>
-          <div class="field <%= type === 'textarea' ? 'full' : '' %>">
-            <label for="<%= key %>"><%= label %></label>
-            <% if (type === 'textarea') { %>
-              <textarea id="<%= key %>" name="<%= key %>" style="min-height:110px"><%= values[key] || '' %></textarea>
+
+  <% GROUPS.forEach(function (group) { %>
+    <div class="card set-card">
+      <div class="card-head">
+        <div>
+          <h2><%= group.title %></h2>
+          <% if (group.help) { %><p class="sub"><%= group.help %></p><% } %>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid two">
+          <% group.fields.forEach(function (f) { %>
+            <div class="field <%= f.type === 'textarea' ? 'full' : '' %>">
+              <label for="<%= f.key %>"><%= f.label %></label>
+              <% if (f.type === 'textarea') { %>
+                <textarea id="<%= f.key %>" name="<%= f.key %>" style="min-height:<%= f.key === 'google_map' ? 120 : 100 %>px"><%= values[f.key] || '' %></textarea>
+              <% } else { %>
+                <input id="<%= f.key %>" name="<%= f.key %>" type="<%= f.type %>" value="<%= values[f.key] || '' %>">
+              <% } %>
+              <% if (f.help) { %><span class="hint"><%= f.help %></span><% } %>
+            </div>
+          <% }); %>
+        </div>
+
+        <% if (group.title === 'Contact and location') { %>
+          <div class="map-preview">
+            <% if (mapUrl) { %>
+              <iframe src="<%= mapUrl %>" title="Campus location" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+              <span class="hint">This is what visitors will see on the Contact page.</span>
             <% } else { %>
-              <input id="<%= key %>" name="<%= key %>" type="<%= type %>" value="<%= values[key] || '' %>">
+              <div class="map-empty">No map yet. Paste the Google Maps embed code above, or type the address, then save.</div>
             <% } %>
           </div>
-        <% }); %>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit">Save settings</button>
-        <a class="btn btn-light" href="/" target="_blank">Preview website ↗</a>
+        <% } %>
       </div>
     </div>
+  <% }); %>
+
+  <div class="card set-card">
+    <div class="card-head">
+      <div>
+        <h2>Logo</h2>
+        <p class="sub">Shown in the website header and in this panel. Leave it empty to keep the plain badge.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="logo-row">
+        <div class="logo-box">
+          <% if (values.logo) { %>
+            <img src="/uploads/<%= values.logo %>" alt="Current logo">
+          <% } else { %>
+            <span class="logo-none">No logo</span>
+          <% } %>
+        </div>
+        <div class="logo-fields">
+          <div class="field">
+            <label for="logo">Upload a new logo</label>
+            <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+            <span class="hint">JPG, PNG, WebP or GIF, up to 4&nbsp;MB. A wide image about 400&nbsp;&times;&nbsp;120 pixels works best.</span>
+          </div>
+          <% if (values.logo) { %>
+            <label class="check"><input type="checkbox" name="logo_remove" value="1"> Remove the current logo</label>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card set-card">
+    <div class="card-head">
+      <div>
+        <h2>Statistics on the home page</h2>
+        <p class="sub">Type the number you want shown. Leave a box empty and it is counted from the records instead.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <% STAT_KEYS.forEach(function (pair) {
+           var key = pair[0], fallbackLabel = pair[1];
+           var auto = autoStats[key]; %>
+        <div class="stat-row">
+          <div class="field">
+            <label for="<%= key %>">Number</label>
+            <input id="<%= key %>" name="<%= key %>" type="text" value="<%= values[key] || '' %>" placeholder="<%= auto %>">
+            <span class="hint">
+              <% if (String(values[key] || '').trim() === '') { %>
+                Empty &mdash; currently counted from the records as <strong><%= h.num(auto) %></strong>.
+              <% } else { %>
+                Counted from the records it would be <%= h.num(auto) %>.
+              <% } %>
+            </span>
+          </div>
+          <div class="field">
+            <label for="<%= key %>_label">Caption</label>
+            <input id="<%= key %>_label" name="<%= key %>_label" type="text" value="<%= values[key + '_label'] || '' %>" placeholder="<%= fallbackLabel %>">
+            <span class="hint">Leave empty for &ldquo;<%= fallbackLabel %>&rdquo;. Bangla is fine.</span>
+          </div>
+        </div>
+      <% }); %>
+      <p class="hint" style="margin-top:.4rem">You can write anything here, not only digits &mdash; for example <strong>500+</strong> or <strong>৫০০+</strong>.</p>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <button class="btn btn-primary" type="submit">Save settings</button>
+    <span class="hint">Changes appear on the website straight away.</span>
   </div>
 </form>

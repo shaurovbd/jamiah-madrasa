@@ -265,3 +265,18 @@ footer.site li{margin-bottom:.5rem}
   .g4{grid-template-columns:1fr}
   .footer-grid{grid-template-columns:1fr}
 }
+
+/* --------------------------------------------- uploaded logo and campus map */
+/* Sits in place of .brand-mark when a logo has been uploaded in Settings. */
+.brand-logo{
+  height:48px;max-width:180px;width:auto;flex:0 0 auto;
+  object-fit:contain;display:block
+}
+
+.map-embed iframe{
+  width:100%;height:380px;border:0;display:block;border-radius:10px
+}
+@media(max-width:620px){
+  .brand-logo{height:40px;max-width:130px}
+  .map-embed iframe{height:280px}
+}
