@@ -1101,5 +1101,6 @@
   "enum.leave_type.earned": "Earned",
   "enum.leave_type.unpaid": "Unpaid",
   "enum.leave_type.maternity": "Maternity",
-  "enum.leave_type.official": "Official duty"
+  "enum.leave_type.official": "Official duty",
+  "a.staff.shift_hint": "Which sitting this member works. Teacher attendance judges their arrival against this shift’s timings."
 }

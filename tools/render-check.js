@@ -123,6 +123,7 @@ function localsFor(lang) {
     student,
     staff: [staffRow],
     row: staffRow,
+    member: staffRow,
     edit: null,
     isNew: false,
     notices: [{ id: 1, title: 'Holiday', slug: 'holiday', category: 'General', body: 'Closed.', published_at: '2026-03-01', created_at: '2026-03-01', is_published: 1, attachment: null }],

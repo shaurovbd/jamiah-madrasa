@@ -1101,5 +1101,6 @@
   "enum.leave_type.earned": "অর্জিত",
   "enum.leave_type.unpaid": "বিনা বেতনে",
   "enum.leave_type.maternity": "মাতৃত্বকালীন",
-  "enum.leave_type.official": "সরকারি দায়িত্ব"
+  "enum.leave_type.official": "সরকারি দায়িত্ব",
+  "a.staff.shift_hint": "এই স্টাফ কোন শিফটে দায়িত্ব পালন করেন। শিক্ষকের উপস্থিতিতে এই শিফটের সময় ধরেই বিলম্ব হিসাব হবে।"
 }
