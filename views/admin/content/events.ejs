@@ -1,26 +1,26 @@
-<div class="page-bar"><div><h1>Events</h1><p class="sub">Shown on the website events page</p></div></div>
+<div class="page-bar"><div><h1><%= t('admin.nav.events') %></h1><p class="sub"><%= t('a.web.events_sub') %></p></div></div>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2>All events</h2></div>
+    <div class="card-head"><h2><%= t('home.all_events') %></h2></div>
     <div class="card-body flush">
       <% if (events.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Event</th><th>Date</th><th>Location</th><th>Status</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('a.web.event') %></th><th><%= t('common.date') %></th><th><%= t('event.location') %></th><th><%= t('common.status') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% events.forEach(function (e) { %>
               <tr>
                 <td><strong><%= e.title %></strong></td>
-                <td><%= h.fmtDate(e.event_date) %><%= e.end_date ? ' – ' + h.fmtDate(e.end_date) : '' %></td>
+                <td><%= fmtDate(e.event_date) %><%= e.end_date ? ' – ' + fmtDate(e.end_date) : '' %></td>
                 <td><%= e.location || '—' %></td>
                 <td><span class="badge badge-<%= e.is_published ? 'green' : 'grey' %>"><%= e.is_published ? 'Live' : 'Draft' %></span></td>
                 <td class="actions">
-                  <% if (e.is_published) { %><a class="btn btn-light btn-sm" href="/events/<%= e.slug %>" target="_blank">View</a><% } %>
-                  <a class="btn btn-light btn-sm" href="/admin/events?edit=<%= e.id %>">Edit</a>
-                  <form method="post" action="/admin/events/<%= e.id %>" style="display:inline" data-confirm="Delete this event?">
+                  <% if (e.is_published) { %><a class="btn btn-light btn-sm" href="/events/<%= e.slug %>" target="_blank"><%= t('common.view') %></a><% } %>
+                  <a class="btn btn-light btn-sm" href="/admin/events?edit=<%= e.id %>"><%= t('common.edit') %></a>
+                  <form method="post" action="/admin/events/<%= e.id %>" style="display:inline" data-confirm="<%= t('a.web.confirm_event') %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -28,7 +28,7 @@
           </tbody>
         </table>
       </div>
-      <% } else { %><div class="empty"><div class="big">◷</div><p>No events yet.</p></div><% } %>
+      <% } else { %><div class="empty"><div class="big">◷</div><p><%= t('a.web.no_events') %></p></div><% } %>
     </div>
     <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
   </div>
@@ -39,24 +39,24 @@
       <form method="post" action="/admin/events" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
-        <div class="field" style="margin-bottom:.7rem"><label for="title">Title <span class="req">*</span></label>
+        <div class="field" style="margin-bottom:.7rem"><label for="title"><%= t('common.title') %> <span class="req">*</span></label>
           <input id="title" name="title" type="text" required value="<%= edit ? edit.title : '' %>"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem">
-          <div class="field"><label for="event_date">Date <span class="req">*</span></label>
+          <div class="field"><label for="event_date"><%= t('common.date') %> <span class="req">*</span></label>
             <input id="event_date" name="event_date" type="date" required value="<%= edit ? h.inputDate(edit.event_date) : '' %>"></div>
-          <div class="field"><label for="end_date">End date</label>
+          <div class="field"><label for="end_date"><%= t('a.end_date') %></label>
             <input id="end_date" name="end_date" type="date" value="<%= edit ? h.inputDate(edit.end_date) : '' %>"></div>
         </div>
-        <div class="field" style="margin-bottom:.7rem"><label for="location">Location</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="location"><%= t('event.location') %></label>
           <input id="location" name="location" type="text" value="<%= edit ? edit.location || '' : '' %>"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="description">Description</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="description"><%= t('common.description') %></label>
           <textarea id="description" name="description" style="min-height:140px"><%= edit ? edit.description || '' : '' %></textarea></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="image">Image</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="image"><%= t('a.web.image') %></label>
           <input id="image" name="image" type="file" accept="image/*"></div>
         <label class="chk" style="margin-bottom:.9rem">
-          <input type="checkbox" name="is_published" value="1" <%= edit ? (edit.is_published ? 'checked' : '') : 'checked' %>> Publish on the website</label>
+          <input type="checkbox" name="is_published" value="1" <%= edit ? (edit.is_published ? 'checked' : '') : 'checked' %>> <%= t('a.web.publish') %></label>
         <div><button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create event' %></button>
-        <% if (edit) { %><a class="btn btn-light" href="/admin/events">Cancel</a><% } %></div>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/events"><%= t('common.cancel') %></a><% } %></div>
       </form>
     </div>
   </div>

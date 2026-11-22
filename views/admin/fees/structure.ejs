@@ -1,30 +1,30 @@
 <div class="page-bar">
-  <div><h1>Fee Setup</h1><p class="sub">Fee heads, and the amount each class pays</p></div>
+  <div><h1><%= t('admin.nav.fee_setup') %></h1><p class="sub"><%= t('a.fee.structure_sub') %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="/admin/fees">← Invoices</a>
+  <a class="btn btn-light" href="/admin/fees"><%= t('a.fee.back_invoices') %></a>
 </div>
 
 <div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
   <div>
     <div class="card" style="margin-bottom:1.1rem">
-      <div class="card-head"><h2>Fee heads</h2></div>
+      <div class="card-head"><h2><%= t('a.fee.heads') %></h2></div>
       <div class="card-body flush">
         <% if (heads.length) { %>
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Name</th><th>Type</th><th class="num">Default amount</th><th>Active</th><th class="actions"></th></tr></thead>
+            <thead><tr><th><%= t('common.name') %></th><th><%= t('common.type') %></th><th class="num"><%= t('a.fee.default_amount') %></th><th><%= t('common.active') %></th><th class="actions"></th></tr></thead>
             <tbody>
               <% heads.forEach(function (f) { %>
                 <tr>
                   <td><strong><%= f.name %></strong></td>
-                  <td><%= f.ftype.replace('_', ' ') %></td>
+                  <td><%= label('ftype', f.ftype) %></td>
                   <td class="num"><%= money(f.amount) %></td>
                   <td><span class="badge badge-<%= f.is_active ? 'green' : 'grey' %>"><%= f.is_active ? 'Yes' : 'No' %></span></td>
                   <td class="actions">
-                    <a class="btn btn-light btn-sm" href="/admin/fees/structure?edit=<%= f.id %><%= classId ? '&class_id=' + classId : '' %>">Edit</a>
+                    <a class="btn btn-light btn-sm" href="/admin/fees/structure?edit=<%= f.id %><%= classId ? '&class_id=' + classId : '' %>"><%= t('common.edit') %></a>
                     <form method="post" action="/admin/fees/heads/<%= f.id %>" style="display:inline" data-confirm="Delete <%= f.name %>? It is removed from every class structure.">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                      <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                     </form>
                   </td>
                 </tr>
@@ -32,17 +32,17 @@
             </tbody>
           </table>
         </div>
-        <% } else { %><div class="empty"><p>No fee heads yet. Add one on the right.</p></div><% } %>
+        <% } else { %><div class="empty"><p><%= t('a.fee.no_heads') %></p></div><% } %>
       </div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <h2>Class fee structure</h2>
+        <h2><%= t('a.fee.class_structure') %></h2>
         <span class="spacer"></span>
         <form method="get" action="/admin/fees/structure">
           <select name="class_id" onchange="this.form.submit()">
-            <option value="">Choose a class…</option>
+            <option value=""><%= t('a.fee.choose_class_ellipsis') %></option>
             <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
           </select>
         </form>
@@ -52,15 +52,15 @@
           <form method="post" action="/admin/fees/structure">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="class_id" value="<%= classId %>">
-            <p class="sub" style="margin-bottom:.9rem">Amounts for <strong><%= klass ? klass.name : '' %></strong>. Leave a box empty to exclude that head from this class.</p>
+            <p class="sub" style="margin-bottom:.9rem"><%- t('a.fee.structure_for', { cls: '<strong>' + h.esc(klass ? klass.name : '') + '</strong>' }) %></p>
             <div class="table-wrap">
               <table class="data">
-                <thead><tr><th>Fee head</th><th>Type</th><th class="num">Default</th><th style="width:170px">Amount for this class</th></tr></thead>
+                <thead><tr><th><%= t('a.fee.head') %></th><th><%= t('common.type') %></th><th class="num"><%= t('a.fee.default') %></th><th style="width:170px"><%= t('a.fee.amount_this_class') %></th></tr></thead>
                 <tbody>
                   <% structure.forEach(function (s) { %>
                     <tr>
                       <td><strong><%= s.name %></strong></td>
-                      <td><%= s.ftype.replace('_', ' ') %></td>
+                      <td><%= label('ftype', s.ftype) %></td>
                       <td class="num"><%= money(s.default_amount) %></td>
                       <td><input type="number" step="0.01" min="0" name="amount[id<%= s.fee_head_id %>]" value="<%= s.amount === null || s.amount === undefined ? '' : s.amount %>"></td>
                     </tr>
@@ -68,13 +68,13 @@
                 </tbody>
               </table>
             </div>
-            <div class="form-actions"><button class="btn btn-primary" type="submit">Save fee structure</button></div>
-            <p class="hint" style="margin-top:.8rem">A head whose name contains "hostel" is billed only to boarding students.</p>
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><%= t('a.fee.save_structure') %></button></div>
+            <p class="hint" style="margin-top:.8rem"><%= t('a.fee.hostel_note') %></p>
           </form>
         <% } else if (classId) { %>
-          <div class="empty"><p>No active fee heads to assign.</p></div>
+          <div class="empty"><p><%= t('a.fee.no_active_heads') %></p></div>
         <% } else { %>
-          <div class="empty"><div class="big">⚙</div><p>Choose a class to set its fee amounts.</p></div>
+          <div class="empty"><div class="big">⚙</div><p><%= t('a.fee.choose_to_set') %></p></div>
         <% } %>
       </div>
     </div>
@@ -87,26 +87,26 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (editHead) { %><input type="hidden" name="id" value="<%= editHead.id %>"><% } %>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="name">Name <span class="req">*</span></label>
+          <label for="name"><%= t('common.name') %> <span class="req">*</span></label>
           <input id="name" name="name" type="text" required value="<%= editHead ? editHead.name : '' %>">
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="ftype">Type</label>
+          <label for="ftype"><%= t('common.type') %></label>
           <select id="ftype" name="ftype">
-            <% ['monthly','one_time','annual'].forEach(function (t) { %>
-              <option value="<%= t %>" <%= editHead && editHead.ftype === t ? 'selected' : '' %>><%= t.replace('_',' ') %></option>
+            <% ['monthly','one_time','annual'].forEach(function (ftype) { %>
+              <option value="<%= ftype %>" <%= editHead && editHead.ftype === ftype ? 'selected' : '' %>><%= label('ftype', ftype) %></option>
             <% }); %>
           </select>
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="amount">Default amount</label>
+          <label for="amount"><%= t('a.fee.default_amount') %></label>
           <input id="amount" name="amount" type="number" step="0.01" min="0" value="<%= editHead ? editHead.amount : 0 %>">
         </div>
         <label class="chk" style="margin-bottom:.9rem">
-          <input type="checkbox" name="is_active" value="1" <%= editHead ? (editHead.is_active ? 'checked' : '') : 'checked' %>> Active
+          <input type="checkbox" name="is_active" value="1" <%= editHead ? (editHead.is_active ? 'checked' : '') : 'checked' %>> <%= t('common.active') %>
         </label>
         <div><button class="btn btn-primary" type="submit"><%= editHead ? 'Save changes' : 'Add fee head' %></button>
-        <% if (editHead) { %><a class="btn btn-light" href="/admin/fees/structure">Cancel</a><% } %></div>
+        <% if (editHead) { %><a class="btn btn-light" href="/admin/fees/structure"><%= t('common.cancel') %></a><% } %></div>
       </form>
     </div>
   </div>

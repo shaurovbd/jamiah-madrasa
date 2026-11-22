@@ -1,7 +1,7 @@
 <div class="page-head no-print">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Class Routine</div>
-    <h1>ক্লাস রুটিন · Class Routine</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('routine.title') %></div>
+    <h1><%= t('routine.title') %></h1>
   </div>
 </div>
 
@@ -23,16 +23,13 @@
 <section>
   <div class="wrap">
     <div class="panel no-print" style="margin-bottom:0">
-      <p style="color:var(--muted);font-size:.93rem">
-        আপনার ক্লাস নির্বাচন করুন, সাপ্তাহিক রুটিন দেখানো হবে।
-        <span style="display:block">Choose your class to see the weekly routine. Friday is the weekly holiday.</span>
-      </p>
+      <p style="color:var(--muted);font-size:.93rem"><%= t('routine.lead') %></p>
       <form method="get" action="/routine">
         <div class="form-grid">
           <div class="field">
-            <label for="class_id">ক্লাস / Class <span class="req">*</span></label>
+            <label for="class_id"><%= t('common.class') %> <span class="req">*</span></label>
             <select id="class_id" name="class_id" required>
-              <option value="">— Select —</option>
+              <option value=""><%= t('results.select_placeholder') %></option>
               <% classes.forEach(function (c) { %>
                 <option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.dept_name ? c.dept_name + ' · ' : '' %><%= c.name %></option>
               <% }); %>
@@ -40,9 +37,9 @@
           </div>
           <% if (sections.length) { %>
             <div class="field">
-              <label for="section_id">শাখা / Section</label>
+              <label for="section_id"><%= t('common.section') %></label>
               <select id="section_id" name="section_id">
-                <option value="">— All —</option>
+                <option value=""><%= t('routine.select_all') %></option>
                 <% sections.forEach(function (s) { %>
                   <option value="<%= s.id %>" <%= sectionId === s.id ? 'selected' : '' %>><%= s.name %></option>
                 <% }); %>
@@ -50,18 +47,18 @@
             </div>
           <% } %>
         </div>
-        <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit">রুটিন দেখুন / View routine</button></p>
+        <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit"><%= t('routine.view_button') %></button></p>
       </form>
     </div>
 
     <% if (classId && !periods.length) { %>
-      <div class="alert alert-info" style="margin-top:1.2rem">রুটিন এখনো প্রকাশ করা হয়নি। / The routine has not been published yet. Please check back later.</div>
+      <div class="alert alert-info" style="margin-top:1.2rem"><%= t('routine.not_published') %></div>
     <% } else if (classId && !found) { %>
       <div class="alert alert-info" style="margin-top:1.2rem">
         <% if (sections.length && !sectionId) { %>
-          এই ক্লাসের জন্য শাখা নির্বাচন করুন। / This class is split into sections — please choose your section above.
+          <%= t('routine.choose_section') %>
         <% } else { %>
-          এই ক্লাসের রুটিন এখনো প্রকাশ করা হয়নি। / No routine has been published for this class yet. Please contact the office.
+          <%= t('routine.none_for_class') %>
         <% } %>
       </div>
     <% } else if (classId) { %>
@@ -72,8 +69,10 @@
           </caption>
           <thead>
             <tr>
-              <th class="rt-period">সময় / Period</th>
-              <% DAYS.forEach(function (d) { %><th><%= d.bn %><small><%= d.en %></small></th><% }); %>
+              <th class="rt-period"><%= t('routine.period') %></th>
+              <%# The day name shows in the reader's language; the other language
+                  is dropped rather than stacked, now that the header has a toggle. %>
+              <% DAYS.forEach(function (d) { %><th><%= lang === 'bn' ? d.bn : d.en %></th><% }); %>
             </tr>
           </thead>
           <tbody>
@@ -106,7 +105,7 @@
         </table>
       </div>
       <p class="no-print" style="margin-top:1.2rem">
-        <button class="btn btn-green" type="button" onclick="window.print()">প্রিন্ট / Print</button>
+        <button class="btn btn-green" type="button" onclick="window.print()"><%= t('common.print') %></button>
       </p>
     <% } %>
   </div>

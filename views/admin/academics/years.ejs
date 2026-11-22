@@ -1,26 +1,26 @@
-<div class="page-bar"><h1>Academic Structure</h1></div>
+<div class="page-bar"><h1><%= t('a.ac.structure') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2>Academic years</h2></div>
+    <div class="card-head"><h2><%= t('a.ac.years') %></h2></div>
     <div class="card-body flush">
       <% if (years.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Year</th><th>Starts</th><th>Ends</th><th>Current</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('common.year') %></th><th><%= t('a.starts') %></th><th><%= t('a.ends') %></th><th><%= t('a.current') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% years.forEach(function (y) { %>
               <tr>
                 <td><strong><%= y.name %></strong></td>
-                <td><%= y.start_date ? h.fmtDate(y.start_date) : '—' %></td>
-                <td><%= y.end_date ? h.fmtDate(y.end_date) : '—' %></td>
-                <td><% if (y.is_current) { %><span class="badge badge-green">Current</span><% } else { %>—<% } %></td>
+                <td><%= y.start_date ? fmtDate(y.start_date) : '—' %></td>
+                <td><%= y.end_date ? fmtDate(y.end_date) : '—' %></td>
+                <td><% if (y.is_current) { %><span class="badge badge-green"><%= t('a.current') %></span><% } else { %>—<% } %></td>
                 <td class="actions">
-                  <a class="btn btn-light btn-sm" href="/admin/academics/years?edit=<%= y.id %>">Edit</a>
-                  <form method="post" action="/admin/academics/years/<%= y.id %>" style="display:inline" data-confirm="Delete this academic year?">
+                  <a class="btn btn-light btn-sm" href="/admin/academics/years?edit=<%= y.id %>"><%= t('common.edit') %></a>
+                  <form method="post" action="/admin/academics/years/<%= y.id %>" style="display:inline" data-confirm="<%= t('a.ac.confirm_year') %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -28,7 +28,7 @@
           </tbody>
         </table>
       </div>
-      <% } else { %><div class="empty">No academic years yet.</div><% } %>
+      <% } else { %><div class="empty"><%= t('a.ac.no_years') %></div><% } %>
     </div>
   </div>
 
@@ -39,20 +39,20 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="name">Name <span class="req">*</span></label>
+          <label for="name"><%= t('common.name') %> <span class="req">*</span></label>
           <input id="name" name="name" type="text" required placeholder="2027" value="<%= edit ? edit.name : '' %>">
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="start_date">Start date</label>
+          <label for="start_date"><%= t('a.start_date') %></label>
           <input id="start_date" name="start_date" type="date" value="<%= edit ? h.inputDate(edit.start_date) : '' %>">
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="end_date">End date</label>
+          <label for="end_date"><%= t('a.end_date') %></label>
           <input id="end_date" name="end_date" type="date" value="<%= edit ? h.inputDate(edit.end_date) : '' %>">
         </div>
-        <label class="chk" style="margin-bottom:.9rem"><input type="checkbox" name="is_current" value="1" <%= edit && edit.is_current ? 'checked' : '' %>> Set as the current year</label>
+        <label class="chk" style="margin-bottom:.9rem"><input type="checkbox" name="is_current" value="1" <%= edit && edit.is_current ? 'checked' : '' %>> <%= t('a.ac.set_current') %></label>
         <div><button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add year' %></button>
-        <% if (edit) { %><a class="btn btn-light" href="/admin/academics/years">Cancel</a><% } %></div>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/academics/years"><%= t('common.cancel') %></a><% } %></div>
       </form>
     </div>
   </div>

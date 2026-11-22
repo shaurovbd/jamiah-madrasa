@@ -41,19 +41,24 @@ function field(o) {
             + ' value="' + val + '"' + ph + reqAttr + msgAttr + '>';
   }
 
+  // One label, in the reader's language. The form used to stack Bangla over
+  // English; the header toggle now decides, so a second line would just repeat
+  // the question in the language the reader did not pick.
   return '<div class="ja-field' + (o.full ? ' ja-field--full' : '') + '">'
-       + '<label for="' + id + '">' + h.esc(o.bn)
-       + '<span class="ja-label-en">' + h.esc(o.en) + '</span>' + req + '</label>'
+       + '<label for="' + id + '">' + h.esc(o.label) + req + '</label>'
        + control + '</div>';
 }
 
 /* --------------------------------------------------- one section header */
-function sectionHead(icon, bn, en) {
+function sectionHead(icon, label) {
   return '<div class="ja-section-head">'
        + '<span class="ja-section-icon">' + icons[icon] + '</span>'
-       + '<span><span class="ja-section-title">' + h.esc(bn) + '</span>'
-       + '<span class="ja-section-sub">' + h.esc(en) + '</span></span></div>';
+       + '<span><span class="ja-section-title">' + h.esc(label) + '</span></span></div>';
 }
+
+/* The departments, campuses, steps and gender options with one language
+   already resolved, so the markup below never has to branch on `lang`. */
+const L = af.forLang(lang);
 %>
 
 <!-- "layout extractStyles" in app.js hoists these into <head><meta charset="utf-8">, so they load
@@ -63,8 +68,8 @@ function sectionHead(icon, bn, en) {
 
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Admission</div>
-    <h1>Online Admission</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('admission.crumb') %></div>
+    <h1><%= t('admission.title') %></h1>
   </div>
 </div>
 
@@ -75,17 +80,16 @@ function sectionHead(icon, bn, en) {
     <div class="ja-wrap">
       <div class="ja-done">
         <div class="ja-done-mark">✓</div>
-        <h2>আবেদন গৃহীত হয়েছে</h2>
-        <p>ধন্যবাদ, <strong><%= submitted.name %></strong>। আপনার ভর্তি আবেদনটি আমাদের কাছে জমা হয়েছে।</p>
+        <h2><%= t('admission.received_title') %></h2>
+        <p><%- t('admission.received_thanks', { name: '<strong>' + h.esc(submitted.name) + '</strong>' }) %></p>
         <p class="ja-done-no">
-          <small>Application Number</small>
+          <small><%= t('admission.app_number') %></small>
           <strong><%= submitted.applicationNo %></strong>
         </p>
         <p style="color:var(--ja-muted);font-size:.93rem">
-          নম্বরটি সংরক্ষণ করে রাখুন। আমাদের ভর্তি অফিস আপনার দেওয়া মোবাইল নম্বরে যোগাযোগ করে
-          সাক্ষাৎকারের সময় জানিয়ে দেবে, ইনশাআল্লাহ।
+          <%= t('admission.keep_number') %>
         </p>
-        <p style="margin-top:1.4rem"><a class="btn btn-green" href="/">হোমে ফিরে যান</a></p>
+        <p style="margin-top:1.4rem"><a class="btn btn-green" href="/"><%= t('admission.back_home') %></a></p>
       </div>
     </div>
 
@@ -93,13 +97,14 @@ function sectionHead(icon, bn, en) {
     <div class="ja-wrap">
 
       <div class="ja-head">
-        <h2>ভর্তি আবেদন ফরম</h2>
-        <p>নিচের তথ্যগুলো সঠিকভাবে পূরণ করুন। <span class="ja-req">*</span> চিহ্নিত ঘরগুলো আবশ্যক।</p>
+        <h2><%= t('admission.form_title') %></h2>
+        <p><%= t('admission.fill_hint') %> <span class="ja-req">*</span> <%= t('admission.fill_hint_tail') %></p>
       </div>
 
       <% if (errors && errors.length) { %>
         <div class="ja-errors" role="alert">
-          <ul><% errors.forEach(function (e) { %><li><%= e %></li><% }); %></ul>
+          <%# validate() hands back translation keys, not finished sentences. %>
+          <ul><% errors.forEach(function (e) { %><li><%= t(e) %></li><% }); %></ul>
         </div>
       <% } %>
 
@@ -108,7 +113,7 @@ function sectionHead(icon, bn, en) {
           <div class="ja-stepper-line"></div>
           <div class="ja-stepper-fill" id="jaStepperFill"></div>
           <ol class="ja-stepper-list">
-            <% af.STEPS.forEach(function (s, i) { %>
+            <% L.STEPS.forEach(function (s, i) { %>
               <li class="ja-stepper-item<%= i === 0 ? ' is-active' : '' %>" data-step="<%= i %>">
                 <span class="ja-stepper-dot"><%= s.n %></span>
                 <span class="ja-stepper-label"><%= s.label %></span>
@@ -116,7 +121,7 @@ function sectionHead(icon, bn, en) {
             <% }); %>
           </ol>
         </div>
-        <p class="ja-stepper-caption" id="jaCaption">ধাপ ১ / ৬ · <%= af.STEPS[0].label %></p>
+        <p class="ja-stepper-caption" id="jaCaption"><%= t('admission.step') %> <%= L.STEPS[0].n %> / <%= L.STEPS[L.STEPS.length - 1].n %> · <%= L.STEPS[0].label %></p>
       </div>
 
       <form method="post" action="/admission" id="jamiah-admission-form" class="ja-form" novalidate>
@@ -130,16 +135,16 @@ function sectionHead(icon, bn, en) {
         <!-- ------------------------------------------- 1. student -->
         <div class="ja-step is-active" data-step="0">
           <div class="ja-section">
-            <%- sectionHead('user', 'শিক্ষার্থীর তথ্য', 'Student Details') %>
+            <%- sectionHead('user', t('admission.sec.student')) %>
             <div class="ja-grid">
-              <%- field({ name:'full_name_bn', bn:'শিক্ষার্থীর নাম (বাংলা)', en:'Full Name (Bangla)', req:true }) %>
-              <%- field({ name:'full_name_en', bn:'শিক্ষার্থীর নাম (ইংরেজি)', en:'Full Name (English)' }) %>
-              <%- field({ name:'dob', bn:'জন্ম তারিখ', en:'Date of Birth', type:'date', req:true }) %>
-              <%- field({ name:'gender', bn:'লিঙ্গ', en:'Gender', type:'select',
-                          options:[{ value:'', label:'নির্বাচন করুন' }].concat(af.GENDERS.map(function (g) { return { value:g.value, label:g.label }; })) }) %>
-              <%- field({ name:'nationality', bn:'জাতীয়তা', en:'Nationality', value:'বাংলাদেশী' }) %>
-              <%- field({ name:'student_mobile', bn:'শিক্ষার্থীর মোবাইল', en:'Student Mobile', type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
-              <%- field({ name:'email', bn:'ইমেইল', en:'Email', type:'email', req:true, full:true, placeholder:'you@example.com', msg:'ইমেইল ঠিকানা দিন। / Please enter your email address.', msgType:'সঠিক ইমেইল ঠিকানা দিন, যেমন you@example.com / Enter a valid email address, e.g. you@example.com' }) %>
+              <%- field({ name:'full_name_bn', label:t('admission.f.name_bn'), req:true }) %>
+              <%- field({ name:'full_name_en', label:t('admission.f.name_en') }) %>
+              <%- field({ name:'dob', label:t('admission.f.dob'), type:'date', req:true }) %>
+              <%- field({ name:'gender', label:t('admission.f.gender'), type:'select',
+                          options:[{ value:'', label:t('common.select') }].concat(L.GENDERS) }) %>
+              <%- field({ name:'nationality', label:t('admission.f.nationality'), value:t('admission.f.nationality_value') }) %>
+              <%- field({ name:'student_mobile', label:t('admission.f.student_mobile'), type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'email', label:t('common.email'), type:'email', req:true, full:true, placeholder:'you@example.com', msg:t('admission.err.email'), msgType:t('admission.err.email_type') }) %>
             </div>
           </div>
         </div>
@@ -147,9 +152,9 @@ function sectionHead(icon, bn, en) {
         <!-- ------------------------------- 2. department & campus -->
         <div class="ja-step" data-step="1">
           <div class="ja-section">
-            <%- sectionHead('layers', 'বিভাগ নির্বাচন করুন', 'Select Department') %>
+            <%- sectionHead('layers', t('admission.sec.department')) %>
             <div class="ja-choice-grid">
-              <% af.DEPARTMENTS.forEach(function (d) { %>
+              <% L.DEPARTMENTS.forEach(function (d) { %>
                 <label class="ja-choice">
                   <input type="radio" name="department" value="<%= d.key %>" <%= form.department === d.key ? 'checked' : '' %> required>
                   <span class="ja-choice-body">
@@ -165,9 +170,9 @@ function sectionHead(icon, bn, en) {
           </div>
 
           <div class="ja-section ja-section--gold">
-            <%- sectionHead('pin', 'ক্যাম্পাস নির্বাচন করুন', 'Select Campus') %>
+            <%- sectionHead('pin', t('admission.sec.campus')) %>
             <div class="ja-choice-grid ja-choice-grid--campus">
-              <% af.CAMPUSES.forEach(function (c) { %>
+              <% L.CAMPUSES.forEach(function (c) { %>
                 <label class="ja-choice ja-choice--campus">
                   <input type="radio" name="campus" value="<%= c.key %>" <%= form.campus === c.key ? 'checked' : '' %> required>
                   <span class="ja-choice-body">
@@ -184,14 +189,14 @@ function sectionHead(icon, bn, en) {
         <!-- -------------------------------------------- 3. parents -->
         <div class="ja-step" data-step="2">
           <div class="ja-section">
-            <%- sectionHead('users', 'পিতা-মাতার তথ্য', 'Parents Information') %>
+            <%- sectionHead('users', t('admission.sec.parents')) %>
             <div class="ja-grid">
-              <%- field({ name:'father_name', bn:'পিতার নাম', en:"Father's Name", req:true }) %>
-              <%- field({ name:'father_mobile', bn:'পিতার মোবাইল', en:"Father's Mobile", type:'tel', req:true, placeholder:'+880 1XXX-XXXXXX' }) %>
-              <%- field({ name:'father_profession', bn:'পিতার পেশা', en:"Father's Profession" }) %>
-              <%- field({ name:'father_income', bn:'মাসিক আয়', en:'Monthly Income' }) %>
-              <%- field({ name:'mother_name', bn:'মাতার নাম', en:"Mother's Name" }) %>
-              <%- field({ name:'mother_mobile', bn:'মাতার মোবাইল', en:"Mother's Mobile", type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'father_name', label:t('admission.f.father_name'), req:true }) %>
+              <%- field({ name:'father_mobile', label:t('admission.f.father_mobile'), type:'tel', req:true, placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'father_profession', label:t('admission.f.father_profession') }) %>
+              <%- field({ name:'father_income', label:t('admission.f.father_income') }) %>
+              <%- field({ name:'mother_name', label:t('admission.f.mother_name') }) %>
+              <%- field({ name:'mother_mobile', label:t('admission.f.mother_mobile'), type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
             </div>
           </div>
         </div>
@@ -199,12 +204,12 @@ function sectionHead(icon, bn, en) {
         <!-- ------------------------------------------- 4. guardian -->
         <div class="ja-step" data-step="3">
           <div class="ja-section">
-            <%- sectionHead('shield', 'অভিভাবকের তথ্য', 'Guardian Information') %>
+            <%- sectionHead('shield', t('admission.sec.guardian')) %>
             <div class="ja-grid">
-              <%- field({ name:'guardian_name', bn:'অভিভাবকের নাম', en:"Guardian's Name" }) %>
-              <%- field({ name:'guardian_relation', bn:'সম্পর্ক', en:'Relation' }) %>
-              <%- field({ name:'guardian_mobile', bn:'অভিভাবকের মোবাইল', en:"Guardian's Mobile", type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
-              <%- field({ name:'guardian_address', bn:'অভিভাবকের ঠিকানা', en:"Guardian's Address", type:'textarea', full:true }) %>
+              <%- field({ name:'guardian_name', label:t('admission.f.guardian_name') }) %>
+              <%- field({ name:'guardian_relation', label:t('admission.f.guardian_relation') }) %>
+              <%- field({ name:'guardian_mobile', label:t('admission.f.guardian_mobile'), type:'tel', placeholder:'+880 1XXX-XXXXXX' }) %>
+              <%- field({ name:'guardian_address', label:t('admission.f.guardian_address'), type:'textarea', full:true }) %>
             </div>
           </div>
         </div>
@@ -212,28 +217,27 @@ function sectionHead(icon, bn, en) {
         <!-- -------------------------------------------- 5. address -->
         <div class="ja-step" data-step="4">
           <div class="ja-section">
-            <%- sectionHead('home', 'বর্তমান ঠিকানা', 'Present Address') %>
+            <%- sectionHead('home', t('admission.sec.present_address')) %>
             <div class="ja-grid">
-              <%- field({ name:'present_house', bn:'বাসা', en:'House' }) %>
-              <%- field({ name:'present_moholla', bn:'মহল্লা', en:'Moholla' }) %>
-              <%- field({ name:'present_thana', bn:'থানা', en:'Thana' }) %>
-              <%- field({ name:'present_district', bn:'জেলা', en:'District' }) %>
+              <%- field({ name:'present_house', label:t('admission.f.house') }) %>
+              <%- field({ name:'present_moholla', label:t('admission.f.moholla') }) %>
+              <%- field({ name:'present_thana', label:t('admission.f.thana') }) %>
+              <%- field({ name:'present_district', label:t('admission.f.district') }) %>
             </div>
           </div>
 
           <div class="ja-section ja-section--gold">
-            <%- sectionHead('pin', 'স্থায়ী ঠিকানা', 'Permanent Address') %>
+            <%- sectionHead('pin', t('admission.sec.permanent_address')) %>
             <p style="margin:-.6rem 0 1rem">
               <label style="font-size:.9rem;color:var(--ja-muted);display:inline-flex;align-items:center;gap:.45rem;cursor:pointer">
-                <input type="checkbox" id="jaSameAddress" style="width:auto;margin:0"> বর্তমান ঠিকানার অনুরূপ
-                <span class="ja-label-en">Same as present address</span>
+                <input type="checkbox" id="jaSameAddress" style="width:auto;margin:0"> <%= t('admission.f.same_address') %>
               </label>
             </p>
             <div class="ja-grid">
-              <%- field({ name:'permanent_village', bn:'গ্রাম', en:'Village' }) %>
-              <%- field({ name:'permanent_post', bn:'ডাকঘর', en:'Post Office' }) %>
-              <%- field({ name:'permanent_thana', bn:'থানা', en:'Thana' }) %>
-              <%- field({ name:'permanent_district', bn:'জেলা', en:'District' }) %>
+              <%- field({ name:'permanent_village', label:t('admission.f.village') }) %>
+              <%- field({ name:'permanent_post', label:t('admission.f.post') }) %>
+              <%- field({ name:'permanent_thana', label:t('admission.f.thana') }) %>
+              <%- field({ name:'permanent_district', label:t('admission.f.district') }) %>
             </div>
           </div>
         </div>
@@ -241,24 +245,24 @@ function sectionHead(icon, bn, en) {
         <!-- ------------------------------------------- 6. academic -->
         <div class="ja-step" data-step="5">
           <div class="ja-section">
-            <%- sectionHead('cap', 'শিক্ষাগত তথ্য', 'Academic History') %>
+            <%- sectionHead('cap', t('admission.sec.academic')) %>
             <div class="ja-grid">
-              <%- field({ name:'prev_inst_name', bn:'পূর্ববর্তী প্রতিষ্ঠানের নাম', en:'Previous Institution', full:true }) %>
-              <%- field({ name:'prev_class', bn:'পূর্ববর্তী শ্রেণী', en:'Previous Class' }) %>
-              <%- field({ name:'target_class', bn:'যে শ্রেণীতে ভর্তি হতে চান', en:'Target Class' }) %>
+              <%- field({ name:'prev_inst_name', label:t('admission.f.prev_inst'), full:true }) %>
+              <%- field({ name:'prev_class', label:t('admission.f.prev_class') }) %>
+              <%- field({ name:'target_class', label:t('admission.f.target_class') }) %>
             </div>
           </div>
         </div>
 
         <div class="ja-stepnav">
-          <button type="button" class="ja-navbtn ja-navbtn--prev" id="jaPrev" disabled>← পূর্ববর্তী</button>
-          <span class="ja-stepnav-count" id="jaCount">ধাপ ১ / ৬</span>
-          <button type="button" class="ja-navbtn ja-navbtn--next" id="jaNext">পরবর্তী →</button>
+          <button type="button" class="ja-navbtn ja-navbtn--prev" id="jaPrev" disabled>← <%= t('admission.prev') %></button>
+          <span class="ja-stepnav-count" id="jaCount"><%= t('admission.step') %> <%= L.STEPS[0].n %> / <%= L.STEPS[L.STEPS.length - 1].n %></span>
+          <button type="button" class="ja-navbtn ja-navbtn--next" id="jaNext"><%= t('admission.next') %> →</button>
         </div>
 
         <div class="ja-actions" id="jaActions" hidden>
-          <button type="submit" class="ja-submit" id="jaSubmit">ভর্তি ফরম জমা দিন</button>
-          <p class="ja-actions-note">জমা দেওয়ার পর আমাদের ভর্তি অফিস আপনার সাথে যোগাযোগ করবে, ইনশাআল্লাহ।</p>
+          <button type="submit" class="ja-submit" id="jaSubmit"><%= t('admission.submit') %></button>
+          <p class="ja-actions-note"><%= t('admission.submit_note') %></p>
         </div>
       </form>
     </div>
@@ -266,30 +270,30 @@ function sectionHead(icon, bn, en) {
 
     <div class="grid g2" style="gap:1.6rem;align-items:start;margin-top:3rem">
       <div class="card">
-        <h3>How admission works</h3>
+        <h3><%= t('admission.how.title') %></h3>
         <ol style="padding-left:1.1rem;font-size:.92rem;color:var(--muted)">
-          <li style="margin-bottom:.5rem">Submit this form and note your application number.</li>
-          <li style="margin-bottom:.5rem">Our office calls the guardian to arrange an interview.</li>
-          <li style="margin-bottom:.5rem">The applicant sits a short oral assessment.</li>
-          <li>On acceptance, admission fee is paid and the seat is confirmed.</li>
+          <li style="margin-bottom:.5rem"><%= t('admission.how.1') %></li>
+          <li style="margin-bottom:.5rem"><%= t('admission.how.2') %></li>
+          <li style="margin-bottom:.5rem"><%= t('admission.how.3') %></li>
+          <li><%= t('admission.how.4') %></li>
         </ol>
       </div>
       <% if (feeHeads && feeHeads.length) { %>
       <div class="card">
-        <h3>Fees at a glance</h3>
+        <h3><%= t('admission.fees.title') %></h3>
         <table class="data" style="font-size:.88rem">
-          <thead><tr><th>Head</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead>
+          <thead><tr><th><%= t('admission.fees.head') %></th><th><%= t('common.type') %></th><th style="text-align:right"><%= t('common.amount') %></th></tr></thead>
           <tbody>
             <% feeHeads.forEach(function (f) { %>
               <tr>
                 <td><%= f.name %></td>
-                <td><%= f.ftype.replace('_', ' ') %></td>
+                <td><%= label('ftype', f.ftype) %></td>
                 <td style="text-align:right"><%= currency %> <%= Number(f.amount).toLocaleString('en-US') %></td>
               </tr>
             <% }); %>
           </tbody>
         </table>
-        <p class="hint" style="margin-top:.7rem">Actual fees may vary by class. The office will confirm at the time of admission.</p>
+        <p class="hint" style="margin-top:.7rem"><%= t('admission.fees.note') %></p>
       </div>
       <% } %>
     </div>
@@ -302,8 +306,12 @@ function sectionHead(icon, bn, en) {
   var form = document.getElementById('jamiah-admission-form');
   if (!form) return;
 
-  var BN = ['১', '২', '৩', '৪', '৫', '৬'];
-  var LABELS = <%- JSON.stringify(af.STEPS.map(function (s) { return s.label; })) %>;
+  // Numerals, labels and the word "Step" all come from the server in the
+  // active language, so the stepper caption matches the rest of the page.
+  var NUMS = <%- JSON.stringify(L.STEPS.map(function (s) { return s.n; })) %>;
+  var LABELS = <%- JSON.stringify(L.STEPS.map(function (s) { return s.label; })) %>;
+  var STEP_WORD = <%- JSON.stringify(t('admission.step')) %>;
+  var SUBMITTING = <%- JSON.stringify(t('admission.submitting')) %>;
 
   var steps   = [].slice.call(form.querySelectorAll('.ja-step'));
   var dots    = [].slice.call(document.querySelectorAll('.ja-stepper-item'));
@@ -323,8 +331,8 @@ function sectionHead(icon, bn, en) {
       d.classList.toggle('is-done', n < current);
     });
     fill.style.width = (current / (steps.length - 1) * 100) + '%';
-    caption.textContent = 'ধাপ ' + BN[current] + ' / ' + BN[steps.length - 1] + ' · ' + LABELS[current];
-    count.textContent = 'ধাপ ' + BN[current] + ' / ' + BN[steps.length - 1];
+    caption.textContent = STEP_WORD + ' ' + NUMS[current] + ' / ' + NUMS[steps.length - 1] + ' · ' + LABELS[current];
+    count.textContent = STEP_WORD + ' ' + NUMS[current] + ' / ' + NUMS[steps.length - 1];
     prevBtn.disabled = current === 0;
     nextBtn.hidden = current === steps.length - 1;
     actions.hidden = current !== steps.length - 1;
@@ -428,7 +436,7 @@ function sectionHead(icon, bn, en) {
       }
     }
     var btn = document.getElementById('jaSubmit');
-    if (btn) { btn.disabled = true; btn.textContent = 'জমা হচ্ছে…'; }
+    if (btn) { btn.disabled = true; btn.textContent = SUBMITTING; }
   });
 
   show(0);

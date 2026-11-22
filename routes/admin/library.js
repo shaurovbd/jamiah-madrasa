@@ -2,9 +2,10 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
-const TABS = [['/admin/library', 'Books'], ['/admin/library/issues', 'Issue & Return']];
+const TABS = [['/admin/library', 'a.tab.books'], ['/admin/library/issues', 'a.lib.issue_return_title']];
 
 /* ----------------------------------------------------------------- books */
 router.get('/', async (req, res, next) => {
@@ -22,7 +23,7 @@ router.get('/', async (req, res, next) => {
       `SELECT COALESCE(SUM(total_copies),0) AS copies, COALESCE(SUM(available_copies),0) AS available FROM books`
     );
     const edit = h.toInt(req.query.edit) ? await db.one('SELECT * FROM books WHERE id = ?', [h.toInt(req.query.edit)]) : null;
-    res.render('admin/library/books', { title: 'Library', TABS, books, p, edit, stats: stats || {}, filters: { q } });
+    res.render('admin/library/books', { title: res.locals.t('admin.nav.library'), TABS, books, p, edit, stats: stats || {}, filters: { q } });
   } catch (err) { next(err); }
 });
 
@@ -30,7 +31,7 @@ router.post('/books', async (req, res, next) => {
   try {
     const title = String(req.body.title || '').trim();
     const bookNo = String(req.body.book_no || '').trim();
-    if (!title || !bookNo) { req.flash('error', 'Book number and title are required.'); return res.redirect('/admin/library'); }
+    if (!title || !bookNo) { req.flash('error', 'f.lib.book_required'); return res.redirect('/admin/library'); }
     const id = h.toInt(req.body.id);
     const copies = Math.max(1, h.toNum(req.body.total_copies, 1));
 
@@ -45,17 +46,17 @@ router.post('/books', async (req, res, next) => {
         [bookNo, title, h.orNull(req.body.author), h.orNull(req.body.publisher), h.orNull(req.body.category),
          h.orNull(req.body.shelf), copies, available, id]
       );
-      req.flash('success', 'Book updated.');
+      req.flash('success', 'f.lib.book_updated');
     } else {
       const dup = await db.one('SELECT id FROM books WHERE book_no = ?', [bookNo]);
-      if (dup) { req.flash('error', `Book number ${bookNo} is already used.`); return res.redirect('/admin/library'); }
+      if (dup) { req.flash('error', i18n.pack('f.lib.book_no_in_use', { no: bookNo })); return res.redirect('/admin/library'); }
       await db.run(
         `INSERT INTO books (book_no, title, author, publisher, category, shelf, total_copies, available_copies)
          VALUES (?,?,?,?,?,?,?,?)`,
         [bookNo, title, h.orNull(req.body.author), h.orNull(req.body.publisher), h.orNull(req.body.category),
          h.orNull(req.body.shelf), copies, copies]
       );
-      req.flash('success', 'Book added to the catalogue.');
+      req.flash('success', 'f.lib.book_added');
     }
     res.redirect('/admin/library');
   } catch (err) { next(err); }
@@ -64,7 +65,7 @@ router.post('/books', async (req, res, next) => {
 router.delete('/books/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM books WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Book removed from the catalogue.');
+    req.flash('success', 'f.lib.book_removed');
     res.redirect('/admin/library');
   } catch (err) { next(err); }
 });
@@ -88,7 +89,7 @@ router.get('/issues', async (req, res, next) => {
       db.query("SELECT id, name, admission_no FROM students WHERE status = 'active' ORDER BY name"),
       db.query("SELECT id, name FROM staff WHERE status = 'active' ORDER BY name")
     ]);
-    res.render('admin/library/issues', { title: 'Issue & Return', TABS, issues, books, students, staff, p, filters: { status } });
+    res.render('admin/library/issues', { title: res.locals.t('a.lib.issue_return_title'), TABS, issues, books, students, staff, p, filters: { status } });
   } catch (err) { next(err); }
 });
 
@@ -98,12 +99,12 @@ router.post('/issues', async (req, res, next) => {
     const studentId = h.toInt(req.body.student_id);
     const staffId = h.toInt(req.body.staff_id);
     if (!bookId || (!studentId && !staffId)) {
-      req.flash('error', 'Choose a book and either a student or a staff member.');
+      req.flash('error', 'f.lib.choose_borrower');
       return res.redirect('/admin/library/issues');
     }
     const book = await db.one('SELECT available_copies, title FROM books WHERE id = ?', [bookId]);
     if (!book || Number(book.available_copies) < 1) {
-      req.flash('error', 'No copies of that book are available.');
+      req.flash('error', 'f.lib.no_copies');
       return res.redirect('/admin/library/issues');
     }
     const issueDate = h.orNull(req.body.issue_date) || h.today();
@@ -117,7 +118,7 @@ router.post('/issues', async (req, res, next) => {
       );
       await conn.execute('UPDATE books SET available_copies = available_copies - 1 WHERE id = ? AND available_copies > 0', [bookId]);
     });
-    req.flash('success', `"${book.title}" issued, due back ${h.fmtDate(dueDate)}.`);
+    req.flash('success', i18n.pack('f.lib.issued', { title: book.title, date: h.fmtDate(dueDate, res.locals.lang) }));
     res.redirect('/admin/library/issues');
   } catch (err) { next(err); }
 });
@@ -126,7 +127,7 @@ router.post('/issues/:id/return', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     const issue = await db.one("SELECT * FROM book_issues WHERE id = ? AND status = 'issued'", [id]);
-    if (!issue) { req.flash('error', 'That loan is not open.'); return res.redirect('/admin/library/issues'); }
+    if (!issue) { req.flash('error', 'f.lib.loan_not_open'); return res.redirect('/admin/library/issues'); }
     const lost = req.body.lost === '1';
     await db.transaction(async (conn) => {
       await conn.execute(
@@ -141,7 +142,7 @@ router.post('/issues/:id/return', async (req, res, next) => {
         await conn.execute('UPDATE books SET total_copies = GREATEST(total_copies - 1, 0) WHERE id = ?', [issue.book_id]);
       }
     });
-    req.flash('success', lost ? 'Marked as lost.' : 'Book returned.');
+    req.flash('success', lost ? 'f.lib.marked_lost' : 'f.lib.returned');
     res.redirect('/admin/library/issues');
   } catch (err) { next(err); }
 });

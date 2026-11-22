@@ -1,26 +1,39 @@
 <div class="page-bar">
-  <div><h1>Settings</h1><p class="sub">Institution details used across the website, receipts and marksheets</p></div>
+  <div><h1><%= t('settings.title') %></h1><p class="sub"><%= t('settings.subtitle') %></p></div>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.1rem">
-  <div class="stat-card"><div class="label">Students</div><div class="value"><%= h.num(counts.students || 0) %></div></div>
-  <div class="stat-card blue"><div class="label">Staff</div><div class="value"><%= h.num(counts.staff || 0) %></div></div>
-  <div class="stat-card gold"><div class="label">Invoices</div><div class="value"><%= h.num(counts.invoices || 0) %></div></div>
-  <div class="stat-card"><div class="label">Examinations</div><div class="value"><%= h.num(counts.exams || 0) %></div></div>
+  <div class="stat-card"><div class="label"><%= t('settings.count.students') %></div><div class="value"><%= h.num(counts.students || 0) %></div></div>
+  <div class="stat-card blue"><div class="label"><%= t('settings.count.staff') %></div><div class="value"><%= h.num(counts.staff || 0) %></div></div>
+  <div class="stat-card gold"><div class="label"><%= t('settings.count.invoices') %></div><div class="value"><%= h.num(counts.invoices || 0) %></div></div>
+  <div class="stat-card"><div class="label"><%= t('settings.count.examinations') %></div><div class="value"><%= h.num(counts.exams || 0) %></div></div>
 </div>
 
 <form method="post" action="/admin/settings">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="card">
-    <div class="card-head"><h2>Institution details</h2></div>
+    <div class="card-head"><h2><%= t('settings.institution_details') %></h2></div>
     <div class="card-body">
       <div class="form-grid two">
         <% FIELDS.forEach(function (f) {
-             var key = f[0], label = f[1], type = f[2]; %>
+             var key = f[0], label = t(f[1]), type = f[2]; %>
+          <%# The Appearance keys have their own card below. %>
+          <% if (['accent_color','accent_secondary','sidebar_style','surface_style','corner_radius','background_glow'].indexOf(key) !== -1) { return; } %>
           <div class="field <%= type === 'textarea' ? 'full' : '' %>">
             <label for="<%= key %>"><%= label %></label>
             <% if (type === 'textarea') { %>
               <textarea id="<%= key %>" name="<%= key %>" style="min-height:110px"><%= values[key] || '' %></textarea>
+            <% } else if (type === 'language') { %>
+              <%# Which language a first-time visitor or staff member sees.
+                  Anyone can still switch with the toggle in the header. %>
+              <select id="<%= key %>" name="<%= key %>">
+                <% languages.forEach(function (l) { %>
+                  <option value="<%= l.code %>" <%= (values[key] || 'en') === l.code ? 'selected' : '' %>>
+                    <%= l.native %><%= l.native !== t('lang.' + l.code) ? ' — ' + t('lang.' + l.code) : '' %>
+                  </option>
+                <% }); %>
+              </select>
+              <small class="hint"><%= t('lang.default_hint') %></small>
             <% } else { %>
               <input id="<%= key %>" name="<%= key %>" type="<%= type %>" value="<%= values[key] || '' %>">
             <% } %>
@@ -28,9 +41,79 @@
         <% }); %>
       </div>
       <div class="form-actions">
-        <button class="btn btn-primary" type="submit">Save settings</button>
-        <a class="btn btn-light" href="/" target="_blank">Preview website ↗</a>
+        <button class="btn btn-primary" type="submit"><%= t('common.save_settings') %></button>
+        <a class="btn btn-light" href="/" target="_blank"><%= t('settings.preview_website') %> ↗</a>
       </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= t('settings.appearance') %></h2></div>
+    <div class="card-body">
+      <div class="field full">
+        <label><%= t('settings.field.accent_color') %></label>
+        <div class="theme-grid" data-theme-presets>
+          <% var PRESETS = [
+               ['#166049','#c3952f','settings.preset.jamiah_green'],
+               ['#7c3aed','#a78bfa','settings.preset.royal_violet'],
+               ['#4f46e5','#818cf8','settings.preset.deep_indigo'],
+               ['#0d9488','#0f766e','settings.preset.emerald_teal'],
+               ['#9f1239','#c3952f','settings.preset.maroon'],
+               ['#475569','#94a3b8','settings.preset.graphite']
+             ];
+             PRESETS.forEach(function (p) {
+               var on = String(values.accent_color || '').toLowerCase() === p[0]; %>
+            <button type="button" class="theme-swatch" data-accent="<%= p[0] %>" data-accent-2="<%= p[1] %>" style="--sw:<%= p[0] %>" aria-pressed="<%= on ? 'true' : 'false' %>">
+              <span class="sw-bar" aria-hidden="true"></span>
+              <span class="sw-name"><%= t(p[2]) %></span>
+              <span class="sw-state"><%= on ? t('settings.selected') : t('settings.tap_apply') %></span>
+            </button>
+          <% }); %>
+        </div>
+      </div>
+      <div class="field full">
+        <div class="colour-row">
+          <div><label for="accent_color"><%= t('settings.custom_colour') %></label>
+            <input type="color" id="accent_color" name="accent_color" value="<%= values.accent_color %>" data-accent-input></div>
+          <div style="flex:1 1 150px;min-width:0"><label for="accent_hex"><%= t('settings.hex_value') %></label>
+            <input type="text" id="accent_hex" maxlength="7" spellcheck="false" value="<%= values.accent_color %>" data-accent-hex></div>
+          <div><label for="accent_secondary"><%= t('settings.secondary_gold') %></label>
+            <input type="color" id="accent_secondary" name="accent_secondary" value="<%= values.accent_secondary %>" data-accent2-input></div>
+          <span class="in-use"><i aria-hidden="true"></i> <%= t('settings.in_use') %></span>
+        </div>
+      </div>
+      <div class="form-grid two">
+        <div class="field"><label><%= t('settings.field.sidebar_style') %></label>
+          <div class="seg">
+            <% [['gradient','settings.sidebar.gradient'],['solid','settings.sidebar.solid'],['light','settings.sidebar.light']].forEach(function (o) { %>
+              <input type="radio" id="sb_<%= o[0] %>" name="sidebar_style" value="<%= o[0] %>" <%= (values.sidebar_style || 'gradient') === o[0] ? 'checked' : '' %>>
+              <label for="sb_<%= o[0] %>"><%= t(o[1]) %></label>
+            <% }); %>
+          </div>
+        </div>
+        <div class="field"><label><%= t('settings.field.surface_style') %></label>
+          <div class="seg">
+            <% [['solid','settings.surface.solid'],['glass','settings.surface.glass']].forEach(function (o) { %>
+              <input type="radio" id="sf_<%= o[0] %>" name="surface_style" value="<%= o[0] %>" <%= (values.surface_style || 'solid') === o[0] ? 'checked' : '' %>>
+              <label for="sf_<%= o[0] %>"><%= t(o[1]) %></label>
+            <% }); %>
+          </div>
+        </div>
+        <div class="field">
+          <div class="radius-row">
+            <div class="radius-head"><label for="corner_radius"><%= t('settings.field.corner_radius') %></label>
+              <output data-radius-out><%= values.corner_radius || 9 %> <%= t('settings.px') %></output></div>
+            <input type="range" id="corner_radius" name="corner_radius" min="8" max="28" step="1" value="<%= values.corner_radius || 9 %>" data-radius-input>
+          </div>
+        </div>
+        <div class="field">
+          <div class="switch-row">
+            <input type="checkbox" id="background_glow" name="background_glow" value="1" <%= String(values.background_glow) === '1' ? 'checked' : '' %> data-glow-input>
+            <label for="background_glow"><%= t('settings.field.background_glow') %></label>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit"><%= t('common.save_settings') %></button></div>
     </div>
   </div>
 </form>

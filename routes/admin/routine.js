@@ -16,6 +16,7 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const routine = require('../../lib/routine');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 const DAYS = routine.DAYS;
@@ -24,9 +25,9 @@ const hhmm = routine.hhmm;
 /* No tab path may be a prefix of another, or the tab partial lights up two at
    once. /admin/routine itself therefore only redirects. */
 const TABS = [
-  ['/admin/routine/classes', 'Class Routine'],
-  ['/admin/routine/periods', 'Periods & Times'],
-  ['/admin/routine/teachers', 'Teacher View']
+  ['/admin/routine/classes', 'admin.nav.routine'],
+  ['/admin/routine/periods', 'a.rt.periods_times'],
+  ['/admin/routine/teachers', 'a.tab.teacher_view']
 ];
 
 /* The WHERE that identifies one class's routine. section_id and
@@ -82,7 +83,7 @@ async function renderGrid(req, res, opts) {
   }
 
   res.render('admin/routine/index', {
-    title: 'Class Routine',
+    title: res.locals.t('admin.nav.routine'),
     TABS: TABS,
     DAYS: DAYS,
     hhmm: hhmm,
@@ -113,7 +114,7 @@ router.get('/periods', async (req, res, next) => {
     const editId = h.toInt(req.query.edit);
     const edit = editId ? periods.find(function (p) { return p.id === editId; }) : null;
     res.render('admin/routine/periods', {
-      title: 'Periods & Times', TABS: TABS, periods: periods, edit: edit || null, hhmm: hhmm
+      title: res.locals.t('a.rt.periods_times'), TABS: TABS, periods: periods, edit: edit || null, hhmm: hhmm
     });
   } catch (err) { next(err); }
 });
@@ -129,11 +130,11 @@ router.post('/periods', async (req, res, next) => {
     const sortOrder = h.toInt(b.sort_order) || 0;
 
     if (!name || !start || !end) {
-      req.flash('error', 'নাম, শুরু ও শেষের সময় দিন। / Name, start time and end time are all required.');
+      req.flash('error', 'f.rt.period_fields');
       return res.redirect('/admin/routine/periods');
     }
     if (end <= start) {
-      req.flash('error', 'শেষের সময় শুরুর সময়ের পরে হতে হবে। / The end time must be after the start time.');
+      req.flash('error', 'f.rt.end_after_start');
       return res.redirect('/admin/routine/periods');
     }
 
@@ -142,13 +143,13 @@ router.post('/periods', async (req, res, next) => {
         'UPDATE routine_periods SET name = ?, start_time = ?, end_time = ?, is_break = ?, sort_order = ? WHERE id = ?',
         [name, start, end, isBreak, sortOrder, id]
       );
-      req.flash('success', 'Period updated.');
+      req.flash('success', 'f.rt.period_updated');
     } else {
       await db.run(
         'INSERT INTO routine_periods (name, start_time, end_time, is_break, sort_order) VALUES (?,?,?,?,?)',
         [name, start, end, isBreak, sortOrder]
       );
-      req.flash('success', 'Period added.');
+      req.flash('success', 'f.rt.period_added');
     }
     res.redirect('/admin/routine/periods');
   } catch (err) { next(err); }
@@ -160,8 +161,8 @@ router.delete('/periods/:id', async (req, res, next) => {
     const used = await db.scalar('SELECT COUNT(*) AS c FROM routine_entries WHERE period_id = ?', [id]);
     await db.run('DELETE FROM routine_periods WHERE id = ?', [id]);
     req.flash('success', Number(used)
-      ? 'Period deleted, along with ' + used + ' routine slot(s) that used it.'
-      : 'Period deleted.');
+      ? i18n.pack('f.rt.period_deleted_slots', { count: used })
+      : 'f.rt.period_deleted');
     res.redirect('/admin/routine/periods');
   } catch (err) { next(err); }
 });
@@ -191,7 +192,7 @@ router.get('/teachers', async (req, res, next) => {
     }
 
     res.render('admin/routine/teachers', {
-      title: 'Teacher Routine',
+      title: res.locals.t('a.rt.teacher_title'),
       TABS: TABS, DAYS: DAYS, hhmm: hhmm,
       teachers: teachers, periods: periods, teacherId: teacherId, grid: grid, load: load
     });
@@ -223,7 +224,7 @@ router.post('/classes', async (req, res, next) => {
     const yearId = h.toInt(b.year_id) || null;
 
     if (!classId) {
-      req.flash('error', 'একটি ক্লাস নির্বাচন করুন। / Choose a class first.');
+      req.flash('error', 'f.choose_class_first');
       return res.redirect('/admin/routine/classes');
     }
 
@@ -293,8 +294,7 @@ router.post('/classes', async (req, res, next) => {
     }
 
     if (clashes.length) {
-      req.flash('error', clashes.length + ' টি সময়সূচি সংঘর্ষ, রুটিন সংরক্ষণ করা হয়নি। / '
-        + clashes.length + ' teacher clash(es) found — nothing was saved.');
+      req.flash('error', i18n.pack('f.rt.clashes', { count: clashes.length }));
       return renderGrid(req, res, {
         classId: classId, sectionId: sectionId, yearId: yearId, grid: grid, clashes: clashes
       });
@@ -313,7 +313,7 @@ router.post('/classes', async (req, res, next) => {
       }
     });
 
-    req.flash('success', 'রুটিন সংরক্ষিত হয়েছে। / Routine saved — ' + cells.length + ' slot(s).');
+    req.flash('success', i18n.pack('f.rt.saved', { count: cells.length }));
     const q = '?class_id=' + classId
       + (sectionId ? '&section_id=' + sectionId : '')
       + (yearId ? '&year_id=' + yearId : '');

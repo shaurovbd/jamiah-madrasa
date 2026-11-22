@@ -2,12 +2,13 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
 const TABS = [
-  ['/admin/hifz', 'Daily Entry'],
-  ['/admin/hifz/overview', 'Progress Overview']
+  ['/admin/hifz', 'a.tab.daily_entry'],
+  ['/admin/hifz/overview', 'a.tab.progress_overview']
 ];
 
 /* --------------------------------------------------------- daily entry */
@@ -36,7 +37,7 @@ router.get('/', async (req, res, next) => {
     }
 
     res.render('admin/hifz/daily', {
-      title: 'Hifz Progress', TABS, classes, teachers, students,
+      title: res.locals.t('admin.nav.hifz'), TABS, classes, teachers, students,
       filters: { class_id: classId, date }
     });
   } catch (err) { next(err); }
@@ -77,7 +78,7 @@ router.post('/', async (req, res, next) => {
       }
     });
 
-    req.flash('success', `Hifz record saved for ${saved} student${saved === 1 ? '' : 's'} on ${h.fmtDate(date)}.`);
+    req.flash('success', i18n.pack('f.hifz.saved', { count: saved, date: h.fmtDate(date, res.locals.lang) }));
     res.redirect(`/admin/hifz?class_id=${classId || ''}&date=${date}`);
   } catch (err) { next(err); }
 });
@@ -98,7 +99,7 @@ router.get('/overview', async (req, res, next) => {
         WHERE s.status = 'active' ${where}
         ORDER BY s.hifz_para_completed DESC, s.name`, params
     );
-    res.render('admin/hifz/overview', { title: 'Hifz Overview', TABS, classes, students, filters: { class_id: classId } });
+    res.render('admin/hifz/overview', { title: res.locals.t('a.hifz.overview_title'), TABS, classes, students, filters: { class_id: classId } });
   } catch (err) { next(err); }
 });
 
@@ -120,7 +121,7 @@ router.get('/student/:id', async (req, res, next) => {
               SUM(rating='excellent') AS excellent, SUM(rating='weak') AS weak
          FROM hifz_progress WHERE student_id = ?`, [id]
     );
-    res.render('admin/hifz/student', { title: `Hifz — ${student.name}`, student, entries, summary: summary || {} });
+    res.render('admin/hifz/student', { title: res.locals.t('a.title.hifz_student', { name: student.name }), student, entries, summary: summary || {} });
   } catch (err) { next(err); }
 });
 
@@ -131,7 +132,7 @@ router.post('/student/:id/para', async (req, res, next) => {
     if (para < 0) para = 0;
     if (para > 30) para = 30;
     await db.run('UPDATE students SET hifz_para_completed = ? WHERE id = ?', [para, id]);
-    req.flash('success', `Memorisation progress updated to ${para} para.`);
+    req.flash('success', i18n.pack('f.hifz.progress_updated', { para: para }));
     res.redirect(`/admin/hifz/student/${id}`);
   } catch (err) { next(err); }
 });

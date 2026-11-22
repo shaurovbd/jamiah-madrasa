@@ -2,26 +2,26 @@
   <div style="text-align:center;margin-bottom:1.6rem;color:#fff">
     <div style="width:62px;height:62px;margin:0 auto .9rem;border-radius:50%;border:2px solid #c3952f;color:#e8d59a;display:grid;place-items:center;font-family:Lora,serif;font-size:1.6rem">ج</div>
     <h1 style="color:#fff;font-size:1.45rem;margin-bottom:.2rem"><%= site.name %></h1>
-    <p style="color:#a9c6ba;font-size:.9rem;margin:0">Staff &amp; Management Panel</p>
+    <p style="color:#a9c6ba;font-size:.9rem;margin:0"><%= t('auth.panel_subtitle') %></p>
   </div>
 
   <div class="panel">
-    <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.join(' ') %></div><% } %>
-    <% if (flash.success && flash.success.length) { %><div class="alert alert-success"><%= flash.success.join(' ') %></div><% } %>
+    <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
+    <% if (flash.success && flash.success.length) { %><div class="alert alert-success"><%= flash.success.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
 
     <form method="post" action="/login">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field" style="margin-bottom:1rem">
-        <label for="username">Username</label>
+        <label for="username"><%= t('auth.username') %></label>
         <input id="username" name="username" type="text" autocomplete="username" required autofocus>
       </div>
       <div class="field" style="margin-bottom:1.3rem">
-        <label for="password">Password</label>
+        <label for="password"><%= t('auth.password') %></label>
         <input id="password" name="password" type="password" autocomplete="current-password" required>
       </div>
-      <button class="btn btn-green" type="submit" style="width:100%">Sign in</button>
+      <button class="btn btn-green" type="submit" style="width:100%"><%= t('auth.sign_in') %></button>
     </form>
   </div>
 
-  <p style="text-align:center;margin-top:1.2rem"><a href="/" style="color:#cfe3da;font-size:.88rem">← Back to website</a></p>
+  <p style="text-align:center;margin-top:1.2rem"><a href="/" style="color:#cfe3da;font-size:.88rem">← <%= t('auth.back_to_site') %></a></p>
 </div>

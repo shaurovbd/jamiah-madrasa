@@ -1,7 +1,7 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / About</div>
-    <h1><%= about ? about.title : 'About Us' %></h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('nav.about') %></div>
+    <h1><%= about ? about.title : t('about.title') %></h1>
   </div>
 </div>
 
@@ -21,18 +21,18 @@
       </div>
       <aside>
         <div class="card" style="margin-bottom:1.2rem">
-          <h3>At a glance</h3>
+          <h3><%= t('about.at_a_glance') %></h3>
           <table class="data" style="font-size:.9rem">
-            <tr><th>Established</th><td><%= settings.established || '—' %></td></tr>
-            <tr><th>Location</th><td><%= site.address || '—' %></td></tr>
-            <tr><th>Phone</th><td><%= site.phone || '—' %></td></tr>
-            <tr><th>Email</th><td><%= site.email || '—' %></td></tr>
+            <tr><th><%= t('common.established') %></th><td><%= settings.established || '—' %></td></tr>
+            <tr><th><%= t('common.location') %></th><td><%= site.address || '—' %></td></tr>
+            <tr><th><%= t('common.phone') %></th><td><%= site.phone || '—' %></td></tr>
+            <tr><th><%= t('common.email') %></th><td><%= site.email || '—' %></td></tr>
           </table>
         </div>
         <div class="card">
-          <h3>Admission</h3>
-          <p>Applications are accepted online throughout the year for all departments.</p>
-          <a class="btn btn-green btn-sm" href="/admission" style="margin-top:.6rem">Apply now</a>
+          <h3><%= t('footer.admission') %></h3>
+          <p><%= t('about.admission_note') %></p>
+          <a class="btn btn-green btn-sm" href="/admission" style="margin-top:.6rem"><%= t('about.apply_now') %></a>
         </div>
       </aside>
     </div>
@@ -43,8 +43,8 @@
 <section class="alt">
   <div class="wrap">
     <div class="section-head">
-      <span class="kicker">Our People</span>
-      <h2>Teachers &amp; Management</h2>
+      <span class="kicker"><%= t('about.our_people') %></span>
+      <h2><%= t('about.teachers_management') %></h2>
     </div>
     <div class="grid g3">
       <% leaders.forEach(function (p) { %>

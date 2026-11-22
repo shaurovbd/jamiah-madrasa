@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= lang %>" dir="<%= langDir %>">
 <head><meta charset="utf-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,7 +7,9 @@
 <meta name="description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : (site.tagline || site.name) %>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+<%# Noto Sans Bengali loads in both languages: the language toggle itself is
+    always labelled in Bangla, so the glyphs are needed even on English pages. %>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
 <%- typeof style !== 'undefined' ? style : '' %>
 </head>
@@ -20,9 +22,18 @@
       <% if (site.email) { %><span>✉ <a href="mailto:<%= site.email %>"><%= site.email %></a></span><% } %>
     </div>
     <div class="topbar-meta">
-          <a href="/routine">Class Routine</a>
-      <a href="/results">Check Result</a>
-      <a href="/admin">Staff Login</a>
+      <a href="/routine"><%= t('nav.routine') %></a>
+      <a href="/results"><%= t('nav.results') %></a>
+      <a href="/admin"><%= t('nav.staff_login') %></a>
+      <span class="lang-switch" role="group" aria-label="<%= t('lang.label') %>">
+        <% languages.forEach(function (l) { %>
+          <% if (l.code === lang) { %>
+            <span class="lang-opt is-on" aria-current="true"><%= l.native %></span>
+          <% } else { %>
+            <a class="lang-opt" href="<%= langSwitchUrl(l.code) %>" hreflang="<%= l.code %>" rel="nofollow"><%= l.native %></a>
+          <% } %>
+        <% }); %>
+      </span>
     </div>
   </div>
 </div>
@@ -33,19 +44,19 @@
       <span class="brand-mark">ج</span>
       <span class="brand-text">
         <strong><%= site.name %></strong>
-        <small><%= site.tagline ? site.tagline.slice(0, 42) : 'Islamic Institute' %></small>
+        <small><%= site.tagline ? site.tagline.slice(0, 42) : t('site.islamic_institute') %></small>
       </span>
     </a>
-    <button class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="<%= t('nav.menu') %>">☰</button>
     <nav class="main" id="mainNav">
-      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a>
-      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>">About</a>
-      <a href="/departments" class="<%= currentPath.startsWith('/departments') ? 'active' : '' %>">Departments</a>
-      <a href="/notices" class="<%= currentPath.startsWith('/notices') ? 'active' : '' %>">Notices</a>
-      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>">Events</a>
-      <a href="/gallery" class="<%= currentPath.startsWith('/gallery') ? 'active' : '' %>">Gallery</a>
-      <a href="/contact" class="<%= currentPath.startsWith('/contact') ? 'active' : '' %>">Contact</a>
-      <a href="/admission" class="nav-cta">Apply Now</a>
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>"><%= t('nav.home') %></a>
+      <a href="/about" class="<%= currentPath.startsWith('/about') ? 'active' : '' %>"><%= t('nav.about') %></a>
+      <a href="/departments" class="<%= currentPath.startsWith('/departments') ? 'active' : '' %>"><%= t('nav.departments') %></a>
+      <a href="/notices" class="<%= currentPath.startsWith('/notices') ? 'active' : '' %>"><%= t('nav.notices') %></a>
+      <a href="/events" class="<%= currentPath.startsWith('/events') ? 'active' : '' %>"><%= t('nav.events') %></a>
+      <a href="/gallery" class="<%= currentPath.startsWith('/gallery') ? 'active' : '' %>"><%= t('nav.gallery') %></a>
+      <a href="/contact" class="<%= currentPath.startsWith('/contact') ? 'active' : '' %>"><%= t('nav.contact') %></a>
+      <a href="/admission" class="nav-cta"><%= t('nav.apply_now') %></a>
     </nav>
   </div>
 </header>
@@ -59,28 +70,28 @@
     <div class="footer-grid">
       <div>
         <h4><%= site.name %></h4>
-        <p><%= settings.about_intro || 'An Islamic educational institution dedicated to the Qur’an and the sacred sciences.' %></p>
+        <p><%= settings.about_intro || t('footer.default_intro') %></p>
       </div>
       <div>
-        <h4>Explore</h4>
+        <h4><%= t('footer.explore') %></h4>
         <ul>
-          <li><a href="/about">About Us</a></li>
-          <li><a href="/departments">Departments</a></li>
-          <li><a href="/admission">Admission</a></li>
-          <li><a href="/results">Check Result</a></li>
+          <li><a href="/about"><%= t('footer.about_us') %></a></li>
+          <li><a href="/departments"><%= t('nav.departments') %></a></li>
+          <li><a href="/admission"><%= t('footer.admission') %></a></li>
+          <li><a href="/results"><%= t('nav.results') %></a></li>
         </ul>
       </div>
       <div>
-        <h4>Information</h4>
+        <h4><%= t('footer.information') %></h4>
         <ul>
-          <li><a href="/notices">Notices</a></li>
-          <li><a href="/events">Events</a></li>
-          <li><a href="/gallery">Gallery</a></li>
-          <li><a href="/contact">Contact</a></li>
+          <li><a href="/notices"><%= t('nav.notices') %></a></li>
+          <li><a href="/events"><%= t('nav.events') %></a></li>
+          <li><a href="/gallery"><%= t('nav.gallery') %></a></li>
+          <li><a href="/contact"><%= t('nav.contact') %></a></li>
         </ul>
       </div>
       <div>
-        <h4>Reach Us</h4>
+        <h4><%= t('footer.reach_us') %></h4>
         <ul>
           <% if (site.address) { %><li><%= site.address %></li><% } %>
           <% if (site.phone) { %><li><%= site.phone %></li><% } %>
@@ -89,8 +100,8 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; <%= new Date().getFullYear() %> <%= site.name %>. All rights reserved.</span>
-      <span><a href="/admin">Staff &amp; Management Login</a></span>
+      <span>&copy; <%= new Date().getFullYear() %> <%= site.name %>. <%= t('footer.rights') %></span>
+      <span><a href="/admin"><%= t('footer.staff_login') %></a></span>
     </div>
   </div>
 </footer>

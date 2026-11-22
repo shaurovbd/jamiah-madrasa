@@ -1,61 +1,61 @@
 <div class="page-bar">
-  <div><h1><%= app.name %></h1><p class="sub">Application <%= app.application_no %> · received <%= h.fmtDate(app.applied_at) %></p></div>
+  <div><h1><%= app.name %></h1><p class="sub"><%= t('a.adm.app_received', { no: app.application_no, date: fmtDate(app.applied_at) }) %></p></div>
   <span class="spacer"></span>
-  <span class="badge badge-<%= app.status === 'approved' ? 'green' : (app.status === 'rejected' ? 'red' : 'amber') %>" style="font-size:.85rem;padding:.3rem .9rem"><%= app.status %></span>
-  <a class="btn btn-light" href="/admin/admissions">← All applications</a>
+  <span class="badge badge-<%= app.status === 'approved' ? 'green' : (app.status === 'rejected' ? 'red' : 'amber') %>" style="font-size:.85rem;padding:.3rem .9rem"><%= label('status', app.status) %></span>
+  <a class="btn btn-light" href="/admin/admissions"><%= t('a.adm.back_all') %></a>
 </div>
 
 <div class="grid g2" style="align-items:start">
   <div class="card">
-    <div class="card-head"><h2>Application details</h2></div>
+    <div class="card-head"><h2><%= t('a.adm.details') %></h2></div>
     <div class="card-body">
-      <h3 class="sub-head">Student</h3>
+      <h3 class="sub-head"><%= t('results.student') %></h3>
       <dl class="kv">
-        <dt>Name (Bangla)</dt><dd><strong><%= app.name %></strong></dd>
-        <dt>Name (English)</dt><dd><%= app.name_en || '—' %></dd>
-        <dt>Date of birth</dt><dd><%= app.dob ? h.fmtDate(app.dob) : '—' %></dd>
-        <dt>Gender</dt><dd><%= app.gender %></dd>
-        <dt>Nationality</dt><dd><%= app.nationality || '—' %></dd>
-        <dt>Student mobile</dt><dd><%= app.student_mobile || '—' %></dd>
-        <dt>Email</dt><dd><%= app.email || '—' %></dd>
+        <dt><%= t('admission.f.name_bn') %></dt><dd><strong><%= app.name %></strong></dd>
+        <dt><%= t('admission.f.name_en') %></dt><dd><%= app.name_en || '—' %></dd>
+        <dt><%= t('a.dob') %></dt><dd><%= app.dob ? fmtDate(app.dob) : '—' %></dd>
+        <dt><%= t('admission.f.gender') %></dt><dd><%= label('gender', app.gender) %></dd>
+        <dt><%= t('admission.f.nationality') %></dt><dd><%= app.nationality || '—' %></dd>
+        <dt><%= t('admission.f.student_mobile') %></dt><dd><%= app.student_mobile || '—' %></dd>
+        <dt><%= t('common.email') %></dt><dd><%= app.email || '—' %></dd>
       </dl>
 
-      <h3 class="sub-head">Applied for</h3>
+      <h3 class="sub-head"><%= t('a.adm.applied_for') %></h3>
       <dl class="kv">
-        <dt>Department</dt>
+        <dt><%= t('common.department') %></dt>
         <dd><%= app.department_key ? af.deptLabel(app.department_key) : (app.dept_name || '—') %></dd>
-        <dt>Campus</dt><dd><%= app.campus ? af.campusLabel(app.campus) : '—' %></dd>
-        <dt>Target class</dt><dd><%= app.target_class || app.class_name || '—' %></dd>
-        <dt>Previous institution</dt><dd><%= app.previous_institution || '—' %></dd>
-        <dt>Previous class</dt><dd><%= app.prev_class || '—' %></dd>
+        <dt><%= t('event.campus') %></dt><dd><%= app.campus ? af.campusLabel(app.campus) : '—' %></dd>
+        <dt><%= t('admission.f.target_class') %></dt><dd><%= app.target_class || app.class_name || '—' %></dd>
+        <dt><%= t('admission.f.prev_inst') %></dt><dd><%= app.previous_institution || '—' %></dd>
+        <dt><%= t('admission.f.prev_class') %></dt><dd><%= app.prev_class || '—' %></dd>
       </dl>
 
-      <h3 class="sub-head">Parents</h3>
+      <h3 class="sub-head"><%= t('admission.sec.parents') %></h3>
       <dl class="kv">
-        <dt>Father's name</dt><dd><%= app.father_name || '—' %></dd>
-        <dt>Father's mobile</dt><dd><%= app.father_mobile || '—' %></dd>
-        <dt>Father's profession</dt><dd><%= app.father_profession || '—' %></dd>
-        <dt>Monthly income</dt><dd><%= app.father_income || '—' %></dd>
-        <dt>Mother's name</dt><dd><%= app.mother_name || '—' %></dd>
-        <dt>Mother's mobile</dt><dd><%= app.mother_mobile || '—' %></dd>
+        <dt><%= t('a.father_name') %></dt><dd><%= app.father_name || '—' %></dd>
+        <dt><%= t('admission.f.father_mobile') %></dt><dd><%= app.father_mobile || '—' %></dd>
+        <dt><%= t('admission.f.father_profession') %></dt><dd><%= app.father_profession || '—' %></dd>
+        <dt><%= t('admission.f.father_income') %></dt><dd><%= app.father_income || '—' %></dd>
+        <dt><%= t('a.mother_name') %></dt><dd><%= app.mother_name || '—' %></dd>
+        <dt><%= t('admission.f.mother_mobile') %></dt><dd><%= app.mother_mobile || '—' %></dd>
       </dl>
 
-      <h3 class="sub-head">Guardian</h3>
+      <h3 class="sub-head"><%= t('admission.sec.guardian') %></h3>
       <dl class="kv">
-        <dt>Guardian's name</dt><dd><%= app.guardian_name || '—' %></dd>
-        <dt>Relation</dt><dd><%= app.guardian_relation || '—' %></dd>
-        <dt>Contact phone</dt><dd><%= app.guardian_phone %></dd>
-        <dt>Guardian's address</dt><dd><%= app.guardian_address || '—' %></dd>
+        <dt><%= t('admission.f.guardian_name') %></dt><dd><%= app.guardian_name || '—' %></dd>
+        <dt><%= t('admission.f.guardian_relation') %></dt><dd><%= app.guardian_relation || '—' %></dd>
+        <dt><%= t('a.contact_phone') %></dt><dd><%= app.guardian_phone %></dd>
+        <dt><%= t('admission.f.guardian_address') %></dt><dd><%= app.guardian_address || '—' %></dd>
       </dl>
 
-      <h3 class="sub-head">Address</h3>
+      <h3 class="sub-head"><%= t('common.address') %></h3>
       <dl class="kv">
-        <dt>Present</dt><dd><%= app.address || '—' %></dd>
-        <dt>Permanent</dt><dd><%= af.permanentAddress(app) || '—' %></dd>
+        <dt><%= t('a.att.present') %></dt><dd><%= app.address || '—' %></dd>
+        <dt><%= t('a.permanent') %></dt><dd><%= af.permanentAddress(app) || '—' %></dd>
       </dl>
 
       <% if (app.note) { %>
-        <h3 class="sub-head">Note from guardian</h3>
+        <h3 class="sub-head"><%= t('a.adm.guardian_note') %></h3>
         <p style="margin:0"><%= app.note %></p>
       <% } %>
     </div>
@@ -64,65 +64,65 @@
   <div>
     <% if (app.status === 'approved' && app.student_id) { %>
       <div class="card">
-        <div class="card-head"><h2>Admitted</h2></div>
+        <div class="card-head"><h2><%= t('a.adm.admitted') %></h2></div>
         <div class="card-body">
-          <p>This applicant was admitted on <%= h.fmtDate(app.processed_at) %> as <strong><%= app.admission_no %></strong>.</p>
-          <a class="btn btn-primary" href="/admin/students/<%= app.student_id %>">Open student record</a>
+          <p><%- t('a.adm.admitted_on', { date: h.esc(fmtDate(app.processed_at)), no: '<strong>' + h.esc(app.admission_no) + '</strong>' }) %></p>
+          <a class="btn btn-primary" href="/admin/students/<%= app.student_id %>"><%= t('a.adm.open_student') %></a>
         </div>
       </div>
     <% } else if (app.status === 'rejected') { %>
       <div class="card">
-        <div class="card-head"><h2>Rejected</h2></div>
+        <div class="card-head"><h2><%= t('a.adm.rejected') %></h2></div>
         <div class="card-body">
-          <p>This application was rejected on <%= h.fmtDate(app.processed_at) %>.</p>
+          <p><%= t('a.adm.rejected_on', { date: fmtDate(app.processed_at) }) %></p>
           <form method="post" action="/admin/admissions/<%= app.id %>/reopen">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn-light" type="submit">Reopen as pending</button>
+            <button class="btn btn-light" type="submit"><%= t('a.adm.reopen') %></button>
           </form>
         </div>
       </div>
     <% } else { %>
       <div class="card" style="margin-bottom:1.1rem">
-        <div class="card-head"><h2>Approve and enrol</h2></div>
+        <div class="card-head"><h2><%= t('a.adm.approve_enrol') %></h2></div>
         <div class="card-body">
-          <p class="sub" style="margin-bottom:1rem">Approving creates the student record and links it to this application.</p>
+          <p class="sub" style="margin-bottom:1rem"><%= t('a.adm.approve_hint') %></p>
           <form method="post" action="/admin/admissions/<%= app.id %>/approve">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-grid two">
-              <div class="field"><label for="admission_no">Admission number <span class="req">*</span></label>
+              <div class="field"><label for="admission_no"><%= t('a.admission_number') %> <span class="req">*</span></label>
                 <input id="admission_no" name="admission_no" type="text" required value="<%= suggestedAdmissionNo %>"></div>
-              <div class="field"><label for="roll_no">Roll number</label>
+              <div class="field"><label for="roll_no"><%= t('results.roll_number') %></label>
                 <input id="roll_no" name="roll_no" type="text"></div>
-              <div class="field"><label for="class_id">Class</label>
-                <select id="class_id" name="class_id"><option value="">— None —</option>
+              <div class="field"><label for="class_id"><%= t('common.class') %></label>
+                <select id="class_id" name="class_id"><option value=""><%= t('common.opt_none') %></option>
                   <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= app.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
                 </select></div>
-              <div class="field"><label for="section_id">Section</label>
-                <select id="section_id" name="section_id"><option value="">— None —</option>
+              <div class="field"><label for="section_id"><%= t('common.section') %></label>
+                <select id="section_id" name="section_id"><option value=""><%= t('common.opt_none') %></option>
                   <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>"><%= s.name %></option><% }); %>
                 </select></div>
-              <div class="field"><label for="academic_year_id">Academic year</label>
-                <select id="academic_year_id" name="academic_year_id"><option value="">— None —</option>
+              <div class="field"><label for="academic_year_id"><%= t('a.academic_year') %></label>
+                <select id="academic_year_id" name="academic_year_id"><option value=""><%= t('common.opt_none') %></option>
                   <% years.forEach(function (y) { %><option value="<%= y.id %>" <%= y.is_current ? 'selected' : '' %>><%= y.name %></option><% }); %>
                 </select></div>
-              <div class="field"><label for="admission_date">Admission date</label>
+              <div class="field"><label for="admission_date"><%= t('a.admission_date') %></label>
                 <input id="admission_date" name="admission_date" type="date" value="<%= h.today() %>"></div>
               <div class="field full">
-                <label class="chk"><input type="checkbox" name="is_resident" value="1"> Boarding (hostel) student</label></div>
+                <label class="chk"><input type="checkbox" name="is_resident" value="1"> <%= t('a.stu.boarder_label') %></label></div>
             </div>
             <input type="hidden" name="department_id" value="<%= app.department_id || '' %>">
-            <div class="form-actions"><button class="btn btn-primary" type="submit">Approve &amp; create student</button></div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit"><%= t('a.adm.approve_button') %></button></div>
           </form>
         </div>
       </div>
 
       <div class="card">
         <div class="card-body" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
-          <div><strong>Not suitable?</strong><p class="sub" style="margin:0">Mark the application as rejected. It stays on record.</p></div>
+          <div><strong><%= t('a.adm.not_suitable') %></strong><p class="sub" style="margin:0"><%= t('a.adm.reject_hint') %></p></div>
           <span class="spacer"></span>
-          <form method="post" action="/admin/admissions/<%= app.id %>/reject" data-confirm="Mark this application as rejected?">
+          <form method="post" action="/admin/admissions/<%= app.id %>/reject" data-confirm="<%= t('a.adm.confirm_reject') %>">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn-danger" type="submit">Reject</button>
+            <button class="btn btn-danger" type="submit"><%= t('a.adm.reject') %></button>
           </form>
         </div>
       </div>

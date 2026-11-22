@@ -1,37 +1,37 @@
 <div class="page-bar">
   <div><h1><%= invoice.invoice_no %></h1>
-    <p class="sub"><%= invoice.student %> · <%= invoice.class_name || '—' %> · <%= h.fmtPeriod(invoice.period) %></p></div>
+    <p class="sub"><%= invoice.student %> · <%= invoice.class_name || '—' %> · <%= fmtPeriod(invoice.period) %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="/admin/fees">← Invoices</a>
-  <a class="btn btn-light" href="/admin/students/<%= invoice.student_id %>">Student profile</a>
+  <a class="btn btn-light" href="/admin/fees"><%= t('a.fee.back_invoices') %></a>
+  <a class="btn btn-light" href="/admin/students/<%= invoice.student_id %>"><%= t('a.stu.profile') %></a>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.1rem">
-  <div class="stat-card"><div class="label">Billed</div><div class="value" style="font-size:1.3rem"><%= money(invoice.total_amount) %></div></div>
-  <div class="stat-card gold"><div class="label">Discount</div><div class="value" style="font-size:1.3rem"><%= money(invoice.discount) %></div></div>
-  <div class="stat-card"><div class="label">Paid</div><div class="value" style="font-size:1.3rem"><%= money(invoice.paid_amount) %></div></div>
-  <div class="stat-card <%= balance > 0 ? 'red' : '' %>"><div class="label">Balance</div><div class="value" style="font-size:1.3rem"><%= money(balance) %></div></div>
+  <div class="stat-card"><div class="label"><%= t('a.fee.billed') %></div><div class="value" style="font-size:1.3rem"><%= money(invoice.total_amount) %></div></div>
+  <div class="stat-card gold"><div class="label"><%= t('a.fee.discount') %></div><div class="value" style="font-size:1.3rem"><%= money(invoice.discount) %></div></div>
+  <div class="stat-card"><div class="label"><%= t('a.paid') %></div><div class="value" style="font-size:1.3rem"><%= money(invoice.paid_amount) %></div></div>
+  <div class="stat-card <%= balance > 0 ? 'red' : '' %>"><div class="label"><%= t('a.balance') %></div><div class="value" style="font-size:1.3rem"><%= money(balance) %></div></div>
 </div>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
   <div>
     <div class="card" style="margin-bottom:1.1rem">
-      <div class="card-head"><h2>Invoice items</h2><span class="spacer"></span>
-        <span class="badge badge-<%= invoice.status === 'paid' ? 'green' : (invoice.status === 'partial' ? 'amber' : 'red') %>"><%= invoice.status %></span></div>
+      <div class="card-head"><h2><%= t('a.fee.invoice_items') %></h2><span class="spacer"></span>
+        <span class="badge badge-<%= invoice.status === 'paid' ? 'green' : (invoice.status === 'partial' ? 'amber' : 'red') %>"><%= label('status', invoice.status) %></span></div>
       <div class="card-body flush">
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Description</th><th class="num">Amount</th></tr></thead>
+            <thead><tr><th><%= t('common.description') %></th><th class="num"><%= t('common.amount') %></th></tr></thead>
             <tbody>
               <% items.forEach(function (i) { %>
                 <tr><td><%= i.description %></td><td class="num"><%= money(i.amount) %></td></tr>
               <% }); %>
             </tbody>
             <tfoot>
-              <tr><td><strong>Total</strong></td><td class="num"><strong><%= money(invoice.total_amount) %></strong></td></tr>
+              <tr><td><strong><%= t('common.total') %></strong></td><td class="num"><strong><%= money(invoice.total_amount) %></strong></td></tr>
               <% if (Number(invoice.discount) > 0) { %>
-                <tr><td>Less discount</td><td class="num">− <%= money(invoice.discount) %></td></tr>
-                <tr><td><strong>Payable</strong></td><td class="num"><strong><%= money(payable) %></strong></td></tr>
+                <tr><td><%= t('a.fee.less_discount') %></td><td class="num">− <%= money(invoice.discount) %></td></tr>
+                <tr><td><strong><%= t('a.fee.payable') %></strong></td><td class="num"><strong><%= money(payable) %></strong></td></tr>
               <% } %>
             </tfoot>
           </table>
@@ -39,34 +39,34 @@
       </div>
       <div class="card-body" style="border-top:1px solid var(--a-line)">
         <dl class="kv" style="font-size:.88rem">
-          <dt>Issued</dt><dd><%= h.fmtDate(invoice.issue_date) %></dd>
-          <dt>Due</dt><dd><%= invoice.due_date ? h.fmtDate(invoice.due_date) : '—' %></dd>
-          <dt>Guardian phone</dt><dd><%= invoice.guardian_phone || '—' %></dd>
-          <% if (invoice.note) { %><dt>Note</dt><dd><%= invoice.note %></dd><% } %>
+          <dt><%= t('a.issued') %></dt><dd><%= fmtDate(invoice.issue_date) %></dd>
+          <dt><%= t('a.due') %></dt><dd><%= invoice.due_date ? fmtDate(invoice.due_date) : '—' %></dd>
+          <dt><%= t('a.guardian_phone') %></dt><dd><%= invoice.guardian_phone || '—' %></dd>
+          <% if (invoice.note) { %><dt><%= t('common.note') %></dt><dd><%= invoice.note %></dd><% } %>
         </dl>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>Payments</h2></div>
+      <div class="card-head"><h2><%= t('a.fee.payments') %></h2></div>
       <div class="card-body flush">
         <% if (payments.length) { %>
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Receipt</th><th>Date</th><th>Method</th><th>Received by</th><th class="num">Amount</th><th class="actions"></th></tr></thead>
+            <thead><tr><th><%= t('a.receipt') %></th><th><%= t('common.date') %></th><th><%= t('a.fee.method') %></th><th><%= t('a.fee.received_by') %></th><th class="num"><%= t('common.amount') %></th><th class="actions"></th></tr></thead>
             <tbody>
               <% payments.forEach(function (p) { %>
                 <tr>
                   <td><a href="/admin/fees/receipt/<%= p.id %>"><%= p.receipt_no %></a></td>
-                  <td><%= h.fmtDate(p.paid_on) %></td>
-                  <td><%= p.method %></td>
+                  <td><%= fmtDate(p.paid_on) %></td>
+                  <td><%= label('method', p.method) %></td>
                   <td><%= p.received_by_name || '—' %></td>
                   <td class="num"><%= money(p.amount) %></td>
                   <td class="actions">
-                    <a class="btn btn-light btn-sm" href="/admin/fees/receipt/<%= p.id %>">Receipt</a>
+                    <a class="btn btn-light btn-sm" href="/admin/fees/receipt/<%= p.id %>"><%= t('a.receipt') %></a>
                     <form method="post" action="/admin/fees/invoice/<%= invoice.id %>/payment/<%= p.id %>" style="display:inline" data-confirm="Remove this payment of <%= money(p.amount) %>? The invoice balance will be recalculated.">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                      <button class="btn btn-danger btn-sm" type="submit">Remove</button>
+                      <button class="btn btn-danger btn-sm" type="submit"><%= t('common.remove') %></button>
                     </form>
                   </td>
                 </tr>
@@ -74,7 +74,7 @@
             </tbody>
           </table>
         </div>
-        <% } else { %><div class="empty"><p>No payments recorded against this invoice.</p></div><% } %>
+        <% } else { %><div class="empty"><p><%= t('a.fee.no_invoice_payments') %></p></div><% } %>
       </div>
     </div>
   </div>
@@ -82,63 +82,63 @@
   <div>
     <% if (balance > 0) { %>
       <div class="card" style="margin-bottom:1.1rem">
-        <div class="card-head"><h2>Collect payment</h2></div>
+        <div class="card-head"><h2><%= t('a.fee.collect_payment') %></h2></div>
         <div class="card-body">
           <form method="post" action="/admin/fees/invoice/<%= invoice.id %>/pay">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field" style="margin-bottom:.8rem">
-              <label for="amount">Amount <span class="req">*</span></label>
+              <label for="amount"><%= t('common.amount') %> <span class="req">*</span></label>
               <input id="amount" name="amount" type="number" step="0.01" min="0.01" max="<%= balance %>" required value="<%= balance %>">
-              <span class="hint">Outstanding balance <%= money(balance) %></span>
+              <span class="hint"><%= t('a.fee.outstanding_balance') %> <%= money(balance) %></span>
             </div>
             <div class="field" style="margin-bottom:.8rem">
-              <label for="method">Method</label>
+              <label for="method"><%= t('a.fee.method') %></label>
               <select id="method" name="method">
-                <option value="cash">Cash</option><option value="bank">Bank</option>
-                <option value="mobile">Mobile banking</option><option value="other">Other</option>
+                <option value="cash"><%= t('a.fee.cash') %></option><option value="bank"><%= t('a.fee.bank') %></option>
+                <option value="mobile"><%= t('a.fee.mobile') %></option><option value="other"><%= t('a.other') %></option>
               </select>
             </div>
             <div class="field" style="margin-bottom:.8rem">
-              <label for="paid_on">Date</label>
+              <label for="paid_on"><%= t('common.date') %></label>
               <input id="paid_on" name="paid_on" type="date" value="<%= h.today() %>">
             </div>
             <div class="field" style="margin-bottom:.9rem">
-              <label for="note">Note</label>
+              <label for="note"><%= t('common.note') %></label>
               <input id="note" name="note" type="text">
             </div>
-            <button class="btn btn-primary" type="submit" style="width:100%">Record payment &amp; print receipt</button>
+            <button class="btn btn-primary" type="submit" style="width:100%"><%= t('a.fee.record_print') %></button>
           </form>
         </div>
       </div>
     <% } else { %>
-      <div class="alert alert-success">This invoice is fully settled.</div>
+      <div class="alert alert-success"><%= t('a.fee.settled') %></div>
     <% } %>
 
     <div class="card" style="margin-bottom:1.1rem">
-      <div class="card-head"><h2>Discount / waiver</h2></div>
+      <div class="card-head"><h2><%= t('a.fee.discount_waiver') %></h2></div>
       <div class="card-body">
         <form method="post" action="/admin/fees/invoice/<%= invoice.id %>/discount">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field" style="margin-bottom:.8rem">
-            <label for="discount">Discount amount</label>
+            <label for="discount"><%= t('a.fee.discount_amount') %></label>
             <input id="discount" name="discount" type="number" step="0.01" min="0" max="<%= invoice.total_amount %>" value="<%= invoice.discount %>">
           </div>
           <div class="field" style="margin-bottom:.9rem">
-            <label for="dnote">Reason</label>
+            <label for="dnote"><%= t('a.fee.reason') %></label>
             <input id="dnote" name="note" type="text" value="<%= invoice.note || '' %>">
           </div>
-          <button class="btn btn-light" type="submit">Apply discount</button>
+          <button class="btn btn-light" type="submit"><%= t('a.fee.apply_discount') %></button>
         </form>
       </div>
     </div>
 
     <div class="card" style="border-color:#edc2bd">
       <div class="card-body">
-        <strong style="color:#8c2016">Delete invoice</strong>
-        <p class="sub">Removes the invoice and any payments recorded against it.</p>
+        <strong style="color:#8c2016"><%= t('a.fee.delete_invoice') %></strong>
+        <p class="sub"><%= t('a.fee.delete_hint') %></p>
         <form method="post" action="/admin/fees/invoice/<%= invoice.id %>" data-confirm="Delete <%= invoice.invoice_no %> and its payments? This cannot be undone.">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-          <button class="btn btn-danger" type="submit">Delete invoice</button>
+          <button class="btn btn-danger" type="submit"><%= t('a.fee.delete_invoice') %></button>
         </form>
       </div>
     </div>

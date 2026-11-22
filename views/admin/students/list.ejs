@@ -1,38 +1,38 @@
 <div class="page-bar">
-  <div><h1>Students</h1><p class="sub"><%= h.num(p.total) %> <%= filters.status %> student<%= p.total === 1 ? '' : 's' %></p></div>
+  <div><h1><%= t('admin.nav.students') %></h1><p class="sub"><%= t('a.stu.count_summary', { count: h.num(p.total), status: label('status', filters.status) }) %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-primary" href="/admin/students/new">+ Add student</a>
+  <a class="btn btn-primary" href="/admin/students/new"><%= t('a.stu.add') %></a>
 </div>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/students">
       <div class="field grow">
-        <label for="q">Search</label>
-        <input id="q" name="q" type="search" placeholder="Name, admission no, roll, phone" value="<%= filters.q %>">
+        <label for="q"><%= t('common.search') %></label>
+        <input id="q" name="q" type="search" placeholder="<%= t('a.stu.search_ph') %>" value="<%= filters.q %>">
       </div>
       <div class="field">
-        <label for="department_id">Department</label>
+        <label for="department_id"><%= t('common.department') %></label>
         <select id="department_id" name="department_id">
-          <option value="">All</option>
+          <option value=""><%= t('common.all') %></option>
           <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= filters.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
         </select>
       </div>
       <div class="field">
-        <label for="class_id">Class</label>
+        <label for="class_id"><%= t('common.class') %></label>
         <select id="class_id" name="class_id">
-          <option value="">All</option>
+          <option value=""><%= t('common.all') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select>
       </div>
       <div class="field">
-        <label for="status">Status</label>
+        <label for="status"><%= t('common.status') %></label>
         <select id="status" name="status">
-          <% ['active','passed','left'].forEach(function (s) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option><% }); %>
+          <% ['active','passed','left'].forEach(function (s) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= label('status', s) %></option><% }); %>
         </select>
       </div>
-      <button class="btn btn-primary" type="submit">Filter</button>
-      <a class="btn btn-light" href="/admin/students">Reset</a>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
+      <a class="btn btn-light" href="/admin/students"><%= t('common.reset') %></a>
     </form>
   </div>
 </div>
@@ -43,7 +43,7 @@
       <div class="table-wrap">
         <table class="data">
           <thead>
-            <tr><th>Roll</th><th>Admission No</th><th>Name</th><th>Father</th><th>Class</th><th>Department</th><th>Guardian Phone</th><th>Boarder</th><th class="actions">Actions</th></tr>
+            <tr><th><%= t('common.roll') %></th><th><%= t('results.admission_no') %></th><th><%= t('common.name') %></th><th><%= t('a.father') %></th><th><%= t('common.class') %></th><th><%= t('common.department') %></th><th><%= t('a.guardian_phone') %></th><th><%= t('a.stu.boarder') %></th><th class="actions"><%= t('common.actions') %></th></tr>
           </thead>
           <tbody>
             <% students.forEach(function (s) { %>
@@ -55,10 +55,10 @@
                 <td><%= s.class_name || '—' %><%= s.section_name ? ' / ' + s.section_name : '' %></td>
                 <td><%= s.dept_name || '—' %></td>
                 <td><%= s.guardian_phone || '—' %></td>
-                <td><% if (s.is_resident) { %><span class="badge badge-green">Hostel</span><% } else { %><span class="badge badge-grey">Day</span><% } %></td>
+                <td><% if (s.is_resident) { %><span class="badge badge-green"><%= t('admin.nav.hostel') %></span><% } else { %><span class="badge badge-grey"><%= t('a.day') %></span><% } %></td>
                 <td class="actions">
-                  <a class="btn btn-light btn-sm" href="/admin/students/<%= s.id %>">View</a>
-                  <a class="btn btn-light btn-sm" href="/admin/students/<%= s.id %>/edit">Edit</a>
+                  <a class="btn btn-light btn-sm" href="/admin/students/<%= s.id %>"><%= t('common.view') %></a>
+                  <a class="btn btn-light btn-sm" href="/admin/students/<%= s.id %>/edit"><%= t('common.edit') %></a>
                 </td>
               </tr>
             <% }); %>
@@ -66,8 +66,8 @@
         </table>
       </div>
     <% } else { %>
-      <div class="empty"><div class="big">☗</div><p>No students match these filters.</p>
-        <a class="btn btn-primary" href="/admin/students/new">Add the first student</a></div>
+      <div class="empty"><div class="big">☗</div><p><%= t('a.stu.none_match') %></p>
+        <a class="btn btn-primary" href="/admin/students/new"><%= t('a.stu.add_first') %></a></div>
     <% } %>
   </div>
   <%- include('../../partials/pager', { p: p, query: query, h: h }) %>

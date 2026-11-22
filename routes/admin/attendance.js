@@ -2,12 +2,13 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
 const TABS = [
-  ['/admin/attendance', 'Take Attendance'],
-  ['/admin/attendance/report', 'Monthly Report']
+  ['/admin/attendance', 'a.tab.take_attendance'],
+  ['/admin/attendance/report', 'a.tab.monthly_report']
 ];
 
 /* --------------------------------------------------------------- take */
@@ -39,7 +40,7 @@ router.get('/', async (req, res, next) => {
 
     const alreadyTaken = students.some((s) => s.status);
     res.render('admin/attendance/take', {
-      title: 'Attendance', TABS, classes, sections, students, alreadyTaken,
+      title: res.locals.t('admin.nav.attendance'), TABS, classes, sections, students, alreadyTaken,
       filters: { class_id: classId, section_id: sectionId, date }
     });
   } catch (err) { next(err); }
@@ -56,7 +57,7 @@ router.post('/', async (req, res, next) => {
 
     const ids = Object.keys(statuses);
     if (!ids.length) {
-      req.flash('error', 'No students to record.');
+      req.flash('error', 'f.att.no_students');
       return res.redirect(`/admin/attendance?class_id=${classId || ''}&section_id=${sectionId || ''}&date=${date}`);
     }
 
@@ -76,7 +77,7 @@ router.post('/', async (req, res, next) => {
       }
     });
 
-    req.flash('success', `Attendance saved for ${saved} student${saved === 1 ? '' : 's'} on ${h.fmtDate(date)}.`);
+    req.flash('success', i18n.pack('f.att.saved', { count: saved, date: h.fmtDate(date, res.locals.lang) }));
     res.redirect(`/admin/attendance?class_id=${classId || ''}&section_id=${sectionId || ''}&date=${date}`);
   } catch (err) { next(err); }
 });
@@ -120,7 +121,7 @@ router.get('/report', async (req, res, next) => {
     }
 
     res.render('admin/attendance/report', {
-      title: 'Attendance Report', TABS, classes, rows, days,
+      title: res.locals.t('a.att.report_title'), TABS, classes, rows, days,
       filters: { class_id: classId, period }
     });
   } catch (err) { next(err); }

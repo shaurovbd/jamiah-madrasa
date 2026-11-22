@@ -3,6 +3,7 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const upload = require('../../lib/upload');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -25,14 +26,14 @@ router.get('/', async (req, res, next) => {
         LIMIT ${p.perPage} OFFSET ${p.offset}`
     );
     const edit = h.toInt(req.query.edit) ? await db.one('SELECT * FROM notices WHERE id = ?', [h.toInt(req.query.edit)]) : null;
-    res.render('admin/content/notices', { title: 'Notices', notices, p, edit });
+    res.render('admin/content/notices', { title: res.locals.t('admin.nav.notices'), notices, p, edit });
   } catch (err) { next(err); }
 });
 
 router.post('/', upload.doc.single('attachment'), async (req, res, next) => {
   try {
     const title = String(req.body.title || '').trim();
-    if (!title) { req.flash('error', 'A title is required.'); return res.redirect('/admin/notices'); }
+    if (!title) { req.flash('error', 'f.title_required'); return res.redirect('/admin/notices'); }
     const id = h.toInt(req.body.id);
     const slug = await uniqueSlug(title, 'notices', id);
     const published = req.body.is_published ? 1 : 0;
@@ -46,7 +47,7 @@ router.post('/', upload.doc.single('attachment'), async (req, res, next) => {
          req.file ? req.file.filename : (existing ? existing.attachment : null),
          published, h.orNull(req.body.published_at) || h.today(), id]
       );
-      req.flash('success', 'Notice updated.');
+      req.flash('success', 'f.web.notice_updated');
     } else {
       await db.run(
         `INSERT INTO notices (title, slug, body, category, attachment, is_published, published_at, created_by)
@@ -55,7 +56,7 @@ router.post('/', upload.doc.single('attachment'), async (req, res, next) => {
          req.file ? req.file.filename : null, published,
          h.orNull(req.body.published_at) || h.today(), req.session.user.id]
       );
-      req.flash('success', published ? 'Notice published to the website.' : 'Notice saved as a draft.');
+      req.flash('success', published ? 'f.web.notice_published' : 'f.web.notice_draft');
     }
     res.redirect('/admin/notices');
   } catch (err) { next(err); }
@@ -66,7 +67,7 @@ router.delete('/:id', async (req, res, next) => {
     const row = await db.one('SELECT attachment FROM notices WHERE id = ?', [h.toInt(req.params.id)]);
     await db.run('DELETE FROM notices WHERE id = ?', [h.toInt(req.params.id)]);
     if (row && row.attachment) upload.remove(row.attachment);
-    req.flash('success', 'Notice deleted.');
+    req.flash('success', 'f.web.notice_deleted');
     res.redirect('/admin/notices');
   } catch (err) { next(err); }
 });

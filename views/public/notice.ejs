@@ -1,6 +1,6 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / <a href="/notices">Notices</a></div>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <a href="/notices"><%= t('nav.notices') %></a></div>
     <h1><%= notice.title %></h1>
   </div>
 </div>
@@ -10,20 +10,20 @@
     <div class="grid g2" style="gap:3rem;align-items:start">
       <article class="prose">
         <p style="color:var(--muted);font-size:.88rem">
-          <span class="tag"><%= notice.category || 'General' %></span>
-          &nbsp;Published <%= h.fmtDate(notice.published_at || notice.created_at) %>
+          <span class="tag"><%= notice.category || t('notices.category_general') %></span>
+          &nbsp;<%= t('notice.published') %> <%= fmtDate(notice.published_at || notice.created_at) %>
         </p>
         <% (notice.body || '').split(/\n{2,}/).forEach(function (para) { %>
           <p><%= para %></p>
         <% }); %>
         <% if (notice.attachment) { %>
-          <p><a class="btn btn-outline btn-sm" href="/uploads/<%= notice.attachment %>" target="_blank">Download attachment</a></p>
+          <p><a class="btn btn-outline btn-sm" href="/uploads/<%= notice.attachment %>" target="_blank"><%= t('notice.download_attachment') %></a></p>
         <% } %>
-        <p style="margin-top:2rem"><a href="/notices">← Back to all notices</a></p>
+        <p style="margin-top:2rem"><a href="/notices">← <%= t('notice.back_all') %></a></p>
       </article>
       <aside>
         <div class="card">
-          <h3>Other notices</h3>
+          <h3><%= t('notice.others') %></h3>
           <ul style="padding-left:1.1rem;font-size:.92rem">
             <% others.forEach(function (o) { %>
               <li style="margin-bottom:.5rem"><a href="/notices/<%= o.slug %>"><%= o.title %></a></li>

@@ -1,8 +1,8 @@
 <div class="card">
   <div class="card-body empty">
     <div class="big">⛔</div>
-    <h2>Not allowed</h2>
-    <p>Your account does not have access to this section.</p>
-    <p style="margin-top:1rem"><a class="btn btn-primary" href="/admin">Back to dashboard</a></p>
+    <h2><%= t('error.forbidden.title') %></h2>
+    <p><%= t('a.err.no_section_access') %></p>
+    <p style="margin-top:1rem"><a class="btn btn-primary" href="/admin"><%= t('a.err.back_dashboard') %></a></p>
   </div>
 </div>

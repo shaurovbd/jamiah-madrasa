@@ -18,6 +18,7 @@ const methodOverride = require('method-override');
 
 const helpers = require('./lib/helpers');
 const settingsLib = require('./lib/settings');
+const i18n = require('./lib/i18n');
 
 const app = express();
 
@@ -94,6 +95,68 @@ app.use((req, res, next) => {
   next();
 });
 
+// ---------------------------------------------------------------- language
+/**
+ * Keep a redirect on this site. The switcher sends people back where they came
+ * from, and both ?next= and Referer are attacker-controllable, so only a plain
+ * path from our own host is ever followed.
+ */
+function localPath(raw, host) {
+  const value = String(raw || '');
+  if (!value) return '/';
+  // Absolute URL (a Referer header): accept only our own host, keep path+query.
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      const u = new URL(value);
+      if (host && u.host !== host) return '/';
+      return (u.pathname || '/') + (u.search || '');
+    } catch (err) {
+      return '/';
+    }
+  }
+  // Relative path: must be a single-slash path, never "//evil.com" or a scheme.
+  if (!value.startsWith('/') || value.startsWith('//')) return '/';
+  return value;
+}
+
+/**
+ * Resolve the active language, most specific wins:
+ *   ?lang= on this request  ->  the visitor's saved choice  ->  the institution's
+ *   default from Settings  ->  English.
+ * Nobody is forced into a language, and a fresh visitor gets what the admin chose.
+ */
+app.use(async (req, res, next) => {
+  try {
+    const settings = await settingsLib.all();
+    if (req.query.lang && i18n.isLang(req.query.lang)) {
+      req.session.lang = i18n.normalize(req.query.lang);
+    }
+    const chosen = req.session && req.session.lang;
+    const lang = i18n.normalize(chosen || settings.default_language, i18n.DEFAULT_LANG);
+
+    res.locals.lang = lang;
+    res.locals.langDir = i18n.language(lang).dir;
+    res.locals.languages = i18n.LANGUAGES;
+    res.locals.t = i18n.translator(lang);
+    res.locals.tflash = i18n.flashTranslator(lang);
+    // Labels for values stored in the database (ENUM columns and the like).
+    res.locals.label = i18n.enumLabeler(lang);
+    // Same path in the other language, for the header toggle.
+    res.locals.langSwitchUrl = (code) =>
+      `/lang/${code}?next=${encodeURIComponent(req.originalUrl || '/')}`;
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Switching language is a plain link, so it works without JavaScript.
+app.get('/lang/:code', (req, res) => {
+  const code = i18n.normalize(req.params.code, i18n.DEFAULT_LANG);
+  if (req.session) req.session.lang = code;
+  res.redirect(localPath(req.query.next || req.get('referer'), req.get('host')));
+});
+
 // ---------------------------------------------------------------- locals
 app.use(async (req, res, next) => {
   try {
@@ -111,6 +174,20 @@ app.use(async (req, res, next) => {
     };
     res.locals.currency = settings.currency_symbol || 'Tk';
     res.locals.user = req.session.user || null;
+
+    // --- theme (Appearance settings) ---
+    // Kept from the server's own Appearance work: the admin layout reads these
+    // to set --a-seed and the data-sidebar / data-surface / data-glow hooks.
+    const __hex = (v, d) => (/^#[0-9a-f]{6}$/i.test(String(v || '')) ? String(v).toLowerCase() : d);
+    const __opt = (v, allowed, d) => (allowed.indexOf(v) !== -1 ? v : d);
+    res.locals.theme = {
+      accent: __hex(settings.accent_color, '#166049'),
+      accent2: __hex(settings.accent_secondary, '#c3952f'),
+      sidebar: __opt(settings.sidebar_style, ['gradient', 'solid', 'light'], 'gradient'),
+      surface: __opt(settings.surface_style, ['solid', 'glass'], 'solid'),
+      radius: Math.max(8, Math.min(28, parseInt(settings.corner_radius, 10) || 9)),
+      glow: String(settings.background_glow) === '1' ? 'on' : 'off'
+    };
     res.locals.flash = {
       success: req.flash('success'),
       error: req.flash('error'),
@@ -118,6 +195,11 @@ app.use(async (req, res, next) => {
     };
     res.locals.h = helpers;
     res.locals.money = (n) => helpers.money(n, res.locals.currency);
+    // Date helpers bound to the active language, so views can call fmtDate(d)
+    // and get Bangla month names without threading `lang` through every call.
+    res.locals.fmtDate = (d) => helpers.fmtDate(d, res.locals.lang);
+    res.locals.fmtPeriod = (p) => helpers.fmtPeriod(p, res.locals.lang);
+    res.locals.monthShort = (i) => helpers.monthShort(i, res.locals.lang);
     res.locals.currentPath = req.path;
     res.locals.query = req.query || {};
     res.locals.title = '';
@@ -136,8 +218,8 @@ app.use((req, res, next) => {
   res.status(403);
   return res.render('error', {
     layout: 'layouts/public',
-    title: 'Session expired',
-    message: 'Your session expired or the form was submitted from an unexpected place. Please go back, reload the page and try again.',
+    title: res.locals.t('error.403.title'),
+    message: res.locals.t('error.403.message'),
     status: 403
   });
 });
@@ -154,8 +236,8 @@ app.get('/healthz', (req, res) => res.json({ ok: true, uptime: process.uptime() 
 app.use((req, res) => {
   res.status(404).render('error', {
     layout: 'layouts/public',
-    title: 'Page not found',
-    message: 'The page you are looking for does not exist or has been moved.',
+    title: res.locals.t('error.404.title'),
+    message: res.locals.t('error.404.message'),
     status: 404
   });
 });
@@ -163,10 +245,20 @@ app.use((req, res) => {
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   console.error('[error]', err && err.stack ? err.stack : err);
   const isDev = (process.env.NODE_ENV || 'development') !== 'production';
+  // The language middleware may itself be what failed, so fall back to a
+  // translator rather than assuming res.locals.t exists.
+  const tr = res.locals.t || i18n.translator(i18n.DEFAULT_LANG);
+  res.locals.t = tr;
+  res.locals.lang = res.locals.lang || i18n.DEFAULT_LANG;
+  res.locals.langDir = res.locals.langDir || 'ltr';
+  res.locals.languages = res.locals.languages || i18n.LANGUAGES;
+  res.locals.langSwitchUrl = res.locals.langSwitchUrl || ((code) => `/lang/${code}`);
+  res.locals.tflash = res.locals.tflash || i18n.flashTranslator(res.locals.lang);
+  res.locals.label = res.locals.label || i18n.enumLabeler(res.locals.lang);
   res.status(500).render('error', {
     layout: 'layouts/public',
-    title: 'Something went wrong',
-    message: isDev && err ? err.message : 'An unexpected error occurred. Please try again, or contact the administrator if it continues.',
+    title: tr('error.500.title'),
+    message: isDev && err ? err.message : tr('error.500.message'),
     status: 500
   });
 });

@@ -1,27 +1,27 @@
-<div class="page-bar"><h1>Examinations</h1></div>
+<div class="page-bar"><h1><%= t('settings.count.examinations') %></h1></div>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2>All examinations</h2></div>
+    <div class="card-head"><h2><%= t('a.exam.all') %></h2></div>
     <div class="card-body flush">
       <% if (exams.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Examination</th><th>Year</th><th>Dates</th><th class="num">Students marked</th><th>Published</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('results.examination') %></th><th><%= t('common.year') %></th><th><%= t('a.exam.dates') %></th><th class="num"><%= t('a.exam.students_marked') %></th><th><%= t('common.published') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% exams.forEach(function (e) { %>
               <tr>
                 <td><a href="/admin/exams/<%= e.id %>"><strong><%= e.name %></strong></a></td>
                 <td><%= e.year_name || '—' %></td>
-                <td><%= e.start_date ? h.fmtDate(e.start_date) : '—' %><%= e.end_date ? ' – ' + h.fmtDate(e.end_date) : '' %></td>
+                <td><%= e.start_date ? fmtDate(e.start_date) : '—' %><%= e.end_date ? ' – ' + fmtDate(e.end_date) : '' %></td>
                 <td class="num"><%= e.student_count %></td>
                 <td><span class="badge badge-<%= e.is_published ? 'green' : 'grey' %>"><%= e.is_published ? 'Published' : 'Draft' %></span></td>
                 <td class="actions">
-                  <a class="btn btn-light btn-sm" href="/admin/exams/<%= e.id %>">Open</a>
-                  <a class="btn btn-light btn-sm" href="/admin/exams?edit=<%= e.id %>">Edit</a>
+                  <a class="btn btn-light btn-sm" href="/admin/exams/<%= e.id %>"><%= t('common.open') %></a>
+                  <a class="btn btn-light btn-sm" href="/admin/exams?edit=<%= e.id %>"><%= t('common.edit') %></a>
                   <form method="post" action="/admin/exams/<%= e.id %>" style="display:inline" data-confirm="Delete <%= e.name %> and all marks recorded for it?">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -29,7 +29,7 @@
           </tbody>
         </table>
       </div>
-      <% } else { %><div class="empty"><div class="big">◈</div><p>No examinations created yet.</p></div><% } %>
+      <% } else { %><div class="empty"><div class="big">◈</div><p><%= t('a.exam.none_yet') %></p></div><% } %>
     </div>
   </div>
 
@@ -40,28 +40,28 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="name">Name <span class="req">*</span></label>
-          <input id="name" name="name" type="text" required placeholder="Annual Examination 2026" value="<%= edit ? edit.name : '' %>">
+          <label for="name"><%= t('common.name') %> <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required placeholder="<%= t('a.exam.name_placeholder') %>" value="<%= edit ? edit.name : '' %>">
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="academic_year_id">Academic year</label>
+          <label for="academic_year_id"><%= t('a.academic_year') %></label>
           <select id="academic_year_id" name="academic_year_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% years.forEach(function (y) { %>
               <option value="<%= y.id %>" <%= edit ? (edit.academic_year_id === y.id ? 'selected' : '') : (y.is_current ? 'selected' : '') %>><%= y.name %></option>
             <% }); %>
           </select>
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="start_date">Starts</label>
+          <label for="start_date"><%= t('a.starts') %></label>
           <input id="start_date" name="start_date" type="date" value="<%= edit ? h.inputDate(edit.start_date) : '' %>">
         </div>
         <div class="field" style="margin-bottom:.9rem">
-          <label for="end_date">Ends</label>
+          <label for="end_date"><%= t('a.ends') %></label>
           <input id="end_date" name="end_date" type="date" value="<%= edit ? h.inputDate(edit.end_date) : '' %>">
         </div>
         <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Create examination' %></button>
-        <% if (edit) { %><a class="btn btn-light" href="/admin/exams">Cancel</a><% } %>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/exams"><%= t('common.cancel') %></a><% } %>
       </form>
     </div>
   </div>

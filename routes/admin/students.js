@@ -4,6 +4,7 @@ const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const upload = require('../../lib/upload');
 const { buildMarksheet } = require('../../lib/results');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -52,7 +53,7 @@ router.get('/', async (req, res, next) => {
     );
 
     res.render('admin/students/list', {
-      title: 'Students', students, p, ...(await lookups()),
+      title: res.locals.t('admin.nav.students'), students, p, ...(await lookups()),
       filters: { q, class_id: classId, section_id: sectionId, department_id: deptId, status }
     });
   } catch (err) { next(err); }
@@ -63,7 +64,7 @@ router.get('/new', async (req, res, next) => {
   try {
     const last = await db.one('SELECT MAX(id) AS id FROM students');
     res.render('admin/students/form', {
-      title: 'Add student', student: { admission_no: h.nextNo('ADM', last ? last.id : 0), gender: 'male', status: 'active' },
+      title: res.locals.t('a.stu.add_first'), student: { admission_no: h.nextNo('ADM', last ? last.id : 0), gender: 'male', status: 'active' },
       isNew: true, ...(await lookups())
     });
   } catch (err) { next(err); }
@@ -73,12 +74,12 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
   try {
     const b = req.body;
     if (!String(b.name || '').trim() || !String(b.admission_no || '').trim()) {
-      req.flash('error', 'Name and admission number are required.');
+      req.flash('error', 'f.stu.required');
       return res.redirect('/admin/students/new');
     }
     const dup = await db.one('SELECT id FROM students WHERE admission_no = ?', [b.admission_no.trim()]);
     if (dup) {
-      req.flash('error', `Admission number ${b.admission_no} is already used.`);
+      req.flash('error', i18n.pack('f.stu.no_in_use', { no: b.admission_no }));
       return res.redirect('/admin/students/new');
     }
     const r = await db.run(
@@ -93,7 +94,7 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
        h.orNull(b.admission_date), b.is_resident ? 1 : 0, h.toNum(b.hifz_para_completed, 0),
        ['active', 'passed', 'left'].includes(b.status) ? b.status : 'active']
     );
-    req.flash('success', `${b.name.trim()} has been added.`);
+    req.flash('success', i18n.pack('f.stu.added', { name: b.name.trim() }));
     res.redirect(`/admin/students/${r.insertId}`);
   } catch (err) { next(err); }
 });
@@ -149,7 +150,7 @@ router.get('/:id/edit', async (req, res, next) => {
   try {
     const student = await db.one('SELECT * FROM students WHERE id = ?', [h.toInt(req.params.id)]);
     if (!student) return next();
-    res.render('admin/students/form', { title: `Edit ${student.name}`, student, isNew: false, ...(await lookups()) });
+    res.render('admin/students/form', { title: res.locals.t('a.title.edit', { name: student.name }), student, isNew: false, ...(await lookups()) });
   } catch (err) { next(err); }
 });
 
@@ -173,7 +174,7 @@ router.put('/:id', upload.image.single('photo'), async (req, res, next) => {
        h.orNull(b.admission_date), b.is_resident ? 1 : 0, h.toNum(b.hifz_para_completed, 0),
        ['active', 'passed', 'left'].includes(b.status) ? b.status : 'active', id]
     );
-    req.flash('success', 'Student record updated.');
+    req.flash('success', 'f.stu.updated');
     res.redirect(`/admin/students/${id}`);
   } catch (err) { next(err); }
 });
@@ -185,7 +186,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!student) return next();
     await db.run('DELETE FROM students WHERE id = ?', [id]);
     if (student.photo) upload.remove(student.photo);
-    req.flash('success', `${student.name} and all linked records have been deleted.`);
+    req.flash('success', i18n.pack('f.stu.deleted', { name: student.name }));
     res.redirect('/admin/students');
   } catch (err) { next(err); }
 });

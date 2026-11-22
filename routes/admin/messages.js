@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
       `SELECT * FROM contact_messages ${where} ORDER BY id DESC LIMIT ${p.perPage} OFFSET ${p.offset}`
     );
     const unread = await db.scalar('SELECT COUNT(*) AS c FROM contact_messages WHERE is_read = 0');
-    res.render('admin/content/messages', { title: 'Messages', messages, p, unread, filters: { unread: unreadOnly } });
+    res.render('admin/content/messages', { title: res.locals.t('admin.nav.messages'), messages, p, unread, filters: { unread: unreadOnly } });
   } catch (err) { next(err); }
 });
 
@@ -29,7 +29,7 @@ router.post('/:id/read', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM contact_messages WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Message deleted.');
+    req.flash('success', 'f.web.message_deleted');
     res.redirect('/admin/messages');
   } catch (err) { next(err); }
 });

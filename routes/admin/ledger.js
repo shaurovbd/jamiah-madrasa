@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.get('/', async (req, res, next) => {
       ? await db.one('SELECT * FROM ledger_entries WHERE id = ?', [h.toInt(req.query.edit)]) : null;
 
     res.render('admin/ledger/index', {
-      title: 'Income & Expense', entries, categories, p, edit, byCategory, maxCat,
+      title: res.locals.t('admin.nav.ledger'), entries, categories, p, edit, byCategory, maxCat,
       summary: { income, expense, balance: income - expense, feeIncome: Number(feeIncome) },
       filters: { period, etype, category_id: categoryId }
     });
@@ -56,7 +57,7 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const amount = h.toNum(req.body.amount, 0);
-    if (amount <= 0) { req.flash('error', 'Enter an amount greater than zero.'); return res.redirect('/admin/ledger'); }
+    if (amount <= 0) { req.flash('error', 'f.amount_gt_zero'); return res.redirect('/admin/ledger'); }
     const etype = req.body.etype === 'income' ? 'income' : 'expense';
     const id = h.toInt(req.body.id);
     const vals = [h.orNull(req.body.edate) || h.today(), h.toInt(req.body.category_id), etype, amount,
@@ -64,11 +65,11 @@ router.post('/', async (req, res, next) => {
     if (id) {
       await db.run('UPDATE ledger_entries SET edate=?, category_id=?, etype=?, amount=?, description=?, reference=? WHERE id=?',
         [...vals, id]);
-      req.flash('success', 'Entry updated.');
+      req.flash('success', 'f.ledger.entry_updated');
     } else {
       await db.run(`INSERT INTO ledger_entries (edate, category_id, etype, amount, description, reference, created_by)
                     VALUES (?,?,?,?,?,?,?)`, [...vals, req.session.user.id]);
-      req.flash('success', `${etype === 'income' ? 'Income' : 'Expense'} of ${h.money(amount, res.locals.currency)} recorded.`);
+      req.flash('success', i18n.pack(etype === 'income' ? 'f.ledger.income_recorded' : 'f.ledger.expense_recorded', { amount: h.money(amount, res.locals.currency) }));
     }
     res.redirect(`/admin/ledger?period=${String(vals[0]).slice(0, 7)}`);
   } catch (err) { next(err); }
@@ -77,7 +78,7 @@ router.post('/', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM ledger_entries WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Entry deleted.');
+    req.flash('success', 'f.ledger.entry_deleted');
     res.redirect('/admin/ledger');
   } catch (err) { next(err); }
 });
@@ -85,10 +86,10 @@ router.delete('/:id', async (req, res, next) => {
 router.post('/categories', async (req, res, next) => {
   try {
     const name = String(req.body.name || '').trim();
-    if (!name) { req.flash('error', 'Category name is required.'); return res.redirect('/admin/ledger'); }
+    if (!name) { req.flash('error', 'f.ledger.cat_required'); return res.redirect('/admin/ledger'); }
     await db.run('INSERT INTO ledger_categories (name, ctype) VALUES (?,?)',
       [name, req.body.ctype === 'income' ? 'income' : 'expense']);
-    req.flash('success', 'Category added.');
+    req.flash('success', 'f.ledger.cat_added');
     res.redirect('/admin/ledger');
   } catch (err) { next(err); }
 });
@@ -96,7 +97,7 @@ router.post('/categories', async (req, res, next) => {
 router.delete('/categories/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM ledger_categories WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Category deleted.');
+    req.flash('success', 'f.ledger.cat_deleted');
     res.redirect('/admin/ledger');
   } catch (err) { next(err); }
 });

@@ -1,17 +1,17 @@
-<div class="page-bar"><h1>Hifz Progress</h1></div>
+<div class="page-bar"><h1><%= t('admin.nav.hifz') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/hifz">
-      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+      <div class="field"><label for="class_id"><%= t('common.class') %> <span class="req">*</span></label>
         <select id="class_id" name="class_id" required>
-          <option value="">— Select —</option>
+          <option value=""><%= t('results.select_placeholder') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
-      <div class="field"><label for="date">Date</label>
+      <div class="field"><label for="date"><%= t('common.date') %></label>
         <input id="date" name="date" type="date" value="<%= filters.date %>"></div>
-      <button class="btn btn-primary" type="submit">Load students</button>
+      <button class="btn btn-primary" type="submit"><%= t('a.hifz.load_students') %></button>
     </form>
   </div>
 </div>
@@ -22,20 +22,20 @@
     <input type="hidden" name="class_id" value="<%= filters.class_id %>">
     <input type="hidden" name="date" value="<%= filters.date %>">
     <div class="card">
-      <div class="card-head"><h2><%= h.fmtDate(filters.date) %> · <%= students.length %> students</h2>
-        <span class="spacer"></span><span class="sub">Leave a row blank to record nothing for that student.</span></div>
+      <div class="card-head"><h2><%= fmtDate(filters.date) %> · <%= students.length %> students</h2>
+        <span class="spacer"></span><span class="sub"><%= t('a.hifz.blank_hint') %></span></div>
       <div class="card-body flush">
         <div class="table-wrap">
           <table class="data compact">
             <thead>
-              <tr><th>Student</th><th>Sabak (surah)</th><th>From</th><th>To</th><th class="num">Lines</th>
-                  <th>Sabqi</th><th>Manzil</th><th>Rating</th><th>Teacher</th><th>Remarks</th></tr>
+              <tr><th><%= t('results.student') %></th><th><%= t('a.hifz.sabak_surah') %></th><th><%= t('common.from') %></th><th><%= t('common.to') %></th><th class="num"><%= t('a.hifz.lines') %></th>
+                  <th><%= t('a.hifz.sabqi') %></th><th><%= t('a.hifz.manzil') %></th><th><%= t('a.hifz.rating') %></th><th><%= t('role.teacher') %></th><th><%= t('a.remarks') %></th></tr>
             </thead>
             <tbody>
               <% students.forEach(function (s) { %>
                 <tr>
                   <td style="min-width:150px"><strong><%= s.name %></strong><br>
-                    <small class="sub">Roll <%= s.roll_no || '—' %> · <%= s.hifz_para_completed %>/30 para</small></td>
+                    <small class="sub"><%= t('a.hifz.roll_para_line', { roll: s.roll_no || '—', para: s.hifz_para_completed }) %></small></td>
                   <td><input type="text" name="row[id<%= s.id %>][sabak_surah]" value="<%= s.sabak_surah || '' %>" style="min-width:120px"></td>
                   <td><input type="text" name="row[id<%= s.id %>][sabak_from]" value="<%= s.sabak_from || '' %>" style="width:75px"></td>
                   <td><input type="text" name="row[id<%= s.id %>][sabak_to]" value="<%= s.sabak_to || '' %>" style="width:75px"></td>
@@ -44,11 +44,11 @@
                   <td><input type="text" name="row[id<%= s.id %>][manzil_para]" value="<%= s.manzil_para || '' %>" style="width:85px"></td>
                   <td><select name="row[id<%= s.id %>][rating]" style="width:110px">
                       <% ['excellent','good','average','weak'].forEach(function (r) { %>
-                        <option value="<%= r %>" <%= (s.rating || 'good') === r ? 'selected' : '' %>><%= r.charAt(0).toUpperCase() + r.slice(1) %></option>
+                        <option value="<%= r %>" <%= (s.rating || 'good') === r ? 'selected' : '' %>><%= label('rating', r) %></option>
                       <% }); %></select></td>
                   <td><select name="row[id<%= s.id %>][teacher_id]" style="min-width:130px">
                       <option value="">—</option>
-                      <% teachers.forEach(function (t) { %><option value="<%= t.id %>" <%= s.teacher_id === t.id ? 'selected' : '' %>><%= t.name %></option><% }); %>
+                      <% teachers.forEach(function (tch) { %><option value="<%= tch.id %>" <%= s.teacher_id === tch.id ? 'selected' : '' %>><%= tch.name %></option><% }); %>
                     </select></td>
                   <td><input type="text" name="row[id<%= s.id %>][remarks]" value="<%= s.remarks || '' %>" style="min-width:130px"></td>
                 </tr>
@@ -58,13 +58,13 @@
         </div>
       </div>
       <div class="card-body" style="border-top:1px solid var(--a-line)">
-        <button class="btn btn-primary" type="submit">Save daily record</button>
+        <button class="btn btn-primary" type="submit"><%= t('a.hifz.save_daily') %></button>
       </div>
     </div>
   </form>
 <% } else if (filters.class_id) { %>
-  <div class="card"><div class="card-body empty"><p>No active students in this class.</p></div></div>
+  <div class="card"><div class="card-body empty"><p><%= t('a.att.no_students_class') %></p></div></div>
 <% } else { %>
   <div class="card"><div class="card-body empty"><div class="big">❁</div>
-    <p>Choose a Hifz class and date to record sabak, sabqi and manzil.</p></div></div>
+    <p><%= t('a.hifz.choose_hint') %></p></div></div>
 <% } %>

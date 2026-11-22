@@ -1,5 +1,5 @@
 <div class="tabs">
-  <% TABS.forEach(function (t) { %>
-    <a href="<%= t[0] %>" class="<%= currentPath.startsWith(t[0]) ? 'active' : '' %>"><%= t[1] %></a>
+  <% TABS.forEach(function (tab) { %>
+    <a href="<%= tab[0] %>" class="<%= currentPath.startsWith(tab[0]) ? 'active' : '' %>"><%= t(tab[1]) %></a>
   <% }); %>
 </div>

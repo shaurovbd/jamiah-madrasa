@@ -1,8 +1,8 @@
-<div class="page-bar"><div><h1>Gallery</h1><p class="sub">Photographs shown on the website gallery page</p></div></div>
+<div class="page-bar"><div><h1><%= t('admin.nav.gallery') %></h1><p class="sub"><%= t('a.web.gallery_sub') %></p></div></div>
 
 <div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2><%= images.length %> image<%= images.length === 1 ? '' : 's' %></h2></div>
+    <div class="card-head"><h2><%= images.length %> <%= t('a.web.image_lower') %><%= images.length === 1 ? '' : 's' %></h2></div>
     <div class="card-body">
       <% if (images.length) { %>
         <div class="grid g4">
@@ -12,31 +12,31 @@
               <div style="padding:.5rem .6rem">
                 <div style="font-size:.82rem;color:var(--a-ink);font-weight:600"><%= img.title || '—' %></div>
                 <div class="sub" style="font-size:.76rem"><%= img.album %></div>
-                <form method="post" action="/admin/gallery/<%= img.id %>" style="margin-top:.4rem" data-confirm="Delete this image?">
+                <form method="post" action="/admin/gallery/<%= img.id %>" style="margin-top:.4rem" data-confirm="<%= t('a.web.confirm_image') %>">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                  <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                  <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                 </form>
               </div>
             </div>
           <% }); %>
         </div>
-      <% } else { %><div class="empty"><div class="big">▣</div><p>No photographs uploaded yet.</p></div><% } %>
+      <% } else { %><div class="empty"><div class="big">▣</div><p><%= t('a.web.no_photos') %></p></div><% } %>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-head"><h2>Upload images</h2></div>
+    <div class="card-head"><h2><%= t('a.web.upload_images') %></h2></div>
     <div class="card-body">
       <form method="post" action="/admin/gallery" enctype="multipart/form-data">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <div class="field" style="margin-bottom:.7rem"><label for="album">Album</label>
-          <input id="album" name="album" type="text" placeholder="Campus" value="Campus"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="title">Caption (applied to all)</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="album"><%= t('a.web.album') %></label>
+          <input id="album" name="album" type="text" placeholder="<%= t('event.campus') %>" value="Campus"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="title"><%= t('a.web.caption_all') %></label>
           <input id="title" name="title" type="text"></div>
-        <div class="field" style="margin-bottom:.9rem"><label for="images">Images <span class="req">*</span></label>
+        <div class="field" style="margin-bottom:.9rem"><label for="images"><%= t('a.web.images') %> <span class="req">*</span></label>
           <input id="images" name="images" type="file" accept="image/*" multiple required>
-          <span class="hint">Up to 12 files, 4 MB each. JPG, PNG, WebP or GIF.</span></div>
-        <button class="btn btn-primary" type="submit" style="width:100%">Upload</button>
+          <span class="hint"><%= t('a.web.upload_hint') %></span></div>
+        <button class="btn btn-primary" type="submit" style="width:100%"><%= t('a.web.upload') %></button>
       </form>
     </div>
   </div>

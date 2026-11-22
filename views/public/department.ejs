@@ -1,6 +1,6 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / <a href="/departments">Departments</a> / <%= dept.name %></div>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <a href="/departments"><%= t('nav.departments') %></a> / <%= dept.name %></div>
     <h1><%= dept.name %></h1>
   </div>
 </div>
@@ -10,7 +10,7 @@
     <div class="prose" style="margin-bottom:2.5rem"><p><%= dept.description || '' %></p></div>
 
     <% if (classes.length) { %>
-      <h2>Classes and Syllabus</h2>
+      <h2><%= t('department.classes_syllabus') %></h2>
       <div class="grid g2" style="margin-top:1.2rem">
         <% classes.forEach(function (c) { %>
           <div class="card">
@@ -18,7 +18,7 @@
             <% if (c.subjects.length) { %>
               <p style="font-size:.9rem"><%= c.subjects.map(function (s) { return s.name; }).join(' · ') %></p>
             <% } else { %>
-              <p>Syllabus to be announced.</p>
+              <p><%= t('department.syllabus_tba') %></p>
             <% } %>
           </div>
         <% }); %>
@@ -26,19 +26,19 @@
     <% } %>
 
     <% if (teachers.length) { %>
-      <h2 style="margin-top:2.5rem">Teachers</h2>
+      <h2 style="margin-top:2.5rem"><%= t('department.teachers') %></h2>
       <div class="table-wrap" style="margin-top:1rem">
         <table class="data">
-          <thead><tr><th>Name</th><th>Designation</th><th>Qualification</th></tr></thead>
+          <thead><tr><th><%= t('common.name') %></th><th><%= t('common.designation') %></th><th><%= t('common.qualification') %></th></tr></thead>
           <tbody>
-          <% teachers.forEach(function (t) { %>
-            <tr><td><%= t.name %></td><td><%= t.designation || '' %></td><td><%= t.qualification || '' %></td></tr>
+          <% teachers.forEach(function (tch) { %>
+            <tr><td><%= tch.name %></td><td><%= tch.designation || '' %></td><td><%= tch.qualification || '' %></td></tr>
           <% }); %>
           </tbody>
         </table>
       </div>
     <% } %>
 
-    <p style="margin-top:2.5rem"><a class="btn btn-green" href="/admission">Apply to this department</a></p>
+    <p style="margin-top:2.5rem"><a class="btn btn-green" href="/admission"><%= t('department.apply_cta') %></a></p>
   </div>
 </section>

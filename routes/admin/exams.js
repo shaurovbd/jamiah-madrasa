@@ -3,6 +3,7 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const { buildMarksheet, classRanking } = require('../../lib/results');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -17,22 +18,22 @@ router.get('/', async (req, res, next) => {
       db.query('SELECT id, name, is_current FROM academic_years ORDER BY name DESC')
     ]);
     const edit = h.toInt(req.query.edit) ? await db.one('SELECT * FROM exams WHERE id = ?', [h.toInt(req.query.edit)]) : null;
-    res.render('admin/exams/list', { title: 'Exams', exams, years, edit });
+    res.render('admin/exams/list', { title: res.locals.t('admin.nav.exams'), exams, years, edit });
   } catch (err) { next(err); }
 });
 
 router.post('/', async (req, res, next) => {
   try {
     const name = String(req.body.name || '').trim();
-    if (!name) { req.flash('error', 'Examination name is required.'); return res.redirect('/admin/exams'); }
+    if (!name) { req.flash('error', 'f.exam.name_required'); return res.redirect('/admin/exams'); }
     const id = h.toInt(req.body.id);
     const vals = [name, h.toInt(req.body.academic_year_id), h.orNull(req.body.start_date), h.orNull(req.body.end_date)];
     if (id) {
       await db.run('UPDATE exams SET name=?, academic_year_id=?, start_date=?, end_date=? WHERE id=?', [...vals, id]);
-      req.flash('success', 'Examination updated.');
+      req.flash('success', 'f.exam.updated');
     } else {
       await db.run('INSERT INTO exams (name, academic_year_id, start_date, end_date) VALUES (?,?,?,?)', vals);
-      req.flash('success', 'Examination created. Now enter marks for each class.');
+      req.flash('success', 'f.exam.created');
     }
     res.redirect('/admin/exams');
   } catch (err) { next(err); }
@@ -41,7 +42,7 @@ router.post('/', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM exams WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Examination and its marks have been deleted.');
+    req.flash('success', 'f.exam.deleted');
     res.redirect('/admin/exams');
   } catch (err) { next(err); }
 });
@@ -51,9 +52,7 @@ router.post('/:id/publish', async (req, res, next) => {
     const id = h.toInt(req.params.id);
     const publish = req.body.publish === '1' ? 1 : 0;
     await db.run('UPDATE exams SET is_published = ? WHERE id = ?', [publish, id]);
-    req.flash('success', publish
-      ? 'Results published — students can now look them up on the website.'
-      : 'Results unpublished and hidden from the website.');
+    req.flash('success', publish ? 'f.exam.published' : 'f.exam.unpublished');
     res.redirect(`/admin/exams/${id}`);
   } catch (err) { next(err); }
 });
@@ -108,7 +107,7 @@ router.get('/:id/marks', async (req, res, next) => {
     }
 
     res.render('admin/exams/marks', {
-      title: `Marks — ${exam.name}`, exam, classes, subjects, subject, students,
+      title: res.locals.t('a.title.marks', { name: exam.name }), exam, classes, subjects, subject, students,
       filters: { class_id: classId, subject_id: subjectId }
     });
   } catch (err) { next(err); }
@@ -120,7 +119,7 @@ router.post('/:id/marks', async (req, res, next) => {
     const classId = h.toInt(req.body.class_id);
     const subjectId = h.toInt(req.body.subject_id);
     const subject = await db.one('SELECT id, full_marks, name FROM subjects WHERE id = ?', [subjectId]);
-    if (!subject) { req.flash('error', 'Subject not found.'); return res.redirect(`/admin/exams/${id}/marks`); }
+    if (!subject) { req.flash('error', 'f.exam.subject_not_found'); return res.redirect(`/admin/exams/${id}/marks`); }
 
     const marks = req.body.marks || {};
     const absents = req.body.absent || {};
@@ -152,8 +151,12 @@ router.post('/:id/marks', async (req, res, next) => {
       }
     });
 
-    req.flash('success', `Marks saved for ${saved} student${saved === 1 ? '' : 's'} in ${subject.name}.`
-      + (clamped ? ` ${clamped} entry above the full marks was reduced to ${subject.full_marks}.` : ''));
+    // Two separate messages rather than one sentence: Bangla and English
+    // order these clauses differently.
+    req.flash('success', i18n.pack('f.exam.marks_saved', { count: saved, subject: subject.name }));
+    if (clamped) {
+      req.flash('info', i18n.pack('f.exam.marks_clamped', { count: clamped, full: subject.full_marks }));
+    }
     res.redirect(`/admin/exams/${id}/marks?class_id=${classId}&subject_id=${subjectId}`);
   } catch (err) { next(err); }
 });
@@ -168,15 +171,15 @@ router.get('/:id/results', async (req, res, next) => {
     const classes = await db.query('SELECT id, name FROM classes ORDER BY department_id, level');
     const ranking = classId ? await classRanking(id, classId) : [];
     const klass = classId ? classes.find((c) => c.id === classId) : null;
-    res.render('admin/exams/results', { title: `Results — ${exam.name}`, exam, classes, ranking, klass, filters: { class_id: classId } });
+    res.render('admin/exams/results', { title: res.locals.t('a.title.results', { name: exam.name }), exam, classes, ranking, klass, filters: { class_id: classId } });
   } catch (err) { next(err); }
 });
 
 router.get('/:id/marksheet/:studentId', async (req, res, next) => {
   try {
     const sheet = await buildMarksheet(h.toInt(req.params.id), h.toInt(req.params.studentId));
-    if (!sheet) { req.flash('error', 'No marks recorded for that student in this examination.'); return res.redirect(`/admin/exams/${req.params.id}`); }
-    res.render('admin/exams/marksheet', { title: `Marksheet — ${sheet.student.name}`, sheet });
+    if (!sheet) { req.flash('error', 'f.exam.no_marks_student'); return res.redirect(`/admin/exams/${req.params.id}`); }
+    res.render('admin/exams/marksheet', { title: res.locals.t('a.title.marksheet', { name: sheet.student.name }), sheet });
   } catch (err) { next(err); }
 });
 

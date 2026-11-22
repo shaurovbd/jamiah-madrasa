@@ -265,3 +265,41 @@ footer.site li{margin-bottom:.5rem}
   .g4{grid-template-columns:1fr}
   .footer-grid{grid-template-columns:1fr}
 }
+
+/* ------------------------------------------------------------ language */
+/* Bangla sits on a taller line than Latin and has no real italic, so the
+   script gets its own stack and a little more leading. Numerals and Latin
+   words inside Bangla text still fall through to Inter. */
+:root{
+  --bengali:"Noto Sans Bengali","Hind Siliguri","SolaimanLipi","Kalpurush",var(--sans);
+}
+html[lang="bn"] body{font-family:var(--bengali);font-size:16px;line-height:1.8}
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3,
+html[lang="bn"] h4{font-family:var(--bengali);line-height:1.4;font-weight:600;letter-spacing:0}
+html[lang="bn"] h1{font-size:clamp(1.7rem,3.6vw,2.5rem)}
+html[lang="bn"] .btn,
+html[lang="bn"] button,
+html[lang="bn"] input,
+html[lang="bn"] select,
+html[lang="bn"] textarea{font-family:var(--bengali)}
+/* The toggle is labelled in Bangla even on English pages. */
+.lang-opt{font-family:var(--bengali)}
+html[lang="bn"] .lang-opt[hreflang="en"]{font-family:var(--sans)}
+
+.lang-switch{
+  display:inline-flex;align-items:center;gap:1px;margin-left:.45rem;
+  border:1px solid rgba(255,255,255,.28);border-radius:999px;overflow:hidden;
+  vertical-align:middle;
+}
+.lang-switch .lang-opt{
+  display:inline-block;padding:.12rem .55rem;font-size:.8rem;line-height:1.5;
+  color:inherit;opacity:.72;text-decoration:none;white-space:nowrap;
+}
+.lang-switch a.lang-opt:hover{opacity:1;background:rgba(255,255,255,.14);text-decoration:none}
+.lang-switch .lang-opt.is-on{opacity:1;background:var(--gold);color:#17201c;font-weight:600}
+@media (max-width:640px){
+  .lang-switch{margin-left:.25rem}
+  .lang-switch .lang-opt{padding:.1rem .45rem;font-size:.75rem}
+}

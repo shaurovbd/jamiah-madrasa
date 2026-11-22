@@ -1,4 +1,4 @@
-<div class="page-bar"><h1>Class Routine</h1></div>
+<div class="page-bar"><h1><%= t('admin.nav.routine') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <style>
@@ -20,49 +20,49 @@
 </style>
 
 <div class="card">
-  <div class="card-head"><h2>Choose a class</h2></div>
+  <div class="card-head"><h2><%= t('a.rt.choose_class') %></h2></div>
   <div class="card-body">
     <form method="get" action="/admin/routine/classes" class="rt-pick grid"
           style="grid-template-columns:repeat(3,1fr) auto;gap:.8rem;align-items:end">
       <div class="field">
-        <label for="class_id">Class <span class="req">*</span></label>
+        <label for="class_id"><%= t('common.class') %> <span class="req">*</span></label>
         <select id="class_id" name="class_id" required>
-          <option value="">— Select —</option>
+          <option value=""><%= t('results.select_placeholder') %></option>
           <% classes.forEach(function (c) { %>
             <option value="<%= c.id %>" <%= classId === c.id ? 'selected' : '' %>><%= c.dept_name ? c.dept_name + ' · ' : '' %><%= c.name %></option>
           <% }); %>
         </select>
       </div>
       <div class="field">
-        <label for="section_id">Section</label>
+        <label for="section_id"><%= t('common.section') %></label>
         <select id="section_id" name="section_id">
-          <option value="">— Whole class —</option>
+          <option value=""><%= t('a.rt.whole_class') %></option>
           <% sections.forEach(function (s) { %>
             <option value="<%= s.id %>" <%= sectionId === s.id ? 'selected' : '' %>><%= s.name %></option>
           <% }); %>
         </select>
       </div>
       <div class="field">
-        <label for="year_id">Academic year</label>
+        <label for="year_id"><%= t('a.academic_year') %></label>
         <select id="year_id" name="year_id">
-          <option value="">— Not recorded —</option>
+          <option value=""><%= t('a.rt.not_recorded') %></option>
           <% years.forEach(function (y) { %>
             <option value="<%= y.id %>" <%= yearId === y.id ? 'selected' : '' %>><%= y.name %><%= y.is_current ? ' (current)' : '' %></option>
           <% }); %>
         </select>
       </div>
-      <div class="field"><button class="btn btn-primary" type="submit">Show routine</button></div>
+      <div class="field"><button class="btn btn-primary" type="submit"><%= t('a.rt.show_routine') %></button></div>
     </form>
   </div>
 </div>
 
 <% if (clashes.length) { %>
   <div class="alert alert-error rt-clash">
-    <strong>এই শিক্ষকগণ ঐ সময়ে অন্য ক্লাসে আছেন / These teachers are already booked at that time.</strong>
-    Nothing was saved — fix the slots below and save again.
+    <strong><%= t('a.rt.clash_heading') %></strong>
+    <%= t('a.rt.nothing_saved') %>
     <ul>
       <% clashes.forEach(function (c) { %>
-        <li><%= c.teacher %> — <%= c.day %>, <%= c.period %> — already teaching <%= c.where %></li>
+        <li><%= t('a.rt.clash_line', { teacher: c.teacher, day: c.day, period: c.period, cls: c.where }) %></li>
       <% }); %>
     </ul>
   </div>
@@ -70,13 +70,13 @@
 
 <% if (!classId) { %>
   <div class="card"><div class="card-body">
-    <div class="empty">Pick a class above to build or edit its weekly routine.</div>
+    <div class="empty"><%= t('a.rt.pick_class') %></div>
   </div></div>
 <% } else if (!periods.length) { %>
   <div class="card"><div class="card-body">
     <div class="empty">
-      No periods are set up yet. Add the daily bell times first on the
-      <a href="/admin/routine/periods">Periods &amp; Times</a> tab.
+      <%= t('a.rt.no_periods_prefix') %>
+      <a href="/admin/routine/periods"><%= t('a.rt.periods_times') %></a> <%= t('a.tab_period') %>
     </div>
   </div></div>
 <% } else { %>
@@ -87,19 +87,19 @@
     <input type="hidden" name="year_id" value="<%= yearId || '' %>">
 
     <div class="card">
-      <div class="card-head"><h2>Weekly routine</h2></div>
+      <div class="card-head"><h2><%= t('a.rt.weekly_routine') %></h2></div>
       <div class="card-body flush">
         <% if (!subjects.length) { %>
           <div class="empty" style="padding:.8rem">
-            This class has no subjects yet, so the subject lists are empty. Add them under
-            <a href="/admin/academics/subjects">Classes &amp; Subjects</a> — you can still set teachers and rooms now.
+            <%= t('a.rt.no_subjects_prefix') %>
+            <a href="/admin/academics/subjects"><%= t('admin.nav.academics') %></a> <%= t('a.rt.no_subjects_suffix') %>
           </div>
         <% } %>
         <div class="rt-scroll">
           <table class="rt-table">
             <thead>
               <tr>
-                <th class="rt-period">Period</th>
+                <th class="rt-period"><%= t('routine.period') %></th>
                 <% DAYS.forEach(function (d) { %><th><%= d.bn %><br><small><%= d.en %></small></th><% }); %>
               </tr>
             </thead>
@@ -116,19 +116,19 @@
                     <% DAYS.forEach(function (d) { %>
                       <% var key = d.n + '_' + p.id; var cell = grid[key] || {}; %>
                       <td class="rt-cell">
-                        <select name="s_<%= key %>" aria-label="Subject">
-                          <option value="">— Subject —</option>
+                        <select name="s_<%= key %>" aria-label="<%= t('common.subject') %>">
+                          <option value=""><%= t('a.rt.opt_subject') %></option>
                           <% subjects.forEach(function (s) { %>
                             <option value="<%= s.id %>" <%= Number(cell.subject_id) === s.id ? 'selected' : '' %>><%= s.name %></option>
                           <% }); %>
                         </select>
-                        <select name="t_<%= key %>" aria-label="Teacher">
-                          <option value="">— Teacher —</option>
-                          <% teachers.forEach(function (t) { %>
-                            <option value="<%= t.id %>" <%= Number(cell.teacher_id) === t.id ? 'selected' : '' %>><%= t.name %></option>
+                        <select name="t_<%= key %>" aria-label="<%= t('role.teacher') %>">
+                          <option value=""><%= t('a.rt.opt_teacher') %></option>
+                          <% teachers.forEach(function (tch) { %>
+                            <option value="<%= tch.id %>" <%= Number(cell.teacher_id) === tch.id ? 'selected' : '' %>><%= tch.name %></option>
                           <% }); %>
                         </select>
-                        <input type="text" name="r_<%= key %>" value="<%= cell.room || '' %>" placeholder="Room" aria-label="Room">
+                        <input type="text" name="r_<%= key %>" value="<%= cell.room || '' %>" placeholder="<%= t('a.room') %>" aria-label="<%= t('a.room') %>">
                       </td>
                     <% }); %>
                   </tr>
@@ -141,8 +141,8 @@
     </div>
 
     <div class="rt-actions" style="display:flex;gap:.6rem;margin-top:1rem">
-      <button class="btn btn-primary" type="submit">Save routine</button>
-      <button class="btn btn-light" type="button" onclick="window.print()">Print</button>
+      <button class="btn btn-primary" type="submit"><%= t('a.rt.save_routine') %></button>
+      <button class="btn btn-light" type="button" onclick="window.print()"><%= t('common.print') %></button>
     </div>
   </form>
 <% } %>

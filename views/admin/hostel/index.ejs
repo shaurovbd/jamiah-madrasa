@@ -1,24 +1,24 @@
 <div class="page-bar">
-  <div><h1>Hostel</h1><p class="sub">Rooms, capacity and current allocations</p></div>
+  <div><h1><%= t('admin.nav.hostel') %></h1><p class="sub"><%= t('a.hostel.sub') %></p></div>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.1rem">
-  <div class="stat-card"><div class="label">Total capacity</div><div class="value"><%= h.num(stats.capacity) %></div></div>
-  <div class="stat-card blue"><div class="label">Occupied</div><div class="value"><%= h.num(stats.occupied) %></div></div>
-  <div class="stat-card"><div class="label">Free beds</div><div class="value"><%= h.num(stats.free) %></div></div>
-  <div class="stat-card <%= stats.unassigned ? 'gold' : '' %>"><div class="label">Boarders without a room</div>
+  <div class="stat-card"><div class="label"><%= t('a.hostel.total_capacity') %></div><div class="value"><%= h.num(stats.capacity) %></div></div>
+  <div class="stat-card blue"><div class="label"><%= t('a.hostel.occupied') %></div><div class="value"><%= h.num(stats.occupied) %></div></div>
+  <div class="stat-card"><div class="label"><%= t('a.hostel.free_beds') %></div><div class="value"><%= h.num(stats.free) %></div></div>
+  <div class="stat-card <%= stats.unassigned ? 'gold' : '' %>"><div class="label"><%= t('a.hostel.without_room') %></div>
     <div class="value"><%= h.num(stats.unassigned) %></div></div>
 </div>
 
 <div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
   <div>
     <div class="card" style="margin-bottom:1.1rem">
-      <div class="card-head"><h2>Rooms</h2></div>
+      <div class="card-head"><h2><%= t('a.hostel.rooms') %></h2></div>
       <div class="card-body flush">
         <% if (rooms.length) { %>
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Room</th><th>Block</th><th class="num">Capacity</th><th class="num">Occupied</th><th class="num">Free</th><th class="num">Monthly fee</th><th class="actions"></th></tr></thead>
+            <thead><tr><th><%= t('a.room') %></th><th><%= t('a.hostel.block') %></th><th class="num"><%= t('a.capacity') %></th><th class="num"><%= t('a.hostel.occupied') %></th><th class="num"><%= t('a.hostel.free') %></th><th class="num"><%= t('a.monthly_fee') %></th><th class="actions"></th></tr></thead>
             <tbody>
               <% rooms.forEach(function (r) { var free = Number(r.capacity) - Number(r.occupied); %>
                 <tr>
@@ -29,10 +29,10 @@
                   <td class="num"><span class="badge badge-<%= free > 0 ? 'green' : 'red' %>"><%= free %></span></td>
                   <td class="num"><%= money(r.monthly_fee) %></td>
                   <td class="actions">
-                    <a class="btn btn-light btn-sm" href="/admin/hostel?edit=<%= r.id %>">Edit</a>
+                    <a class="btn btn-light btn-sm" href="/admin/hostel?edit=<%= r.id %>"><%= t('common.edit') %></a>
                     <form method="post" action="/admin/hostel/rooms/<%= r.id %>" style="display:inline" data-confirm="Delete room <%= r.room_no %> and its allocations?">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                      <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                     </form>
                   </td>
                 </tr>
@@ -40,28 +40,28 @@
             </tbody>
           </table>
         </div>
-        <% } else { %><div class="empty"><div class="big">⌂</div><p>No rooms added yet.</p></div><% } %>
+        <% } else { %><div class="empty"><div class="big">⌂</div><p><%= t('a.hostel.no_rooms') %></p></div><% } %>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>Current allocations</h2></div>
+      <div class="card-head"><h2><%= t('a.hostel.allocations') %></h2></div>
       <div class="card-body flush">
         <% if (allocations.length) { %>
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Room</th><th>Student</th><th>Class</th><th>Since</th><th class="actions"></th></tr></thead>
+            <thead><tr><th><%= t('a.room') %></th><th><%= t('results.student') %></th><th><%= t('common.class') %></th><th><%= t('a.hostel.since') %></th><th class="actions"></th></tr></thead>
             <tbody>
               <% allocations.forEach(function (a) { %>
                 <tr>
                   <td><strong><%= a.room_no %></strong><%= a.block ? ' · ' + a.block : '' %></td>
                   <td><a href="/admin/students/<%= a.student_id %>"><%= a.student %></a><br><small class="sub"><%= a.admission_no %></small></td>
                   <td><%= a.class_name || '—' %></td>
-                  <td><%= h.fmtDate(a.allocated_on) %></td>
+                  <td><%= fmtDate(a.allocated_on) %></td>
                   <td class="actions">
-                    <form method="post" action="/admin/hostel/allocations/<%= a.id %>/vacate" style="display:inline" data-confirm="Vacate this room?">
+                    <form method="post" action="/admin/hostel/allocations/<%= a.id %>/vacate" style="display:inline" data-confirm="<%= t('a.hostel.confirm_vacate') %>">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <button class="btn btn-light btn-sm" type="submit">Vacate</button>
+                      <button class="btn btn-light btn-sm" type="submit"><%= t('a.hostel.vacate') %></button>
                     </form>
                   </td>
                 </tr>
@@ -69,44 +69,44 @@
             </tbody>
           </table>
         </div>
-        <% } else { %><div class="empty"><p>Nobody is allocated a room yet.</p></div><% } %>
+        <% } else { %><div class="empty"><p><%= t('a.hostel.nobody') %></p></div><% } %>
       </div>
     </div>
   </div>
 
   <div>
     <div class="card" style="margin-bottom:1.1rem">
-      <div class="card-head"><h2>Allocate a room</h2></div>
+      <div class="card-head"><h2><%= t('a.hostel.allocate_room') %></h2></div>
       <div class="card-body">
         <% if (unassigned.length && rooms.length) { %>
           <form method="post" action="/admin/hostel/allocate">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field" style="margin-bottom:.7rem">
-              <label for="student_id">Student <span class="req">*</span></label>
+              <label for="student_id"><%= t('results.student') %> <span class="req">*</span></label>
               <select id="student_id" name="student_id" required>
-                <option value="">— Select —</option>
+                <option value=""><%= t('results.select_placeholder') %></option>
                 <% unassigned.forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %> (<%= s.admission_no %>)</option><% }); %>
               </select>
             </div>
             <div class="field" style="margin-bottom:.7rem">
-              <label for="room_id">Room <span class="req">*</span></label>
+              <label for="room_id"><%= t('a.room') %> <span class="req">*</span></label>
               <select id="room_id" name="room_id" required>
-                <option value="">— Select —</option>
+                <option value=""><%= t('results.select_placeholder') %></option>
                 <% rooms.filter(function (r) { return Number(r.occupied) < Number(r.capacity); }).forEach(function (r) { %>
-                  <option value="<%= r.id %>"><%= r.room_no %> — <%= Number(r.capacity) - Number(r.occupied) %> free</option>
+                  <option value="<%= r.id %>"><%= r.room_no %> — <%= t('a.hostel.free_count', { count: Number(r.capacity) - Number(r.occupied) }) %></option>
                 <% }); %>
               </select>
             </div>
             <div class="field" style="margin-bottom:.9rem">
-              <label for="allocated_on">From</label>
+              <label for="allocated_on"><%= t('common.from') %></label>
               <input id="allocated_on" name="allocated_on" type="date" value="<%= h.today() %>">
             </div>
-            <button class="btn btn-primary" type="submit" style="width:100%">Allocate</button>
+            <button class="btn btn-primary" type="submit" style="width:100%"><%= t('a.hostel.allocate') %></button>
           </form>
         <% } else if (!rooms.length) { %>
-          <p class="sub">Add a room first.</p>
+          <p class="sub"><%= t('a.hostel.add_room_first') %></p>
         <% } else { %>
-          <p class="sub">Every boarding student has a room. Mark a student as a boarder on their profile to allocate one.</p>
+          <p class="sub"><%= t('a.hostel.all_allocated') %></p>
         <% } %>
       </div>
     </div>
@@ -117,20 +117,20 @@
         <form method="post" action="/admin/hostel/rooms">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <% if (editRoom) { %><input type="hidden" name="id" value="<%= editRoom.id %>"><% } %>
-          <div class="field" style="margin-bottom:.7rem"><label for="room_no">Room number <span class="req">*</span></label>
+          <div class="field" style="margin-bottom:.7rem"><label for="room_no"><%= t('a.hostel.room_number') %> <span class="req">*</span></label>
             <input id="room_no" name="room_no" type="text" required value="<%= editRoom ? editRoom.room_no : '' %>"></div>
-          <div class="field" style="margin-bottom:.7rem"><label for="block">Block</label>
+          <div class="field" style="margin-bottom:.7rem"><label for="block"><%= t('a.hostel.block') %></label>
             <input id="block" name="block" type="text" value="<%= editRoom ? editRoom.block || '' : '' %>"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.7rem">
-            <div class="field"><label for="capacity">Capacity</label>
+            <div class="field"><label for="capacity"><%= t('a.capacity') %></label>
               <input id="capacity" name="capacity" type="number" min="1" value="<%= editRoom ? editRoom.capacity : 4 %>"></div>
-            <div class="field"><label for="monthly_fee">Monthly fee</label>
+            <div class="field"><label for="monthly_fee"><%= t('a.monthly_fee') %></label>
               <input id="monthly_fee" name="monthly_fee" type="number" step="0.01" min="0" value="<%= editRoom ? editRoom.monthly_fee : 0 %>"></div>
           </div>
-          <div class="field" style="margin-bottom:.9rem"><label for="notes">Notes</label>
+          <div class="field" style="margin-bottom:.9rem"><label for="notes"><%= t('common.notes') %></label>
             <input id="notes" name="notes" type="text" value="<%= editRoom ? editRoom.notes || '' : '' %>"></div>
           <button class="btn btn-primary" type="submit"><%= editRoom ? 'Save changes' : 'Add room' %></button>
-          <% if (editRoom) { %><a class="btn btn-light" href="/admin/hostel">Cancel</a><% } %>
+          <% if (editRoom) { %><a class="btn btn-light" href="/admin/hostel"><%= t('common.cancel') %></a><% } %>
         </form>
       </div>
     </div>

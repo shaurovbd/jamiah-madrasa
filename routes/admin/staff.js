@@ -3,6 +3,7 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const upload = require('../../lib/upload');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ router.get('/', async (req, res, next) => {
     const payroll = await db.scalar("SELECT COALESCE(SUM(salary),0) AS c FROM staff WHERE status = 'active'");
 
     res.render('admin/staff/list', {
-      title: 'Staff', staff, departments, p, payroll: Number(payroll),
+      title: res.locals.t('home.stat_staff'), staff, departments, p, payroll: Number(payroll),
       filters: { q, department_id: deptId, status }
     });
   } catch (err) { next(err); }
@@ -39,7 +40,7 @@ router.get('/new', async (req, res, next) => {
     const last = await db.one('SELECT MAX(id) AS id FROM staff');
     const departments = await db.query('SELECT id, name FROM departments ORDER BY sort_order, id');
     res.render('admin/staff/form', {
-      title: 'Add staff member', isNew: true, departments,
+      title: res.locals.t('a.staff.add_member'), isNew: true, departments,
       member: { staff_no: `STF-${String((last && last.id ? last.id : 0) + 1).padStart(3, '0')}`, status: 'active' }
     });
   } catch (err) { next(err); }
@@ -49,11 +50,11 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
   try {
     const b = req.body;
     if (!String(b.name || '').trim() || !String(b.staff_no || '').trim()) {
-      req.flash('error', 'Name and staff number are required.');
+      req.flash('error', 'f.staff.required');
       return res.redirect('/admin/staff/new');
     }
     const dup = await db.one('SELECT id FROM staff WHERE staff_no = ?', [b.staff_no.trim()]);
-    if (dup) { req.flash('error', `Staff number ${b.staff_no} is already used.`); return res.redirect('/admin/staff/new'); }
+    if (dup) { req.flash('error', i18n.pack('f.staff.no_in_use', { no: b.staff_no })); return res.redirect('/admin/staff/new'); }
 
     const r = await db.run(
       `INSERT INTO staff (staff_no, name, designation, department_id, qualification, phone, email,
@@ -63,7 +64,7 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
        h.orNull(b.phone), h.orNull(b.email), h.orNull(b.address), req.file ? req.file.filename : null,
        h.orNull(b.join_date), h.toNum(b.salary, 0), b.status === 'inactive' ? 'inactive' : 'active']
     );
-    req.flash('success', `${b.name.trim()} has been added.`);
+    req.flash('success', i18n.pack('f.staff.added', { name: b.name.trim() }));
     res.redirect(`/admin/staff/${r.insertId}`);
   } catch (err) { next(err); }
 });
@@ -90,7 +91,7 @@ router.get('/:id/edit', async (req, res, next) => {
     const member = await db.one('SELECT * FROM staff WHERE id = ?', [h.toInt(req.params.id)]);
     if (!member) return next();
     const departments = await db.query('SELECT id, name FROM departments ORDER BY sort_order, id');
-    res.render('admin/staff/form', { title: `Edit ${member.name}`, member, isNew: false, departments });
+    res.render('admin/staff/form', { title: res.locals.t('a.title.edit', { name: member.name }), member, isNew: false, departments });
   } catch (err) { next(err); }
 });
 
@@ -109,7 +110,7 @@ router.put('/:id', upload.image.single('photo'), async (req, res, next) => {
        h.orNull(b.phone), h.orNull(b.email), h.orNull(b.address), req.file ? req.file.filename : existing.photo,
        h.orNull(b.join_date), h.toNum(b.salary, 0), b.status === 'inactive' ? 'inactive' : 'active', id]
     );
-    req.flash('success', 'Staff record updated.');
+    req.flash('success', 'f.staff.updated');
     res.redirect(`/admin/staff/${id}`);
   } catch (err) { next(err); }
 });
@@ -121,7 +122,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!member) return next();
     await db.run('DELETE FROM staff WHERE id = ?', [id]);
     if (member.photo) upload.remove(member.photo);
-    req.flash('success', `${member.name} has been removed.`);
+    req.flash('success', i18n.pack('f.staff.removed', { name: member.name }));
     res.redirect('/admin/staff');
   } catch (err) { next(err); }
 });

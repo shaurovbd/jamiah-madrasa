@@ -1,26 +1,26 @@
-<div class="page-bar"><h1>Hifz Progress</h1></div>
+<div class="page-bar"><h1><%= t('admin.nav.hifz') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/hifz/overview">
-      <div class="field"><label for="class_id">Class</label>
+      <div class="field"><label for="class_id"><%= t('common.class') %></label>
         <select id="class_id" name="class_id" onchange="this.form.submit()">
-          <option value="">All classes</option>
+          <option value=""><%= t('a.all_classes') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
-      <button class="btn btn-primary" type="submit">Filter</button>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
     </form>
   </div>
 </div>
 
 <div class="card">
-  <div class="card-head"><h2>Memorisation progress</h2></div>
+  <div class="card-head"><h2><%= t('a.hifz.memorisation_progress') %></h2></div>
   <div class="card-body flush">
     <% if (students.length) { %>
     <div class="table-wrap">
       <table class="data">
-        <thead><tr><th>Roll</th><th>Name</th><th>Class</th><th style="width:220px">Para completed</th><th class="num">Entries</th><th>Last entry</th><th class="actions"></th></tr></thead>
+        <thead><tr><th><%= t('common.roll') %></th><th><%= t('common.name') %></th><th><%= t('common.class') %></th><th style="width:220px"><%= t('a.hifz.para_completed') %></th><th class="num"><%= t('a.entries') %></th><th><%= t('a.hifz.last_entry') %></th><th class="actions"></th></tr></thead>
         <tbody>
           <% students.forEach(function (s) { %>
             <tr>
@@ -34,13 +34,13 @@
                 </div>
               </td>
               <td class="num"><%= s.entries %></td>
-              <td><%= s.last_entry ? h.fmtDate(s.last_entry) : '—' %></td>
-              <td class="actions"><a class="btn btn-light btn-sm" href="/admin/hifz/student/<%= s.id %>">Record</a></td>
+              <td><%= s.last_entry ? fmtDate(s.last_entry) : '—' %></td>
+              <td class="actions"><a class="btn btn-light btn-sm" href="/admin/hifz/student/<%= s.id %>"><%= t('a.hifz.record') %></a></td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     </div>
-    <% } else { %><div class="empty"><p>No active students.</p></div><% } %>
+    <% } else { %><div class="empty"><p><%= t('a.hifz.no_active_students') %></p></div><% } %>
   </div>
 </div>

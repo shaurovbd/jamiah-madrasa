@@ -40,7 +40,7 @@ router.get('/about', async (req, res, next) => {
       db.one("SELECT * FROM pages WHERE slug = 'facilities' AND is_published = 1"),
       db.query("SELECT name, designation, qualification, photo FROM staff WHERE status = 'active' ORDER BY id LIMIT 6")
     ]);
-    res.render('public/about', { title: 'About Us', about, mission, facilities, leaders });
+    res.render('public/about', { title: res.locals.t('about.title'), about, mission, facilities, leaders });
   } catch (err) { next(err); }
 });
 
@@ -54,7 +54,7 @@ router.get('/departments', async (req, res, next) => {
         "SELECT COUNT(*) AS c FROM students WHERE department_id = ? AND status = 'active'", [d.id]
       );
     }
-    res.render('public/departments', { title: 'Departments', departments });
+    res.render('public/departments', { title: res.locals.t('nav.departments'), departments });
   } catch (err) { next(err); }
 });
 
@@ -83,7 +83,7 @@ router.get('/notices', async (req, res, next) => {
         WHERE is_published = 1 ORDER BY COALESCE(published_at, DATE(created_at)) DESC, id DESC
         LIMIT ${p.perPage} OFFSET ${p.offset}`
     );
-    res.render('public/notices', { title: 'Notices', notices, p });
+    res.render('public/notices', { title: res.locals.t('nav.notices'), notices, p });
   } catch (err) { next(err); }
 });
 
@@ -107,7 +107,7 @@ router.get('/events', async (req, res, next) => {
     const past = await db.query(
       'SELECT * FROM events WHERE is_published = 1 AND event_date < CURDATE() ORDER BY event_date DESC LIMIT 12'
     );
-    res.render('public/events', { title: 'Events', upcoming, past });
+    res.render('public/events', { title: res.locals.t('nav.events'), upcoming, past });
   } catch (err) { next(err); }
 });
 
@@ -124,7 +124,7 @@ router.get('/gallery', async (req, res, next) => {
   try {
     const images = await db.query('SELECT * FROM gallery ORDER BY sort_order, id DESC');
     const albums = [...new Set(images.map((i) => i.album || 'Campus'))];
-    res.render('public/gallery', { title: 'Gallery', images, albums });
+    res.render('public/gallery', { title: res.locals.t('nav.gallery'), images, albums });
   } catch (err) { next(err); }
 });
 
@@ -137,9 +137,9 @@ async function resolveDepartmentId(key) {
   return row ? row.id : null;
 }
 
-function admissionPageData(extra) {
+function admissionPageData(extra, t) {
   return Object.assign({
-    title: 'ভর্তি আবেদন ফরম',
+    title: t ? t('admission.form_title') : 'ভর্তি আবেদন ফরম',
     af,
     submitted: null,
     errors: [],
@@ -150,7 +150,7 @@ function admissionPageData(extra) {
 router.get('/admission', async (req, res, next) => {
   try {
     const feeHeads = await db.query("SELECT name, ftype, amount FROM fee_heads WHERE is_active = 1 ORDER BY ftype, id");
-    res.render('public/admission', admissionPageData({ feeHeads }));
+    res.render('public/admission', admissionPageData({ feeHeads }, res.locals.t));
   } catch (err) { next(err); }
 });
 
@@ -163,15 +163,15 @@ router.post('/admission', async (req, res, next) => {
     if (String(b.website || '').trim()) {
       return res.render('public/admission', admissionPageData({
         feeHeads: [],
-        title: 'আবেদন গৃহীত হয়েছে',
+        title: res.locals.t('admission.received_title'),
         submitted: { applicationNo: '—', name: String(b.full_name_bn || '').trim() }
-      }));
+      }, res.locals.t));
     }
 
     const errors = af.validate(b);
     if (errors.length) {
       const feeHeads = await db.query("SELECT name, ftype, amount FROM fee_heads WHERE is_active = 1 ORDER BY ftype, id");
-      return res.status(422).render('public/admission', admissionPageData({ feeHeads, errors, form: b }));
+      return res.status(422).render('public/admission', admissionPageData({ feeHeads, errors, form: b }, res.locals.t));
     }
 
     const name = String(b.full_name_bn).trim();
@@ -226,9 +226,9 @@ router.post('/admission', async (req, res, next) => {
     const feeHeads = await db.query("SELECT name, ftype, amount FROM fee_heads WHERE is_active = 1 ORDER BY ftype, id");
     res.render('public/admission', admissionPageData({
       feeHeads,
-      title: 'আবেদন গৃহীত হয়েছে',
+      title: res.locals.t('admission.received_title'),
       submitted: { applicationNo, name }
-    }));
+    }, res.locals.t));
   } catch (err) { next(err); }
 });
 
@@ -237,7 +237,7 @@ router.get('/results', async (req, res, next) => {
   try {
     const exams = await db.query('SELECT id, name FROM exams WHERE is_published = 1 ORDER BY id DESC');
     const classes = await db.query('SELECT id, name FROM classes ORDER BY department_id, level');
-    res.render('public/results', { title: 'Check Result', exams, classes, sheet: null, notFound: false, form: {} });
+    res.render('public/results', { title: res.locals.t('results.title'), exams, classes, sheet: null, notFound: false, form: {} });
   } catch (err) { next(err); }
 });
 
@@ -261,14 +261,14 @@ router.post('/results', async (req, res, next) => {
       notFound = true;
     }
     res.render('public/results', {
-      title: 'Check Result', exams, classes, sheet, notFound, form: req.body
+      title: res.locals.t('results.title'), exams, classes, sheet, notFound, form: req.body
     });
   } catch (err) { next(err); }
 });
 
 /* --------------------------------------------------------------- contact */
 router.get('/contact', (req, res) => {
-  res.render('public/contact', { title: 'Contact Us', sent: false, form: {} });
+  res.render('public/contact', { title: res.locals.t('contact.title'), sent: false, form: {} });
 });
 
 router.post('/contact', async (req, res, next) => {
@@ -278,15 +278,15 @@ router.post('/contact', async (req, res, next) => {
     const message = String(b.message || '').trim();
     if (!name || !message) {
       return res.render('public/contact', {
-        title: 'Contact Us', sent: false, form: b,
-        flash: { ...res.locals.flash, error: ['Please give your name and a message.'] }
+        title: res.locals.t('contact.title'), sent: false, form: b,
+        flash: { ...res.locals.flash, error: ['contact.need_name_message'] }
       });
     }
     await db.run(
       'INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?,?,?,?,?)',
       [name, h.orNull(b.email), h.orNull(b.phone), h.orNull(b.subject), message]
     );
-    res.render('public/contact', { title: 'Contact Us', sent: true, form: {} });
+    res.render('public/contact', { title: res.locals.t('contact.title'), sent: true, form: {} });
   } catch (err) { next(err); }
 });
 
@@ -350,7 +350,7 @@ router.get('/routine', async (req, res, next) => {
     }
 
     res.render('public/routine', {
-      title: 'Class Routine',
+      title: res.locals.t('routine.title'),
       DAYS: routineLib.DAYS,
       hhmm: routineLib.hhmm,
       classes: classes,

@@ -5,6 +5,7 @@ const h = require('../../lib/helpers');
 const af = require('../../lib/admission-form');
 
 const mailer = require('../../lib/mailer');
+const i18n = require('../../lib/i18n');
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
@@ -29,7 +30,7 @@ router.get('/', async (req, res, next) => {
     const counts = await db.one(
       `SELECT SUM(status='pending') AS pending, SUM(status='approved') AS approved, SUM(status='rejected') AS rejected FROM admissions`
     );
-    res.render('admin/admissions/list', { title: 'Admissions', applications, p, counts: counts || {}, filters: { status, q } });
+    res.render('admin/admissions/list', { title: res.locals.t('admin.nav.admissions'), applications, p, counts: counts || {}, filters: { status, q } });
   } catch (err) { next(err); }
 });
 
@@ -64,14 +65,14 @@ router.post('/:id/approve', async (req, res, next) => {
     const app = await db.one('SELECT * FROM admissions WHERE id = ?', [id]);
     if (!app) return next();
     if (app.status === 'approved' && app.student_id) {
-      req.flash('info', 'This application was already approved.');
+      req.flash('info', 'f.adm.already_approved');
       return res.redirect(`/admin/admissions/${id}`);
     }
     const b = req.body;
     const admissionNo = String(b.admission_no || '').trim();
-    if (!admissionNo) { req.flash('error', 'An admission number is required.'); return res.redirect(`/admin/admissions/${id}`); }
+    if (!admissionNo) { req.flash('error', 'f.adm.no_required'); return res.redirect(`/admin/admissions/${id}`); }
     const dup = await db.one('SELECT id FROM students WHERE admission_no = ?', [admissionNo]);
-    if (dup) { req.flash('error', `Admission number ${admissionNo} is already used.`); return res.redirect(`/admin/admissions/${id}`); }
+    if (dup) { req.flash('error', i18n.pack('f.adm.no_in_use', { no: admissionNo })); return res.redirect(`/admin/admissions/${id}`); }
 
     const studentId = await db.transaction(async (conn) => {
       const [r] = await conn.execute(
@@ -100,7 +101,7 @@ router.post('/:id/approve', async (req, res, next) => {
       department: app.department_key
     }).catch(function () {});
 
-    req.flash('success', `${app.name} has been admitted as ${admissionNo}.`);
+    req.flash('success', i18n.pack('f.adm.admitted_as', { name: app.name, no: admissionNo }));
     res.redirect(`/admin/students/${studentId}`);
   } catch (err) { next(err); }
 });
@@ -109,7 +110,7 @@ router.post('/:id/reject', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     await db.run("UPDATE admissions SET status = 'rejected', processed_at = NOW() WHERE id = ?", [id]);
-    req.flash('success', 'Application marked as rejected.');
+    req.flash('success', 'f.adm.rejected');
     res.redirect(`/admin/admissions/${id}`);
   } catch (err) { next(err); }
 });
@@ -118,7 +119,7 @@ router.post('/:id/reopen', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     await db.run("UPDATE admissions SET status = 'pending', processed_at = NULL WHERE id = ? AND student_id IS NULL", [id]);
-    req.flash('success', 'Application reopened.');
+    req.flash('success', 'f.adm.reopened');
     res.redirect(`/admin/admissions/${id}`);
   } catch (err) { next(err); }
 });
@@ -126,7 +127,7 @@ router.post('/:id/reopen', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM admissions WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Application deleted.');
+    req.flash('success', 'f.adm.deleted');
     res.redirect('/admin/admissions');
   } catch (err) { next(err); }
 });

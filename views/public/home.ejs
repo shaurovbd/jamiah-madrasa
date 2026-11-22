@@ -1,11 +1,11 @@
 <section class="hero">
   <div class="wrap">
-    <span class="eyebrow">Established <%= settings.established || '' %></span>
-    <h1><%= site.tagline || 'Rooted in Revelation, Reaching for Excellence' %></h1>
+    <span class="eyebrow"><%= t('common.established') %> <%= settings.established || '' %></span>
+    <h1><%= site.tagline || t('home.default_tagline') %></h1>
     <p><%= settings.about_intro || '' %></p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="/admission">Apply for Admission</a>
-      <a class="btn btn-ghost" href="/departments">Explore Departments</a>
+      <a class="btn btn-primary" href="/admission"><%= t('home.cta_apply') %></a>
+      <a class="btn btn-ghost" href="/departments"><%= t('home.cta_departments') %></a>
     </div>
   </div>
 </section>
@@ -13,10 +13,10 @@
 <section class="dark tight">
   <div class="wrap">
     <div class="grid g4">
-      <div class="stat"><b><%= h.num(stats.students) %></b><span>Students</span></div>
-      <div class="stat"><b><%= h.num(stats.staff) %></b><span>Teachers &amp; Staff</span></div>
-      <div class="stat"><b><%= h.num(stats.huffaz) %></b><span>Huffaz Graduated</span></div>
-      <div class="stat"><b><%= h.num(stats.years) %></b><span>Years of Service</span></div>
+      <div class="stat"><b><%= h.num(stats.students) %></b><span><%= t('home.stat_students') %></span></div>
+      <div class="stat"><b><%= h.num(stats.staff) %></b><span><%= t('home.stat_staff') %></span></div>
+      <div class="stat"><b><%= h.num(stats.huffaz) %></b><span><%= t('home.stat_huffaz') %></span></div>
+      <div class="stat"><b><%= h.num(stats.years) %></b><span><%= t('home.stat_years') %></span></div>
     </div>
   </div>
 </section>
@@ -24,9 +24,9 @@
 <section class="alt">
   <div class="wrap">
     <div class="section-head">
-      <span class="kicker">What We Teach</span>
-      <h2>Our Departments</h2>
-      <p>From a child's first letters of the Qur'an to the completion of the classical dars-e-nizami syllabus.</p>
+      <span class="kicker"><%= t('home.kicker_teach') %></span>
+      <h2><%= t('home.departments_title') %></h2>
+      <p><%= t('home.departments_lead') %></p>
     </div>
     <div class="grid g2">
       <% departments.forEach(function (d, i) { %>
@@ -34,11 +34,11 @@
           <span class="num"><%= String(i + 1).padStart(2, '0') %></span>
           <h3><%= d.name %></h3>
           <p><%= d.description ? d.description.slice(0, 180) : '' %></p>
-          <span class="more">Read more →</span>
+          <span class="more"><%= t('common.read_more') %> →</span>
         </a>
       <% }); %>
       <% if (!departments.length) { %>
-        <p>Departments will appear here once they are added in the management panel.</p>
+        <p><%= t('home.departments_empty') %></p>
       <% } %>
     </div>
   </div>
@@ -48,48 +48,48 @@
   <div class="wrap">
     <div class="grid g2" style="align-items:start;gap:3rem">
       <div>
-        <span class="kicker" style="color:var(--green-600);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;font-weight:700">From the Principal</span>
-        <h2 style="margin-top:.6rem">A word of welcome</h2>
+        <span class="kicker" style="color:var(--green-600);letter-spacing:.18em;text-transform:uppercase;font-size:.74rem;font-weight:700"><%= t('home.principal_kicker') %></span>
+        <h2 style="margin-top:.6rem"><%= t('home.principal_title') %></h2>
         <p><%= settings.principal_message || '' %></p>
         <% if (settings.principal_name) { %>
           <p style="font-family:var(--serif);color:var(--ink);font-weight:600;margin-top:1.2rem">
             <%= settings.principal_name %><br>
-            <span style="font-family:var(--sans);font-weight:400;font-size:.88rem;color:var(--muted)">Principal, <%= site.name %></span>
+            <span style="font-family:var(--sans);font-weight:400;font-size:.88rem;color:var(--muted)"><%= t('home.principal_role', { site: site.name }) %></span>
           </p>
         <% } %>
-        <a class="btn btn-outline" href="/about">About the institute</a>
+        <a class="btn btn-outline" href="/about"><%= t('home.about_cta') %></a>
       </div>
       <div>
         <div class="card" style="margin-bottom:1.2rem">
-          <h3 style="display:flex;align-items:center;gap:.5rem">Latest Notices</h3>
+          <h3 style="display:flex;align-items:center;gap:.5rem"><%= t('home.latest_notices') %></h3>
           <% if (notices.length) { %>
             <% notices.forEach(function (n) {
                  var d = n.published_at || n.created_at; var dt = new Date(d); %>
               <div class="notice-item">
                 <div class="notice-date">
                   <b><%= String(dt.getDate()).padStart(2,'0') %></b>
-                  <span><%= h.MONTHS[dt.getMonth()].slice(0,3) %></span>
+                  <span><%= monthShort(dt.getMonth()) %></span>
                 </div>
                 <div class="notice-body">
-                  <span class="tag"><%= n.category || 'General' %></span>
+                  <span class="tag"><%= n.category || t('notices.category_general') %></span>
                   <h4><a href="/notices/<%= n.slug %>"><%= n.title %></a></h4>
                 </div>
               </div>
             <% }); %>
-            <p style="margin-top:1rem"><a href="/notices">All notices →</a></p>
+            <p style="margin-top:1rem"><a href="/notices"><%= t('home.all_notices') %> →</a></p>
           <% } else { %>
-            <p>No notices have been published yet.</p>
+            <p><%= t('home.notices_empty') %></p>
           <% } %>
         </div>
 
         <div class="card">
-          <h3>Upcoming Events</h3>
+          <h3><%= t('home.upcoming_events') %></h3>
           <% if (events.length) { %>
             <% events.forEach(function (e) { %>
               <div class="notice-item">
                 <div class="notice-date">
                   <b><%= String(new Date(e.event_date).getDate()).padStart(2,'0') %></b>
-                  <span><%= h.MONTHS[new Date(e.event_date).getMonth()].slice(0,3) %></span>
+                  <span><%= monthShort(new Date(e.event_date).getMonth()) %></span>
                 </div>
                 <div class="notice-body">
                   <h4><a href="/events/<%= e.slug %>"><%= e.title %></a></h4>
@@ -97,9 +97,9 @@
                 </div>
               </div>
             <% }); %>
-            <p style="margin-top:1rem"><a href="/events">All events →</a></p>
+            <p style="margin-top:1rem"><a href="/events"><%= t('home.all_events') %> →</a></p>
           <% } else { %>
-            <p>No upcoming events are scheduled.</p>
+            <p><%= t('home.events_empty') %></p>
           <% } %>
         </div>
       </div>
@@ -109,11 +109,11 @@
 
 <section class="dark">
   <div class="wrap" style="text-align:center;max-width:760px">
-    <h2>Admission is open</h2>
-    <p style="color:#a9c6ba;margin-bottom:1.8rem">Apply online in a few minutes. Our office will contact the guardian to arrange an interview and confirm the seat.</p>
+    <h2><%= t('home.admission_open') %></h2>
+    <p style="color:#a9c6ba;margin-bottom:1.8rem"><%= t('home.admission_lead') %></p>
     <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
-      <a class="btn btn-primary" href="/admission">Start an application</a>
-      <a class="btn btn-ghost" href="/contact">Talk to the office</a>
+      <a class="btn btn-primary" href="/admission"><%= t('home.start_application') %></a>
+      <a class="btn btn-ghost" href="/contact"><%= t('home.talk_office') %></a>
     </div>
   </div>
 </section>

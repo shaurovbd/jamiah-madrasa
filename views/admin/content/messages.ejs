@@ -1,8 +1,8 @@
 <div class="page-bar">
-  <div><h1>Messages</h1><p class="sub"><%= h.num(unread) %> unread of <%= h.num(p.total) %></p></div>
+  <div><h1><%= t('admin.nav.messages') %></h1><p class="sub"><%= h.num(unread) %> <%= t('a.web.unread_of') %> <%= h.num(p.total) %></p></div>
   <span class="spacer"></span>
-  <a class="btn <%= filters.unread ? 'btn-primary' : 'btn-light' %>" href="/admin/messages?unread=1">Unread only</a>
-  <a class="btn <%= filters.unread ? 'btn-light' : 'btn-primary' %>" href="/admin/messages">All</a>
+  <a class="btn <%= filters.unread ? 'btn-primary' : 'btn-light' %>" href="/admin/messages?unread=1"><%= t('a.web.unread_only') %></a>
+  <a class="btn <%= filters.unread ? 'btn-light' : 'btn-primary' %>" href="/admin/messages"><%= t('common.all') %></a>
 </div>
 
 <div class="card">
@@ -10,12 +10,12 @@
     <% if (messages.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Received</th><th>From</th><th>Subject &amp; message</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('a.received') %></th><th><%= t('common.from') %></th><th><%= t('a.web.subject_message') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% messages.forEach(function (m) { %>
               <tr style="<%= m.is_read ? '' : 'background:#fffdf5' %>">
-                <td style="white-space:nowrap"><%= h.fmtDate(m.created_at) %>
-                  <% if (!m.is_read) { %><br><span class="badge badge-amber">New</span><% } %></td>
+                <td style="white-space:nowrap"><%= fmtDate(m.created_at) %>
+                  <% if (!m.is_read) { %><br><span class="badge badge-amber"><%= t('a.web.new') %></span><% } %></td>
                 <td><strong><%= m.name %></strong>
                   <% if (m.phone) { %><br><small class="sub"><%= m.phone %></small><% } %>
                   <% if (m.email) { %><br><small class="sub"><a href="mailto:<%= m.email %>"><%= m.email %></a></small><% } %></td>
@@ -28,9 +28,9 @@
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-light btn-sm" type="submit"><%= m.is_read ? 'Mark unread' : 'Mark read' %></button>
                   </form>
-                  <form method="post" action="/admin/messages/<%= m.id %>" style="display:inline" data-confirm="Delete this message?">
+                  <form method="post" action="/admin/messages/<%= m.id %>" style="display:inline" data-confirm="<%= t('a.web.confirm_message') %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -38,7 +38,7 @@
           </tbody>
         </table>
       </div>
-    <% } else { %><div class="empty"><div class="big">✉</div><p>No messages.</p></div><% } %>
+    <% } else { %><div class="empty"><div class="big">✉</div><p><%= t('a.web.no_messages') %></p></div><% } %>
   </div>
   <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
 </div>

@@ -1,25 +1,25 @@
 <div class="page-bar">
-  <div><h1>Teachers &amp; Staff</h1><p class="sub"><%= h.num(p.total) %> <%= filters.status %> · monthly payroll <%= money(payroll) %></p></div>
+  <div><h1><%= t('home.stat_staff') %></h1><p class="sub"><%= t('a.staff.count_summary', { count: h.num(p.total), status: label('status', filters.status), amount: money(payroll) }) %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-primary" href="/admin/staff/new">+ Add staff</a>
+  <a class="btn btn-primary" href="/admin/staff/new"><%= t('a.staff.add') %></a>
 </div>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/staff">
-      <div class="field grow"><label for="q">Search</label>
-        <input id="q" name="q" type="search" placeholder="Name, staff no, designation, phone" value="<%= filters.q %>"></div>
-      <div class="field"><label for="department_id">Department</label>
-        <select id="department_id" name="department_id"><option value="">All</option>
+      <div class="field grow"><label for="q"><%= t('common.search') %></label>
+        <input id="q" name="q" type="search" placeholder="<%= t('a.staff.search_ph') %>" value="<%= filters.q %>"></div>
+      <div class="field"><label for="department_id"><%= t('common.department') %></label>
+        <select id="department_id" name="department_id"><option value=""><%= t('common.all') %></option>
           <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= filters.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
         </select></div>
-      <div class="field"><label for="status">Status</label>
+      <div class="field"><label for="status"><%= t('common.status') %></label>
         <select id="status" name="status">
-          <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>>Active</option>
-          <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+          <option value="active" <%= filters.status === 'active' ? 'selected' : '' %>><%= t('common.active') %></option>
+          <option value="inactive" <%= filters.status === 'inactive' ? 'selected' : '' %>><%= t('common.inactive') %></option>
         </select></div>
-      <button class="btn btn-primary" type="submit">Filter</button>
-      <a class="btn btn-light" href="/admin/staff">Reset</a>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
+      <a class="btn btn-light" href="/admin/staff"><%= t('common.reset') %></a>
     </form>
   </div>
 </div>
@@ -29,7 +29,7 @@
     <% if (staff.length) { %>
     <div class="table-wrap">
       <table class="data">
-        <thead><tr><th>Staff No</th><th>Name</th><th>Designation</th><th>Department</th><th>Phone</th><th>Joined</th><th class="num">Salary</th><th class="actions"></th></tr></thead>
+        <thead><tr><th><%= t('a.staff.no') %></th><th><%= t('common.name') %></th><th><%= t('common.designation') %></th><th><%= t('common.department') %></th><th><%= t('common.phone') %></th><th><%= t('a.joined') %></th><th class="num"><%= t('a.staff.salary') %></th><th class="actions"></th></tr></thead>
         <tbody>
           <% staff.forEach(function (s) { %>
             <tr>
@@ -38,11 +38,11 @@
               <td><%= s.designation || '—' %></td>
               <td><%= s.dept_name || '—' %></td>
               <td><%= s.phone || '—' %></td>
-              <td><%= s.join_date ? h.fmtDate(s.join_date) : '—' %></td>
+              <td><%= s.join_date ? fmtDate(s.join_date) : '—' %></td>
               <td class="num"><%= money(s.salary) %></td>
               <td class="actions">
-                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>">View</a>
-                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>/edit">Edit</a>
+                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>"><%= t('common.view') %></a>
+                <a class="btn btn-light btn-sm" href="/admin/staff/<%= s.id %>/edit"><%= t('common.edit') %></a>
               </td>
             </tr>
           <% }); %>
@@ -50,8 +50,8 @@
       </table>
     </div>
     <% } else { %>
-      <div class="empty"><div class="big">☖</div><p>No staff match these filters.</p>
-        <a class="btn btn-primary" href="/admin/staff/new">Add a staff member</a></div>
+      <div class="empty"><div class="big">☖</div><p><%= t('a.staff.none_match') %></p>
+        <a class="btn btn-primary" href="/admin/staff/new"><%= t('a.staff.add_member') %></a></div>
     <% } %>
   </div>
   <%- include('../../partials/pager', { p: p, query: query, h: h }) %>

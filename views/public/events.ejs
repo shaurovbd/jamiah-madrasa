@@ -1,35 +1,35 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Events</div>
-    <h1>Events</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('nav.events') %></div>
+    <h1><%= t('nav.events') %></h1>
   </div>
 </div>
 
 <section>
   <div class="wrap">
-    <h2>Upcoming</h2>
+    <h2><%= t('events.upcoming') %></h2>
     <div class="grid g3" style="margin-top:1.2rem">
       <% if (upcoming.length) { upcoming.forEach(function (e) { var dt = new Date(e.event_date); %>
         <a class="card card-link" href="/events/<%= e.slug %>">
           <div class="notice-date" style="margin-bottom:.8rem;width:62px">
             <b><%= String(dt.getDate()).padStart(2,'0') %></b>
-            <span><%= h.MONTHS[dt.getMonth()].slice(0,3) %></span>
+            <span><%= monthShort(dt.getMonth()) %></span>
           </div>
           <h3><%= e.title %></h3>
           <p><%= (e.description || '').slice(0, 130) %></p>
           <% if (e.location) { %><p style="margin-top:.6rem;font-size:.85rem;color:var(--green-700)"><%= e.location %></p><% } %>
         </a>
       <% }); } else { %>
-        <p>No upcoming events are scheduled at the moment.</p>
+        <p><%= t('events.empty_upcoming') %></p>
       <% } %>
     </div>
 
     <% if (past.length) { %>
-      <h2 style="margin-top:3rem">Past events</h2>
+      <h2 style="margin-top:3rem"><%= t('events.past') %></h2>
       <div class="grid g3" style="margin-top:1.2rem">
         <% past.forEach(function (e) { %>
           <a class="card card-link" href="/events/<%= e.slug %>">
-            <p style="font-size:.82rem;color:var(--muted);margin-bottom:.3rem"><%= h.fmtDate(e.event_date) %></p>
+            <p style="font-size:.82rem;color:var(--muted);margin-bottom:.3rem"><%= fmtDate(e.event_date) %></p>
             <h3 style="font-size:1.05rem"><%= e.title %></h3>
           </a>
         <% }); %>

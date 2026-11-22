@@ -1,4 +1,4 @@
-<div class="page-bar"><h1>Class Routine</h1></div>
+<div class="page-bar"><h1><%= t('admin.nav.routine') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <style>
@@ -17,41 +17,41 @@
 </style>
 
 <div class="card">
-  <div class="card-head"><h2>Choose a teacher</h2></div>
+  <div class="card-head"><h2><%= t('a.rt.choose_teacher') %></h2></div>
   <div class="card-body">
     <form method="get" action="/admin/routine/teachers" class="rt-pick grid"
           style="grid-template-columns:1fr auto;gap:.8rem;align-items:end">
       <div class="field">
-        <label for="teacher_id">Teacher</label>
+        <label for="teacher_id"><%= t('role.teacher') %></label>
         <select id="teacher_id" name="teacher_id" required>
-          <option value="">— Select —</option>
-          <% teachers.forEach(function (t) { %>
-            <option value="<%= t.id %>" <%= teacherId === t.id ? 'selected' : '' %>><%= t.name %><%= t.designation ? ' · ' + t.designation : '' %></option>
+          <option value=""><%= t('results.select_placeholder') %></option>
+          <% teachers.forEach(function (tch) { %>
+            <option value="<%= tch.id %>" <%= teacherId === tch.id ? 'selected' : '' %>><%= tch.name %><%= tch.designation ? ' · ' + tch.designation : '' %></option>
           <% }); %>
         </select>
       </div>
-      <div class="field"><button class="btn btn-primary" type="submit">Show week</button></div>
+      <div class="field"><button class="btn btn-primary" type="submit"><%= t('a.rt.show_week') %></button></div>
     </form>
   </div>
 </div>
 
 <% if (!teacherId) { %>
   <div class="card"><div class="card-body">
-    <div class="empty">Pick a teacher to see their week across every class.</div>
+    <div class="empty"><%= t('a.rt.pick_teacher') %></div>
   </div></div>
 <% } else if (!periods.length) { %>
   <div class="card"><div class="card-body">
-    <div class="empty">No periods are set up yet. Add them on the <a href="/admin/routine/periods">Periods &amp; Times</a> tab.</div>
+    <div class="empty"><%= t('a.rt.no_periods_add') %> <a href="/admin/routine/periods"><%= t('a.rt.periods_times') %></a> <%= t('a.tab_period') %></div>
   </div></div>
 <% } else { %>
   <div class="card">
-    <div class="card-head"><h2>Weekly load — <%= load %> period(s)</h2></div>
+    <div class="card-head"><h2><%= t('a.rt.weekly_load_line', { count: load }) %></h2></div>
     <div class="card-body flush">
       <div class="rt-scroll">
         <table class="rt-table">
           <thead>
             <tr>
-              <th class="rt-period">Period</th>
+              <th class="rt-period"><%= t('routine.period') %></th>
               <% DAYS.forEach(function (d) { %><th><%= d.bn %><br><small><%= d.en %></small></th><% }); %>
             </tr>
           </thead>
@@ -85,6 +85,6 @@
     </div>
   </div>
   <div class="rt-actions" style="margin-top:1rem">
-    <button class="btn btn-light" type="button" onclick="window.print()">Print</button>
+    <button class="btn btn-light" type="button" onclick="window.print()"><%= t('common.print') %></button>
   </div>
 <% } %>

@@ -1,7 +1,7 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Departments</div>
-    <h1>Departments</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('nav.departments') %></div>
+    <h1><%= t('nav.departments') %></h1>
   </div>
 </div>
 
@@ -15,14 +15,14 @@
           <p><%= d.description || '' %></p>
           <% if (d.classes && d.classes.length) { %>
             <p style="margin-top:.9rem;font-size:.85rem;color:var(--ink)">
-              <strong>Classes:</strong> <%= d.classes.map(function (c) { return c.name; }).join(' · ') %>
+              <strong><%= t('departments.classes_label') %>:</strong> <%= d.classes.map(function (c) { return c.name; }).join(' · ') %>
             </p>
           <% } %>
-          <p style="margin-top:.5rem;font-size:.85rem"><strong><%= d.student_count %></strong> students enrolled</p>
-          <a class="more" href="/departments/<%= d.slug %>">View details →</a>
+          <p style="margin-top:.5rem;font-size:.85rem"><strong><%= d.student_count %></strong> <%= t('departments.students_enrolled') %></p>
+          <a class="more" href="/departments/<%= d.slug %>"><%= t('common.view_details') %> →</a>
         </div>
       <% }); %>
-      <% if (!departments.length) { %><p>No departments have been added yet.</p><% } %>
+      <% if (!departments.length) { %><p><%= t('departments.empty') %></p><% } %>
     </div>
   </div>
 </section>

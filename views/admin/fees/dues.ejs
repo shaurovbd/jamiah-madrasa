@@ -1,19 +1,19 @@
 <div class="page-bar">
-  <div><h1>Dues Report</h1><p class="sub"><%= rows.length %> student<%= rows.length === 1 ? '' : 's' %> owing <%= money(totalDue) %> in total</p></div>
+  <div><h1><%= t('admin.nav.dues') %></h1><p class="sub"><%= t('a.fee.dues_summary', { count: rows.length, amount: money(totalDue) }) %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light no-print" href="/admin/fees">← Invoices</a>
-  <% if (rows.length) { %><button class="btn btn-light no-print" onclick="window.print()">Print</button><% } %>
+  <a class="btn btn-light no-print" href="/admin/fees"><%= t('a.fee.back_invoices') %></a>
+  <% if (rows.length) { %><button class="btn btn-light no-print" onclick="window.print()"><%= t('common.print') %></button><% } %>
 </div>
 
 <div class="card no-print" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/fees/dues">
-      <div class="field"><label for="class_id">Class</label>
+      <div class="field"><label for="class_id"><%= t('common.class') %></label>
         <select id="class_id" name="class_id" onchange="this.form.submit()">
-          <option value="">All classes</option>
+          <option value=""><%= t('a.all_classes') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
-      <button class="btn btn-primary" type="submit">Filter</button>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
     </form>
   </div>
 </div>
@@ -23,7 +23,7 @@
     <% if (rows.length) { %>
     <div class="table-wrap">
       <table class="data">
-        <thead><tr><th>Roll</th><th>Student</th><th>Class</th><th>Guardian phone</th><th class="num">Unpaid invoices</th><th>Oldest</th><th class="num">Total due</th><th class="actions no-print"></th></tr></thead>
+        <thead><tr><th><%= t('common.roll') %></th><th><%= t('results.student') %></th><th><%= t('common.class') %></th><th><%= t('a.guardian_phone') %></th><th class="num"><%= t('a.fee.unpaid_invoices') %></th><th><%= t('a.fee.oldest') %></th><th class="num"><%= t('a.fee.total_due') %></th><th class="actions no-print"></th></tr></thead>
         <tbody>
           <% rows.forEach(function (r) { %>
             <tr>
@@ -32,19 +32,19 @@
               <td><%= r.class_name || '—' %></td>
               <td><%= r.guardian_phone || '—' %></td>
               <td class="num"><%= r.invoice_count %></td>
-              <td><%= h.fmtPeriod(r.oldest_period) %></td>
+              <td><%= fmtPeriod(r.oldest_period) %></td>
               <td class="num"><strong style="color:#b3261e"><%= money(r.due) %></strong></td>
-              <td class="actions no-print"><a class="btn btn-primary btn-sm" href="/admin/fees?q=<%= encodeURIComponent(r.admission_no) %>&status=unpaid">Collect</a></td>
+              <td class="actions no-print"><a class="btn btn-primary btn-sm" href="/admin/fees?q=<%= encodeURIComponent(r.admission_no) %>&status=unpaid"><%= t('a.fee.collect') %></a></td>
             </tr>
           <% }); %>
         </tbody>
         <tfoot>
-          <tr style="background:#f1f5f3;font-weight:600"><td colspan="6">Total outstanding</td><td class="num"><%= money(totalDue) %></td><td class="no-print"></td></tr>
+          <tr style="background:#f1f5f3;font-weight:600"><td colspan="6"><%= t('a.fee.total_outstanding') %></td><td class="num"><%= money(totalDue) %></td><td class="no-print"></td></tr>
         </tfoot>
       </table>
     </div>
     <% } else { %>
-      <div class="empty"><div class="big">✓</div><p>No outstanding dues<%= filters.class_id ? ' in this class' : '' %>.</p></div>
+      <div class="empty"><div class="big">✓</div><p><%= filters.class_id ? t('a.fee.no_dues_in_class') : t('a.fee.no_dues_any') %></p></div>
     <% } %>
   </div>
 </div>

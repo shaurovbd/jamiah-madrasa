@@ -1,8 +1,8 @@
 <div class="page-bar">
   <div><h1><%= exam.name %></h1>
-    <p class="sub"><%= exam.year_name || 'No academic year' %><%= exam.start_date ? ' · ' + h.fmtDate(exam.start_date) : '' %></p></div>
+    <p class="sub"><%= exam.year_name || 'No academic year' %><%= exam.start_date ? ' · ' + fmtDate(exam.start_date) : '' %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="/admin/exams">← All exams</a>
+  <a class="btn btn-light" href="/admin/exams"><%= t('a.exam.back_all') %></a>
   <form method="post" action="/admin/exams/<%= exam.id %>/publish" style="display:inline"
         data-confirm="<%= exam.is_published ? 'Hide these results from the public website?' : 'Publish these results so students can look them up on the website?' %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -14,16 +14,16 @@
 </div>
 
 <% if (exam.is_published) { %>
-  <div class="alert alert-success">Results are live. Students can look them up at <a href="/results" target="_blank">/results</a> using their roll number.</div>
+  <div class="alert alert-success"><%= t('a.exam.live_prefix') %> <a href="/results" target="_blank">/results</a> <%= t('a.exam.live_suffix') %></div>
 <% } %>
 
 <div class="card">
-  <div class="card-head"><h2>Marks entry by class</h2><span class="spacer"></span>
-    <span class="sub">Enter marks subject by subject, then review the class result.</span></div>
+  <div class="card-head"><h2><%= t('a.exam.marks_by_class') %></h2><span class="spacer"></span>
+    <span class="sub"><%= t('a.exam.marks_hint') %></span></div>
   <div class="card-body flush">
     <div class="table-wrap">
       <table class="data">
-        <thead><tr><th>Class</th><th>Department</th><th class="num">Students</th><th class="num">Subjects</th><th>Progress</th><th class="actions"></th></tr></thead>
+        <thead><tr><th><%= t('common.class') %></th><th><%= t('common.department') %></th><th class="num"><%= t('admin.nav.students') %></th><th class="num"><%= t('a.subjects') %></th><th><%= t('a.exam.progress') %></th><th class="actions"></th></tr></thead>
         <tbody>
           <% classes.forEach(function (c) {
                var pct = c.student_count ? Math.round((c.marked_count / c.student_count) * 100) : 0; %>
@@ -39,8 +39,8 @@
                 </div>
               </td>
               <td class="actions">
-                <a class="btn btn-primary btn-sm" href="/admin/exams/<%= exam.id %>/marks?class_id=<%= c.id %>">Enter marks</a>
-                <a class="btn btn-light btn-sm" href="/admin/exams/<%= exam.id %>/results?class_id=<%= c.id %>">Results</a>
+                <a class="btn btn-primary btn-sm" href="/admin/exams/<%= exam.id %>/marks?class_id=<%= c.id %>"><%= t('a.exam.enter_marks') %></a>
+                <a class="btn btn-light btn-sm" href="/admin/exams/<%= exam.id %>/results?class_id=<%= c.id %>"><%= t('a.exam.results') %></a>
               </td>
             </tr>
           <% }); %>

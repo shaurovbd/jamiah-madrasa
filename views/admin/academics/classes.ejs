@@ -1,14 +1,14 @@
-<div class="page-bar"><h1>Academic Structure</h1></div>
+<div class="page-bar"><h1><%= t('a.ac.structure') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2>Classes</h2></div>
+    <div class="card-head"><h2><%= t('a.classes') %></h2></div>
     <div class="card-body flush">
       <% if (classes.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Class</th><th>Department</th><th class="num">Level</th><th class="num">Sections</th><th class="num">Subjects</th><th class="num">Students</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('common.class') %></th><th><%= t('common.department') %></th><th class="num"><%= t('a.level') %></th><th class="num"><%= t('a.sections') %></th><th class="num"><%= t('a.subjects') %></th><th class="num"><%= t('admin.nav.students') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% classes.forEach(function (c) { %>
               <tr>
@@ -19,10 +19,10 @@
                 <td class="num"><a href="/admin/academics/subjects?class_id=<%= c.id %>"><%= c.subject_count %></a></td>
                 <td class="num"><a href="/admin/students?class_id=<%= c.id %>"><%= c.student_count %></a></td>
                 <td class="actions">
-                  <a class="btn btn-light btn-sm" href="/admin/academics/classes?edit=<%= c.id %>">Edit</a>
+                  <a class="btn btn-light btn-sm" href="/admin/academics/classes?edit=<%= c.id %>"><%= t('common.edit') %></a>
                   <form method="post" action="/admin/academics/classes/<%= c.id %>" style="display:inline" data-confirm="Delete <%= c.name %>? Its sections and subjects go with it.">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -30,7 +30,7 @@
           </tbody>
         </table>
       </div>
-      <% } else { %><div class="empty">No classes yet.</div><% } %>
+      <% } else { %><div class="empty"><%= t('a.ac.no_classes') %></div><% } %>
     </div>
   </div>
 
@@ -41,23 +41,23 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="name">Class name <span class="req">*</span></label>
+          <label for="name"><%= t('a.ac.class_name') %> <span class="req">*</span></label>
           <input id="name" name="name" type="text" required value="<%= edit ? edit.name : '' %>">
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="department_id">Department</label>
+          <label for="department_id"><%= t('common.department') %></label>
           <select id="department_id" name="department_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= edit && edit.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
           </select>
         </div>
         <div class="field" style="margin-bottom:.8rem">
-          <label for="level">Level / order</label>
+          <label for="level"><%= t('a.ac.level_order') %></label>
           <input id="level" name="level" type="number" value="<%= edit ? edit.level : classes.length + 1 %>">
-          <span class="hint">Lower numbers are listed first.</span>
+          <span class="hint"><%= t('a.ac.level_hint') %></span>
         </div>
         <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add class' %></button>
-        <% if (edit) { %><a class="btn btn-light" href="/admin/academics/classes">Cancel</a><% } %>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/academics/classes"><%= t('common.cancel') %></a><% } %>
       </form>
     </div>
   </div>

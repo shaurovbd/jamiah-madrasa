@@ -1,66 +1,66 @@
 <div class="page-bar">
-  <div><h1>Generate Invoices</h1><p class="sub">Create one invoice per active student for a month</p></div>
+  <div><h1><%= t('a.fee.generate_title') %></h1><p class="sub"><%= t('a.fee.generate_sub') %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="/admin/fees">← Invoices</a>
+  <a class="btn btn-light" href="/admin/fees"><%= t('a.fee.back_invoices') %></a>
 </div>
 
 <% if (result) { %>
   <div class="alert alert-success">
-    <strong><%= result.created %></strong> invoice<%= result.created === 1 ? '' : 's' %> created for <%= h.fmtPeriod(result.period) %>.
-    <% if (result.skipped) { %> <%= result.skipped %> student<%= result.skipped === 1 ? ' already had' : 's already had' %> an invoice for this month and <%= result.skipped === 1 ? 'was' : 'were' %> skipped.<% } %>
-    <% if (result.noStructure) { %> <%= result.noStructure %> student<%= result.noStructure === 1 ? '' : 's' %> had no fee structure for their class.<% } %>
+    <%- t('a.fee.generated_summary', { created: '<strong>' + h.esc(result.created) + '</strong>', period: h.esc(fmtPeriod(result.period)) }) %>
+    <% if (result.skipped) { %> <%= t('a.fee.generated_skipped', { count: result.skipped }) %><% } %>
+    <% if (result.noStructure) { %> <%= t('a.fee.generated_nostructure', { count: result.noStructure }) %><% } %>
   </div>
   <p style="margin-bottom:1.3rem">
-    <a class="btn btn-primary" href="/admin/fees?period=<%= result.period %>">View these invoices</a>
-    <a class="btn btn-light" href="/admin/fees/structure">Adjust fee structure</a>
+    <a class="btn btn-primary" href="/admin/fees?period=<%= result.period %>"><%= t('a.fee.view_these') %></a>
+    <a class="btn btn-light" href="/admin/fees/structure"><%= t('a.fee.adjust_structure') %></a>
   </p>
 <% } %>
 
 <div class="grid g2" style="align-items:start">
   <div class="card">
-    <div class="card-head"><h2>Billing run</h2></div>
+    <div class="card-head"><h2><%= t('a.fee.billing_run') %></h2></div>
     <div class="card-body">
       <form method="post" action="/admin/fees/generate">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="form-grid two">
           <div class="field">
-            <label for="period">Month <span class="req">*</span></label>
+            <label for="period"><%= t('common.month') %> <span class="req">*</span></label>
             <input id="period" name="period" type="month" required value="<%= period %>">
           </div>
           <div class="field">
-            <label for="due_date">Due date</label>
+            <label for="due_date"><%= t('a.fee.due_date') %></label>
             <input id="due_date" name="due_date" type="date">
           </div>
           <div class="field full">
-            <label for="class_id">Class</label>
+            <label for="class_id"><%= t('common.class') %></label>
             <select id="class_id" name="class_id">
-              <option value="">All classes</option>
+              <option value=""><%= t('a.all_classes') %></option>
               <% classes.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %></option><% }); %>
             </select>
           </div>
           <div class="field full">
-            <label>Include besides monthly heads</label>
+            <label><%= t('a.fee.include_besides') %></label>
             <div class="chk-list">
-              <label class="chk"><input type="checkbox" name="include_one_time" value="1"> One-time heads (e.g. admission fee)</label>
-              <label class="chk"><input type="checkbox" name="include_annual" value="1"> Annual heads (e.g. exam fee)</label>
+              <label class="chk"><input type="checkbox" name="include_one_time" value="1"> <%= t('a.fee.one_time_heads') %></label>
+              <label class="chk"><input type="checkbox" name="include_annual" value="1"> <%= t('a.fee.annual_heads') %></label>
             </div>
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn btn-primary" type="submit">Generate invoices</button>
+          <button class="btn btn-primary" type="submit"><%= t('a.fee.generate_title') %></button>
         </div>
       </form>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-head"><h2>How this works</h2></div>
+    <div class="card-head"><h2><%= t('a.fee.how_works') %></h2></div>
     <div class="card-body">
       <ul style="padding-left:1.1rem;color:var(--a-muted);font-size:.92rem">
-        <li style="margin-bottom:.5rem">One invoice per active student per month. A student who already has an invoice for the chosen month is skipped, so running this twice is safe.</li>
-        <li style="margin-bottom:.5rem">Amounts come from the fee structure of the student's class. Students in a class with no structure are reported and skipped.</li>
-        <li style="margin-bottom:.5rem">A fee head whose name contains "hostel" is only billed to students marked as boarders.</li>
-        <li>To change what a class pays, set it up under <a href="/admin/fees/structure">Fee Setup</a> first.</li>
+        <li style="margin-bottom:.5rem"><%= t('a.fee.how_1') %></li>
+        <li style="margin-bottom:.5rem"><%= t('a.fee.how_2') %></li>
+        <li style="margin-bottom:.5rem"><%= t('a.fee.how_3') %></li>
+        <li><%= t('a.fee.change_under') %> <a href="/admin/fees/structure"><%= t('admin.nav.fee_setup') %></a> <%= t('a.first_period') %></li>
       </ul>
     </div>
   </div>

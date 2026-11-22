@@ -1,7 +1,7 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Gallery</div>
-    <h1>Gallery</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('nav.gallery') %></div>
+    <h1><%= t('nav.gallery') %></h1>
   </div>
 </div>
 <section>
@@ -19,7 +19,7 @@
         </div>
       <% }); %>
     <% } else { %>
-      <div class="card"><p>No photographs have been uploaded yet.</p></div>
+      <div class="card"><p><%= t('gallery.empty') %></p></div>
     <% } %>
   </div>
 </section>

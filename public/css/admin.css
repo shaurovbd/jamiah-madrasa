@@ -223,3 +223,42 @@ table.compact th,table.compact td{padding:.4rem .55rem}
   border-bottom:1px solid var(--a-line,#e3e0d6);
 }
 .card-body .sub-head:first-child{margin-top:0}
+
+/* ------------------------------------------------------------ language */
+:root{
+  --bengali:"Noto Sans Bengali","Hind Siliguri","SolaimanLipi","Kalpurush",var(--sans);
+}
+html[lang="bn"] body{font-family:var(--bengali);line-height:1.7}
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3{font-family:var(--bengali);line-height:1.4}
+html[lang="bn"] .side-nav a,
+html[lang="bn"] .side-group,
+html[lang="bn"] .btn,
+html[lang="bn"] button,
+html[lang="bn"] input,
+html[lang="bn"] select,
+html[lang="bn"] textarea,
+html[lang="bn"] table{font-family:var(--bengali)}
+/* Bangla labels run longer than English; keep the sidebar items on one line
+   where they fit and wrapping cleanly where they do not. */
+html[lang="bn"] .side-nav a{font-size:.9rem;line-height:1.5;align-items:flex-start}
+html[lang="bn"] .page-title{font-size:1rem}
+.lang-opt{font-family:var(--bengali)}
+html[lang="bn"] .lang-opt[hreflang="en"]{font-family:var(--sans)}
+
+.topbar .lang-switch{
+  display:inline-flex;align-items:center;gap:1px;margin-right:.6rem;
+  border:1px solid var(--a-line);border-radius:999px;overflow:hidden;background:#fff;
+}
+.topbar .lang-switch .lang-opt{
+  display:inline-block;padding:.18rem .6rem;font-size:.8rem;line-height:1.4;
+  color:var(--a-muted);text-decoration:none;white-space:nowrap;
+}
+.topbar .lang-switch a.lang-opt:hover{background:var(--a-bg);color:var(--a-ink);text-decoration:none}
+.topbar .lang-switch .lang-opt.is-on{background:var(--a-green);color:#fff;font-weight:600}
+@media (max-width:720px){
+  .topbar .lang-switch{margin-right:.35rem}
+  .topbar .lang-switch .lang-opt{padding:.14rem .45rem;font-size:.74rem}
+}
+@media print{ .lang-switch{display:none} }

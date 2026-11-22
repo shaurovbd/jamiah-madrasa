@@ -1,8 +1,8 @@
 <div class="page-bar">
-  <div><h1><%= isNew ? 'Add student' : 'Edit student' %></h1>
+  <div><h1><%= isNew ? t('a.stu.add_title') : t('a.stu.edit_title') %></h1>
     <% if (!isNew) { %><p class="sub"><%= student.admission_no %></p><% } %></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>">Cancel</a>
+  <a class="btn btn-light" href="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>"><%= t('common.cancel') %></a>
 </div>
 
 <form method="post" action="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>" enctype="multipart/form-data">
@@ -10,139 +10,240 @@
   <% if (!isNew) { %><input type="hidden" name="_method" value="PUT"><% } %>
 
   <div class="card" style="margin-bottom:1.1rem">
-    <div class="card-head"><h2>Identity</h2></div>
+    <div class="card-head"><h2><%= t('a.stu.sec_info') %></h2></div>
     <div class="card-body">
       <div class="form-grid">
         <div class="field">
-          <label for="admission_no">Admission number <span class="req">*</span></label>
+          <label for="admission_no"><%= t('a.admission_number') %> <span class="req">*</span></label>
           <input id="admission_no" name="admission_no" type="text" required value="<%= student.admission_no || '' %>">
         </div>
         <div class="field">
-          <label for="roll_no">Roll number</label>
+          <label for="roll_no"><%= t('results.roll_number') %></label>
           <input id="roll_no" name="roll_no" type="text" value="<%= student.roll_no || '' %>">
-          <span class="hint">Used for the public result lookup.</span>
+          <span class="hint"><%= t('a.stu.roll_hint') %></span>
         </div>
         <div class="field">
-          <label for="status">Status</label>
+          <label for="status"><%= t('common.status') %></label>
           <select id="status" name="status">
             <% ['active','passed','left'].forEach(function (s) { %>
-              <option value="<%= s %>" <%= student.status === s ? 'selected' : '' %>><%= s.charAt(0).toUpperCase() + s.slice(1) %></option>
+              <option value="<%= s %>" <%= student.status === s ? 'selected' : '' %>><%= label('status', s) %></option>
             <% }); %>
           </select>
         </div>
         <div class="field full">
-          <label for="name">Full name <span class="req">*</span></label>
+          <label for="name"><%= t('a.full_name') %> <span class="req">*</span></label>
           <input id="name" name="name" type="text" required value="<%= student.name || '' %>">
         </div>
         <div class="field">
-          <label for="dob">Date of birth</label>
+          <label for="dob"><%= t('a.dob') %></label>
           <input id="dob" name="dob" type="date" value="<%= h.inputDate(student.dob) %>">
         </div>
         <div class="field">
-          <label for="gender">Gender</label>
+          <label for="gender"><%= t('admission.f.gender') %></label>
           <select id="gender" name="gender">
-            <option value="male" <%= student.gender === 'female' ? '' : 'selected' %>>Male</option>
-            <option value="female" <%= student.gender === 'female' ? 'selected' : '' %>>Female</option>
+            <option value="male" <%= student.gender === 'female' ? '' : 'selected' %>><%= label('gender', 'male') %></option>
+            <option value="female" <%= student.gender === 'female' ? 'selected' : '' %>><%= label('gender', 'female') %></option>
           </select>
         </div>
         <div class="field">
-          <label for="blood_group">Blood group</label>
+          <label for="blood_group"><%= t('a.stu.blood_group') %></label>
           <input id="blood_group" name="blood_group" type="text" value="<%= student.blood_group || '' %>">
         </div>
         <div class="field full">
-          <label for="photo">Photograph</label>
+          <label for="photo"><%= t('a.photograph') %></label>
           <input id="photo" name="photo" type="file" accept="image/*">
-          <% if (student.photo) { %><span class="hint">A photo is already on file; choosing a new one replaces it.</span><% } %>
+          <% if (student.photo) { %><span class="hint"><%= t('a.stu.photo_hint') %></span><% } %>
+        </div>
+      </div>
+      <div class="form-grid two">
+        <div class="field">
+          <label><%= t('a.stu.orphan') %> <span class="req">*</span></label>
+          <div class="seg">
+            <input type="radio" id="is_orphan_0" name="is_orphan" value="0" <%= (student.is_orphan || '0') === '0' ? 'checked' : '' %>>
+            <label for="is_orphan_0"><%= t('common.no') %></label>
+            <input type="radio" id="is_orphan_1" name="is_orphan" value="1" <%= (student.is_orphan || '0') === '1' ? 'checked' : '' %>>
+            <label for="is_orphan_1"><%= t('common.yes') %></label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="birth_reg_no"><%= t('a.stu.birth_reg_no') %></label>
+          <input id="birth_reg_no" name="birth_reg_no" type="text" value="<%= student.birth_reg_no || '' %>">
+        </div>
+        <div class="field">
+          <label for="madrasa_id_no"><%= t('a.stu.madrasa_id_no') %></label>
+          <input id="madrasa_id_no" name="madrasa_id_no" type="text" value="<%= student.madrasa_id_no || '' %>">
+        </div>
+        <div class="field">
+          <label for="prev_madrasa"><%= t('a.stu.prev_madrasa') %></label>
+          <input id="prev_madrasa" name="prev_madrasa" type="text" value="<%= student.prev_madrasa || '' %>">
+        </div>
+        <div class="field">
+          <label for="prev_class"><%= t('admission.f.prev_class') %></label>
+          <input id="prev_class" name="prev_class" type="text" value="<%= student.prev_class || '' %>">
+        </div>
+        <div class="field">
+          <label for="prev_result"><%= t('a.stu.prev_result') %></label>
+          <input id="prev_result" name="prev_result" type="text" value="<%= student.prev_result || '' %>">
         </div>
       </div>
     </div>
   </div>
 
   <div class="card" style="margin-bottom:1.1rem">
-    <div class="card-head"><h2>Guardian &amp; contact</h2></div>
+    <div class="card-head"><h2><%= t('a.stu.sec_address') %></h2></div>
     <div class="card-body">
       <div class="form-grid">
-        <div class="field"><label for="father_name">Father's name</label><input id="father_name" name="father_name" type="text" value="<%= student.father_name || '' %>"></div>
-        <div class="field"><label for="mother_name">Mother's name</label><input id="mother_name" name="mother_name" type="text" value="<%= student.mother_name || '' %>"></div>
-        <div class="field"><label for="guardian_name">Guardian (if different)</label><input id="guardian_name" name="guardian_name" type="text" value="<%= student.guardian_name || '' %>"></div>
-        <div class="field"><label for="guardian_phone">Guardian phone</label><input id="guardian_phone" name="guardian_phone" type="tel" value="<%= student.guardian_phone || '' %>"></div>
-        <div class="field full"><label for="address">Address</label><input id="address" name="address" type="text" value="<%= student.address || '' %>"></div>
+        <div class="field"><label for="father_name"><%= t('a.father_name') %></label><input id="father_name" name="father_name" type="text" value="<%= student.father_name || '' %>"></div>
+        <div class="field"><label for="mother_name"><%= t('a.mother_name') %></label><input id="mother_name" name="mother_name" type="text" value="<%= student.mother_name || '' %>"></div>
+        <div class="field"><label for="guardian_name"><%= t('a.stu.guardian_if_diff') %></label><input id="guardian_name" name="guardian_name" type="text" value="<%= student.guardian_name || '' %>"></div>
+        <div class="field"><label for="guardian_phone"><%= t('a.guardian_phone') %></label><input id="guardian_phone" name="guardian_phone" type="tel" value="<%= student.guardian_phone || '' %>"></div>
+        <div class="field full"><label for="address"><%= t('common.address') %></label><input id="address" name="address" type="text" value="<%= student.address || '' %>"></div>
       </div>
+      <div class="form-grid two">
+        <div class="field">
+          <label for="addr_village"><%= t('admission.f.village') %></label>
+          <input id="addr_village" name="addr_village" type="text" value="<%= student.addr_village || '' %>">
+        </div>
+        <div class="field">
+          <label for="addr_post"><%= t('admission.f.post') %></label>
+          <input id="addr_post" name="addr_post" type="text" value="<%= student.addr_post || '' %>">
+        </div>
+        <div class="field">
+          <label for="addr_thana"><%= t('a.stu.thana_upazila') %></label>
+          <input id="addr_thana" name="addr_thana" type="text" value="<%= student.addr_thana || '' %>">
+        </div>
+        <div class="field">
+          <label for="addr_district"><%= t('admission.f.district') %></label>
+          <input id="addr_district" name="addr_district" type="text" value="<%= student.addr_district || '' %>">
+        </div>
+        <div class="field">
+          <label for="guardian_relation"><%= t('a.stu.relation_with') %></label>
+          <input id="guardian_relation" name="guardian_relation" type="text" value="<%= student.guardian_relation || '' %>">
+        </div>
+        <div class="field">
+          <label for="guardian_nid"><%= t('a.stu.guardian_nid') %></label>
+          <input id="guardian_nid" name="guardian_nid" type="text" value="<%= student.guardian_nid || '' %>">
+        </div>
+      </div>
+      <details class="more-guardians">
+        <summary><%= t('a.stu.more_guardians') %></summary>
+        <div class="form-grid two" style="margin-top:14px">
+          <div class="field">
+            <label for="guardian2_name"><%= t('a.stu.guardian_n_name', { n: 2 }) %></label>
+            <input id="guardian2_name" name="guardian2_name" type="text" value="<%= student.guardian2_name || '' %>">
+          </div>
+          <div class="field">
+            <label for="guardian2_phone"><%= t('a.stu.guardian_n_phone', { n: 2 }) %></label>
+            <input id="guardian2_phone" name="guardian2_phone" type="tel" value="<%= student.guardian2_phone || '' %>">
+          </div>
+          <div class="field">
+            <label for="guardian3_name"><%= t('a.stu.guardian_n_name', { n: 3 }) %></label>
+            <input id="guardian3_name" name="guardian3_name" type="text" value="<%= student.guardian3_name || '' %>">
+          </div>
+          <div class="field">
+            <label for="guardian3_phone"><%= t('a.stu.guardian_n_phone', { n: 3 }) %></label>
+            <input id="guardian3_phone" name="guardian3_phone" type="tel" value="<%= student.guardian3_phone || '' %>">
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-head"><h2>Enrolment</h2></div>
+    <div class="card-head"><h2><%= t('a.stu.sec_enrolment') %></h2></div>
     <div class="card-body">
       <div class="form-grid">
         <div class="field">
-          <label for="department_id">Department</label>
+          <label for="department_id"><%= t('common.department') %></label>
           <select id="department_id" name="department_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= student.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
           </select>
         </div>
         <div class="field">
-          <label for="class_id">Class</label>
+          <label for="class_id"><%= t('common.class') %></label>
           <select id="class_id" name="class_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% classes.forEach(function (c) { %><option value="<%= c.id %>" data-dept="<%= c.department_id %>" <%= student.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
           </select>
         </div>
         <div class="field">
-          <label for="section_id">Section</label>
+          <label for="section_id"><%= t('common.section') %></label>
           <select id="section_id" name="section_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>" <%= student.section_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
           </select>
         </div>
         <div class="field">
-          <label for="academic_year_id">Academic year</label>
+          <label for="academic_year_id"><%= t('a.academic_year') %></label>
           <select id="academic_year_id" name="academic_year_id">
-            <option value="">— None —</option>
+            <option value=""><%= t('common.opt_none') %></option>
             <% years.forEach(function (y) { %><option value="<%= y.id %>" <%= student.academic_year_id === y.id ? 'selected' : (!student.academic_year_id && y.is_current ? 'selected' : '') %>><%= y.name %></option><% }); %>
           </select>
         </div>
         <div class="field">
-          <label for="admission_date">Admission date</label>
+          <label for="admission_date"><%= t('a.admission_date') %></label>
           <input id="admission_date" name="admission_date" type="date" value="<%= h.inputDate(student.admission_date) || h.today() %>">
         </div>
         <div class="field">
-          <label for="hifz_para_completed">Para memorised (Hifz)</label>
+          <label for="hifz_para_completed"><%= t('a.stu.para_memorised') %></label>
           <input id="hifz_para_completed" name="hifz_para_completed" type="number" min="0" max="30" value="<%= student.hifz_para_completed || 0 %>">
         </div>
         <div class="field full">
-          <label class="chk"><input type="checkbox" name="is_resident" value="1" <%= student.is_resident ? 'checked' : '' %>> Boarding (hostel) student</label>
+          <label class="chk"><input type="checkbox" name="is_resident" value="1" <%= student.is_resident ? 'checked' : '' %>> <%= t('a.stu.boarder_label') %></label>
         </div>
       </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" type="submit"><%= isNew ? 'Add student' : 'Save changes' %></button>
-        <a class="btn btn-light" href="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>">Cancel</a>
+      <div class="form-grid two">
+        <div class="field">
+          <label><%= t('a.stu.admission_type') %> <span class="req">*</span></label>
+          <div class="seg">
+            <input type="radio" id="admission_type_new" name="admission_type" value="new" <%= (student.admission_type || 'new') === 'new' ? 'checked' : '' %>>
+            <label for="admission_type_new"><%= t('a.stu.type_new') %></label>
+            <input type="radio" id="admission_type_old" name="admission_type" value="old" <%= (student.admission_type || 'new') === 'old' ? 'checked' : '' %>>
+            <label for="admission_type_old"><%= t('a.stu.type_old') %></label>
+          </div>
+        </div>
+        <div class="field">
+          <label><%= t('a.stu.student_type') %> <span class="req">*</span></label>
+          <div class="seg">
+            <input type="radio" id="student_type_residential" name="student_type" value="residential" <%= (student.student_type || 'non_residential') === 'residential' ? 'checked' : '' %>>
+            <label for="student_type_residential"><%= t('a.stu.residential') %></label>
+            <input type="radio" id="student_type_non_residential" name="student_type" value="non_residential" <%= (student.student_type || 'non_residential') === 'non_residential' ? 'checked' : '' %>>
+            <label for="student_type_non_residential"><%= t('a.stu.non_residential') %></label>
+            <input type="radio" id="student_type_day_care" name="student_type" value="day_care" <%= (student.student_type || 'non_residential') === 'day_care' ? 'checked' : '' %>>
+            <label for="student_type_day_care"><%= t('a.stu.day_care') %></label>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <div class="form-actions sticky-actions">
+    <button class="btn btn-primary" type="submit"><%= isNew ? t('a.stu.add_title') : t('common.save_changes') %></button>
+    <a class="btn btn-light" href="<%= isNew ? '/admin/students' : '/admin/students/' + student.id %>"><%= t('common.cancel') %></a>
   </div>
 </form>
 
 <script>
-  (function () {
-    var cls = document.getElementById('class_id'), sec = document.getElementById('section_id');
-    if (!cls || !sec) return;
-    var all = Array.prototype.slice.call(sec.options).map(function (o) {
-      return { value: o.value, text: o.text, cls: o.getAttribute('data-class'), sel: o.selected };
+(function () {
+  var cls = document.getElementById('class_id'), sec = document.getElementById('section_id');
+  if (!cls || !sec) return;
+  var all = Array.prototype.slice.call(sec.options).map(function (o) {
+    return { value: o.value, text: o.text, cls: o.getAttribute('data-class'), sel: o.selected };
+  });
+  function filter() {
+    var c = cls.value, current = sec.value;
+    sec.innerHTML = '';
+    all.forEach(function (o) {
+      if (o.value === '' || !c || o.cls === c) {
+        var opt = document.createElement('option');
+        opt.value = o.value; opt.textContent = o.text; opt.setAttribute('data-class', o.cls || '');
+        if (o.value === current) opt.selected = true;
+        sec.appendChild(opt);
+      }
     });
-    function filter() {
-      var c = cls.value, current = sec.value;
-      sec.innerHTML = '';
-      all.forEach(function (o) {
-        if (o.value === '' || !c || o.cls === c) {
-          var opt = document.createElement('option');
-          opt.value = o.value; opt.textContent = o.text; opt.setAttribute('data-class', o.cls || '');
-          if (o.value === current) opt.selected = true;
-          sec.appendChild(opt);
-        }
-      });
-    }
-    cls.addEventListener('change', filter);
-    filter();
-  })();
+  }
+  cls.addEventListener('change', filter);
+  filter();
+})();
 </script>

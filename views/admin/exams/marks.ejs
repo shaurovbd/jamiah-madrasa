@@ -1,23 +1,23 @@
 <div class="page-bar">
-  <div><h1>Marks entry</h1><p class="sub"><%= exam.name %></p></div>
+  <div><h1><%= t('a.exam.marks_entry') %></h1><p class="sub"><%= exam.name %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-light" href="/admin/exams/<%= exam.id %>">← Back to exam</a>
+  <a class="btn btn-light" href="/admin/exams/<%= exam.id %>"><%= t('a.exam.back_exam') %></a>
 </div>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/exams/<%= exam.id %>/marks">
-      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+      <div class="field"><label for="class_id"><%= t('common.class') %> <span class="req">*</span></label>
         <select id="class_id" name="class_id" onchange="this.form.submit()" required>
-          <option value="">— Select —</option>
+          <option value=""><%= t('results.select_placeholder') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
-      <div class="field"><label for="subject_id">Subject <span class="req">*</span></label>
+      <div class="field"><label for="subject_id"><%= t('common.subject') %> <span class="req">*</span></label>
         <select id="subject_id" name="subject_id" onchange="this.form.submit()" required>
-          <option value="">— Select —</option>
+          <option value=""><%= t('results.select_placeholder') %></option>
           <% subjects.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.subject_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
         </select></div>
-      <button class="btn btn-primary" type="submit">Load</button>
+      <button class="btn btn-primary" type="submit"><%= t('a.load') %></button>
     </form>
   </div>
 </div>
@@ -31,12 +31,12 @@
       <div class="card-head">
         <h2><%= subject.name %></h2>
         <span class="spacer"></span>
-        <span class="sub">Full marks <%= subject.full_marks %> · pass <%= subject.pass_marks %></span>
+        <span class="sub"><%= t('a.exam.full_pass_line', { full: subject.full_marks, pass: subject.pass_marks }) %></span>
       </div>
       <div class="card-body flush">
         <div class="table-wrap">
           <table class="data">
-            <thead><tr><th>Roll</th><th>Name</th><th style="width:150px">Marks</th><th style="width:110px">Absent</th><th>Grade</th></tr></thead>
+            <thead><tr><th><%= t('common.roll') %></th><th><%= t('common.name') %></th><th style="width:150px"><%= t('a.exam.marks') %></th><th style="width:110px"><%= t('results.absent') %></th><th><%= t('results.grade') %></th></tr></thead>
             <tbody>
               <% students.forEach(function (s) {
                    var pct = s.marks !== null && s.marks !== undefined ? (Number(s.marks) / Number(subject.full_marks)) * 100 : null;
@@ -46,7 +46,7 @@
                   <td><strong><%= s.name %></strong></td>
                   <td><input type="number" step="0.01" min="0" max="<%= subject.full_marks %>" name="marks[id<%= s.id %>]"
                          value="<%= s.is_absent ? '' : (s.marks === null || s.marks === undefined ? '' : s.marks) %>"></td>
-                  <td><label class="chk"><input type="checkbox" name="absent[id<%= s.id %>]" value="1" <%= s.is_absent ? 'checked' : '' %>> Absent</label></td>
+                  <td><label class="chk"><input type="checkbox" name="absent[id<%= s.id %>]" value="1" <%= s.is_absent ? 'checked' : '' %>> <%= t('results.absent') %></label></td>
                   <td><%= s.is_absent ? 'Absent' : (g ? g.grade : '—') %></td>
                 </tr>
               <% }); %>
@@ -55,16 +55,16 @@
         </div>
       </div>
       <div class="card-body" style="border-top:1px solid var(--a-line)">
-        <button class="btn btn-primary" type="submit">Save marks</button>
-        <span class="sub" style="margin-left:.8rem">Leaving a box empty removes any mark already stored for that student.</span>
+        <button class="btn btn-primary" type="submit"><%= t('a.exam.save_marks') %></button>
+        <span class="sub" style="margin-left:.8rem"><%= t('a.exam.empty_hint') %></span>
       </div>
     </div>
   </form>
 <% } else if (filters.class_id && !subjects.length) { %>
-  <div class="card"><div class="card-body empty"><p>This class has no subjects yet.
-    <a href="/admin/academics/subjects?class_id=<%= filters.class_id %>">Add subjects</a> first.</p></div></div>
+  <div class="card"><div class="card-body empty"><p><%= t('a.exam.no_subjects') %>
+    <a href="/admin/academics/subjects?class_id=<%= filters.class_id %>"><%= t('a.exam.add_subjects') %></a> <%= t('a.first_period') %></p></div></div>
 <% } else if (subject) { %>
-  <div class="card"><div class="card-body empty"><p>No active students in this class.</p></div></div>
+  <div class="card"><div class="card-body empty"><p><%= t('a.att.no_students_class') %></p></div></div>
 <% } else { %>
-  <div class="card"><div class="card-body empty"><div class="big">◈</div><p>Choose a class and subject to enter marks.</p></div></div>
+  <div class="card"><div class="card-body empty"><div class="big">◈</div><p><%= t('a.exam.choose_class_subject') %></p></div></div>
 <% } %>

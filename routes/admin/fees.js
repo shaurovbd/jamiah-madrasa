@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const i18n = require('../../lib/i18n');
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.get('/', async (req, res, next) => {
     ]);
 
     res.render('admin/fees/list', {
-      title: 'Fee Invoices', invoices, classes, periods, p,
+      title: res.locals.t('admin.nav.fees'), invoices, classes, periods, p,
       totals: { billed: Number(totals.billed || 0), collected: Number(totals.collected || 0) },
       filters: { period, status, class_id: classId, q }
     });
@@ -69,7 +70,7 @@ router.get('/structure', async (req, res, next) => {
     const editHead = h.toInt(req.query.edit)
       ? await db.one('SELECT * FROM fee_heads WHERE id = ?', [h.toInt(req.query.edit)]) : null;
     res.render('admin/fees/structure', {
-      title: 'Fee Setup', heads, classes, structure, editHead, classId,
+      title: res.locals.t('admin.nav.fee_setup'), heads, classes, structure, editHead, classId,
       klass: classId ? classes.find((c) => c.id === classId) : null
     });
   } catch (err) { next(err); }
@@ -78,16 +79,16 @@ router.get('/structure', async (req, res, next) => {
 router.post('/heads', async (req, res, next) => {
   try {
     const name = String(req.body.name || '').trim();
-    if (!name) { req.flash('error', 'Fee head name is required.'); return res.redirect('/admin/fees/structure'); }
+    if (!name) { req.flash('error', 'f.fee.head_required'); return res.redirect('/admin/fees/structure'); }
     const id = h.toInt(req.body.id);
     const ftype = ['monthly', 'one_time', 'annual'].includes(req.body.ftype) ? req.body.ftype : 'monthly';
     const vals = [name, ftype, h.toNum(req.body.amount, 0), req.body.is_active ? 1 : 0];
     if (id) {
       await db.run('UPDATE fee_heads SET name=?, ftype=?, amount=?, is_active=? WHERE id=?', [...vals, id]);
-      req.flash('success', 'Fee head updated.');
+      req.flash('success', 'f.fee.head_updated');
     } else {
       await db.run('INSERT INTO fee_heads (name, ftype, amount, is_active) VALUES (?,?,?,?)', vals);
-      req.flash('success', 'Fee head added.');
+      req.flash('success', 'f.fee.head_added');
     }
     res.redirect('/admin/fees/structure');
   } catch (err) { next(err); }
@@ -96,7 +97,7 @@ router.post('/heads', async (req, res, next) => {
 router.delete('/heads/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM fee_heads WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Fee head deleted.');
+    req.flash('success', 'f.fee.head_deleted');
     res.redirect('/admin/fees/structure');
   } catch (err) { next(err); }
 });
@@ -104,7 +105,7 @@ router.delete('/heads/:id', async (req, res, next) => {
 router.post('/structure', async (req, res, next) => {
   try {
     const classId = h.toInt(req.body.class_id);
-    if (!classId) { req.flash('error', 'Choose a class first.'); return res.redirect('/admin/fees/structure'); }
+    if (!classId) { req.flash('error', 'f.choose_class_first'); return res.redirect('/admin/fees/structure'); }
     const amounts = req.body.amount || {};
     await db.transaction(async (conn) => {
       for (const key of Object.keys(amounts)) {
@@ -122,7 +123,7 @@ router.post('/structure', async (req, res, next) => {
         }
       }
     });
-    req.flash('success', 'Fee structure saved for this class.');
+    req.flash('success', 'f.fee.structure_saved');
     res.redirect(`/admin/fees/structure?class_id=${classId}`);
   } catch (err) { next(err); }
 });
@@ -131,7 +132,7 @@ router.post('/structure', async (req, res, next) => {
 router.get('/generate', async (req, res, next) => {
   try {
     const classes = await db.query('SELECT id, name FROM classes ORDER BY department_id, level');
-    res.render('admin/fees/generate', { title: 'Generate Invoices', classes, period: h.currentPeriod(), result: null });
+    res.render('admin/fees/generate', { title: res.locals.t('a.fee.generate_title'), classes, period: h.currentPeriod(), result: null });
   } catch (err) { next(err); }
 });
 
@@ -197,7 +198,7 @@ router.post('/generate', async (req, res, next) => {
     });
 
     res.render('admin/fees/generate', {
-      title: 'Generate Invoices', classes, period,
+      title: res.locals.t('a.fee.generate_title'), classes, period,
       result: { created, skipped, noStructure, period, total: students.length }
     });
   } catch (err) { next(err); }
@@ -256,9 +257,9 @@ router.post('/invoice/:id/pay', async (req, res, next) => {
     const amount = h.toNum(req.body.amount, 0);
     const payable = Number(invoice.total_amount) - Number(invoice.discount);
     const balance = payable - Number(invoice.paid_amount);
-    if (amount <= 0) { req.flash('error', 'Enter an amount greater than zero.'); return res.redirect(`/admin/fees/invoice/${id}`); }
+    if (amount <= 0) { req.flash('error', 'f.amount_gt_zero'); return res.redirect(`/admin/fees/invoice/${id}`); }
     if (amount > balance + 0.001) {
-      req.flash('error', `That is more than the outstanding balance of ${h.money(balance, res.locals.currency)}.`);
+      req.flash('error', i18n.pack('f.fee.over_balance', { balance: h.money(balance, res.locals.currency) }));
       return res.redirect(`/admin/fees/invoice/${id}`);
     }
 
@@ -276,7 +277,7 @@ router.post('/invoice/:id/pay', async (req, res, next) => {
       return r.insertId;
     });
 
-    req.flash('success', `Payment of ${h.money(amount, res.locals.currency)} recorded.`);
+    req.flash('success', i18n.pack('f.fee.payment_recorded', { amount: h.money(amount, res.locals.currency) }));
     res.redirect(`/admin/fees/receipt/${paymentId}`);
   } catch (err) { next(err); }
 });
@@ -294,7 +295,7 @@ router.post('/invoice/:id/discount', async (req, res, next) => {
         [discount, h.orNull(req.body.note), id]);
       await refreshInvoice(conn, id);
     });
-    req.flash('success', 'Discount updated.');
+    req.flash('success', 'f.fee.discount_updated');
     res.redirect(`/admin/fees/invoice/${id}`);
   } catch (err) { next(err); }
 });
@@ -306,7 +307,7 @@ router.delete('/invoice/:id/payment/:paymentId', async (req, res, next) => {
       await conn.execute('DELETE FROM fee_payments WHERE id = ? AND invoice_id = ?', [h.toInt(req.params.paymentId), id]);
       await refreshInvoice(conn, id);
     });
-    req.flash('success', 'Payment removed and the invoice balance recalculated.');
+    req.flash('success', 'f.fee.payment_removed');
     res.redirect(`/admin/fees/invoice/${id}`);
   } catch (err) { next(err); }
 });
@@ -314,7 +315,7 @@ router.delete('/invoice/:id/payment/:paymentId', async (req, res, next) => {
 router.delete('/invoice/:id', async (req, res, next) => {
   try {
     await db.run('DELETE FROM fee_invoices WHERE id = ?', [h.toInt(req.params.id)]);
-    req.flash('success', 'Invoice deleted together with its payments.');
+    req.flash('success', 'f.fee.invoice_deleted');
     res.redirect('/admin/fees');
   } catch (err) { next(err); }
 });
@@ -336,7 +337,7 @@ router.get('/receipt/:paymentId', async (req, res, next) => {
     if (!payment) return next();
     const items = await db.query('SELECT * FROM fee_invoice_items WHERE invoice_id = ? ORDER BY id', [payment.invoice_id]);
     const balance = Number(payment.total_amount) - Number(payment.discount) - Number(payment.paid_amount);
-    res.render('admin/fees/receipt', { title: `Receipt ${payment.receipt_no}`, payment, items, balance });
+    res.render('admin/fees/receipt', { title: res.locals.t('a.title.receipt', { no: payment.receipt_no }), payment, items, balance });
   } catch (err) { next(err); }
 });
 
@@ -361,7 +362,7 @@ router.get('/dues', async (req, res, next) => {
         ORDER BY due DESC`, params
     );
     const totalDue = rows.reduce((sum, r) => sum + Number(r.due), 0);
-    res.render('admin/fees/dues', { title: 'Dues Report', rows, classes, totalDue, filters: { class_id: classId } });
+    res.render('admin/fees/dues', { title: res.locals.t('admin.nav.dues'), rows, classes, totalDue, filters: { class_id: classId } });
   } catch (err) { next(err); }
 });
 

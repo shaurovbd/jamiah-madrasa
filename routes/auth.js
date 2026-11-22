@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/login', (req, res) => {
   if (req.session.user) return res.redirect('/admin');
-  res.render('auth/login', { layout: 'layouts/blank', title: 'Sign in' });
+  res.render('auth/login', { layout: 'layouts/blank', title: res.locals.t('auth.sign_in') });
 });
 
 router.post('/login', async (req, res, next) => {
@@ -15,7 +15,7 @@ router.post('/login', async (req, res, next) => {
     const username = String(req.body.username || '').trim();
     const password = String(req.body.password || '');
     if (!username || !password) {
-      req.flash('error', 'Enter your username and password.');
+      req.flash('error', 'f.auth.enter_both');
       return res.redirect('/login');
     }
     const user = await db.one(
@@ -24,7 +24,7 @@ router.post('/login', async (req, res, next) => {
     );
     // Same message either way, so the form does not reveal which usernames exist.
     if (!user || !user.is_active || !(await bcrypt.compare(password, user.password_hash))) {
-      req.flash('error', 'Incorrect username or password.');
+      req.flash('error', 'auth.invalid');
       return res.redirect('/login');
     }
     await db.run('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);

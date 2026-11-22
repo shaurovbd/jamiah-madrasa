@@ -1,7 +1,7 @@
 <div class="page-head">
   <div class="wrap">
-    <div class="crumb"><a href="/">Home</a> / Contact</div>
-    <h1>Contact Us</h1>
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('nav.contact') %></div>
+    <h1><%= t('contact.title') %></h1>
   </div>
 </div>
 
@@ -10,48 +10,48 @@
     <div class="grid g2" style="gap:2.5rem;align-items:start">
       <div class="panel">
         <% if (sent) { %>
-          <div class="alert alert-success">Thank you. Your message has been received and the office will reply shortly.</div>
+          <div class="alert alert-success"><%= t('contact.sent') %></div>
         <% } %>
-        <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.join(' ') %></div><% } %>
-        <h2 style="margin-bottom:1.1rem">Send us a message</h2>
+        <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
+        <h2 style="margin-bottom:1.1rem"><%= t('contact.send_heading') %></h2>
         <form method="post" action="/contact">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="form-grid">
             <div class="field">
-              <label for="name">Your name <span class="req">*</span></label>
+              <label for="name"><%= t('contact.your_name') %> <span class="req">*</span></label>
               <input id="name" name="name" type="text" required value="<%= form.name || '' %>">
             </div>
             <div class="field">
-              <label for="phone">Phone</label>
+              <label for="phone"><%= t('common.phone') %></label>
               <input id="phone" name="phone" type="tel" value="<%= form.phone || '' %>">
             </div>
             <div class="field full">
-              <label for="email">Email</label>
+              <label for="email"><%= t('common.email') %></label>
               <input id="email" name="email" type="email" value="<%= form.email || '' %>">
             </div>
             <div class="field full">
-              <label for="subject">Subject</label>
+              <label for="subject"><%= t('contact.subject') %></label>
               <input id="subject" name="subject" type="text" value="<%= form.subject || '' %>">
             </div>
             <div class="field full">
-              <label for="message">Message <span class="req">*</span></label>
+              <label for="message"><%= t('contact.message') %> <span class="req">*</span></label>
               <textarea id="message" name="message" required><%= form.message || '' %></textarea>
             </div>
           </div>
-          <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit">Send message</button></p>
+          <p style="margin-top:1.2rem"><button class="btn btn-green" type="submit"><%= t('contact.send_button') %></button></p>
         </form>
       </div>
 
       <aside>
         <div class="card" style="margin-bottom:1.2rem">
-          <h3>Office</h3>
+          <h3><%= t('contact.office') %></h3>
           <p style="color:var(--body)"><%= site.address || '' %></p>
-          <% if (site.phone) { %><p><strong>Phone:</strong> <%= site.phone %></p><% } %>
-          <% if (site.email) { %><p><strong>Email:</strong> <a href="mailto:<%= site.email %>"><%= site.email %></a></p><% } %>
+          <% if (site.phone) { %><p><strong><%= t('common.phone') %>:</strong> <%= site.phone %></p><% } %>
+          <% if (site.email) { %><p><strong><%= t('common.email') %>:</strong> <a href="mailto:<%= site.email %>"><%= site.email %></a></p><% } %>
         </div>
         <div class="card">
-          <h3>Office hours</h3>
-          <p>Saturday – Thursday, 8:00 am to 4:00 pm.<br>Friday closed.</p>
+          <h3><%= t('contact.office_hours') %></h3>
+          <p><%= t('contact.office_hours_value') %></p>
         </div>
       </aside>
     </div>

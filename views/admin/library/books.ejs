@@ -1,18 +1,18 @@
 <div class="page-bar">
-  <div><h1>Library</h1><p class="sub"><%= h.num(p.total) %> titles · <%= h.num(stats.copies || 0) %> copies · <%= h.num(stats.available || 0) %> on the shelf</p></div>
+  <div><h1><%= t('admin.nav.library') %></h1><p class="sub"><%= t('a.lib.summary_line', { titles: h.num(p.total), copies: h.num(stats.copies || 0), available: h.num(stats.available || 0) }) %></p></div>
 </div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="grid" style="grid-template-columns:1fr 330px;align-items:start;gap:1.1rem">
   <div class="card">
-    <div class="card-head"><h2>Catalogue</h2><span class="spacer"></span>
-      <form method="get" action="/admin/library"><input type="search" name="q" placeholder="Search title, author, number" value="<%= filters.q %>"></form>
+    <div class="card-head"><h2><%= t('a.lib.catalogue') %></h2><span class="spacer"></span>
+      <form method="get" action="/admin/library"><input type="search" name="q" placeholder="<%= t('a.lib.search_ph') %>" value="<%= filters.q %>"></form>
     </div>
     <div class="card-body flush">
       <% if (books.length) { %>
       <div class="table-wrap">
         <table class="data">
-          <thead><tr><th>Book No</th><th>Title</th><th>Author</th><th>Category</th><th>Shelf</th><th class="num">Copies</th><th class="num">Available</th><th class="actions"></th></tr></thead>
+          <thead><tr><th><%= t('a.lib.book_no') %></th><th><%= t('common.title') %></th><th><%= t('a.lib.author') %></th><th><%= t('a.cat') %></th><th><%= t('a.lib.shelf') %></th><th class="num"><%= t('a.lib.copies') %></th><th class="num"><%= t('a.lib.available') %></th><th class="actions"></th></tr></thead>
           <tbody>
             <% books.forEach(function (b) { %>
               <tr>
@@ -24,10 +24,10 @@
                 <td class="num"><%= b.total_copies %></td>
                 <td class="num"><span class="badge badge-<%= b.available_copies > 0 ? 'green' : 'red' %>"><%= b.available_copies %></span></td>
                 <td class="actions">
-                  <a class="btn btn-light btn-sm" href="/admin/library?edit=<%= b.id %>">Edit</a>
+                  <a class="btn btn-light btn-sm" href="/admin/library?edit=<%= b.id %>"><%= t('common.edit') %></a>
                   <form method="post" action="/admin/library/books/<%= b.id %>" style="display:inline" data-confirm="Delete <%= b.title %> and its loan history?">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
-                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
                 </td>
               </tr>
@@ -35,7 +35,7 @@
           </tbody>
         </table>
       </div>
-      <% } else { %><div class="empty"><div class="big">▥</div><p>No books in the catalogue yet.</p></div><% } %>
+      <% } else { %><div class="empty"><div class="big">▥</div><p><%= t('a.lib.no_books') %></p></div><% } %>
     </div>
     <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
   </div>
@@ -46,22 +46,22 @@
       <form method="post" action="/admin/library/books">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
-        <div class="field" style="margin-bottom:.7rem"><label for="book_no">Book number <span class="req">*</span></label>
+        <div class="field" style="margin-bottom:.7rem"><label for="book_no"><%= t('a.lib.book_number') %> <span class="req">*</span></label>
           <input id="book_no" name="book_no" type="text" required value="<%= edit ? edit.book_no : '' %>"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="title">Title <span class="req">*</span></label>
+        <div class="field" style="margin-bottom:.7rem"><label for="title"><%= t('common.title') %> <span class="req">*</span></label>
           <input id="title" name="title" type="text" required value="<%= edit ? edit.title : '' %>"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="author">Author</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="author"><%= t('a.lib.author') %></label>
           <input id="author" name="author" type="text" value="<%= edit ? edit.author || '' : '' %>"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="publisher">Publisher</label>
+        <div class="field" style="margin-bottom:.7rem"><label for="publisher"><%= t('a.lib.publisher') %></label>
           <input id="publisher" name="publisher" type="text" value="<%= edit ? edit.publisher || '' : '' %>"></div>
-        <div class="field" style="margin-bottom:.7rem"><label for="category">Category</label>
-          <input id="category" name="category" type="text" placeholder="Tafsir, Hadith, Fiqh…" value="<%= edit ? edit.category || '' : '' %>"></div>
+        <div class="field" style="margin-bottom:.7rem"><label for="category"><%= t('a.cat') %></label>
+          <input id="category" name="category" type="text" placeholder="<%= t('a.lib.category_ph') %>" value="<%= edit ? edit.category || '' : '' %>"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem">
-          <div class="field"><label for="shelf">Shelf</label><input id="shelf" name="shelf" type="text" value="<%= edit ? edit.shelf || '' : '' %>"></div>
-          <div class="field"><label for="total_copies">Copies</label><input id="total_copies" name="total_copies" type="number" min="1" value="<%= edit ? edit.total_copies : 1 %>"></div>
+          <div class="field"><label for="shelf"><%= t('a.lib.shelf') %></label><input id="shelf" name="shelf" type="text" value="<%= edit ? edit.shelf || '' : '' %>"></div>
+          <div class="field"><label for="total_copies"><%= t('a.lib.copies') %></label><input id="total_copies" name="total_copies" type="number" min="1" value="<%= edit ? edit.total_copies : 1 %>"></div>
         </div>
         <button class="btn btn-primary" type="submit"><%= edit ? 'Save changes' : 'Add book' %></button>
-        <% if (edit) { %><a class="btn btn-light" href="/admin/library">Cancel</a><% } %>
+        <% if (edit) { %><a class="btn btn-light" href="/admin/library"><%= t('common.cancel') %></a><% } %>
       </form>
     </div>
   </div>

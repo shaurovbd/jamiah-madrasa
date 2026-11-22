@@ -224,3 +224,16 @@
   .ja-navbtn{padding:.55rem .9rem;font-size:.9rem}
   .ja-stepnav-count{font-size:.8rem}
 }
+
+/* ------------------------------------------------------------ language */
+/* The form's type stack is Bangla-first, which is right for the Bangla
+   version. In English the same stack renders Latin text in a Bangla face, so
+   English pages get the site's Latin stack back. */
+html[lang="en"] .ja-wrap,
+html[lang="en"] .ja-wrap input,
+html[lang="en"] .ja-wrap select,
+html[lang="en"] .ja-wrap textarea,
+html[lang="en"] .ja-wrap button{font-family:var(--sans)}
+html[lang="en"] .ja-head h2,
+html[lang="en"] .ja-done h2,
+html[lang="en"] .ja-section-title{font-family:var(--serif)}

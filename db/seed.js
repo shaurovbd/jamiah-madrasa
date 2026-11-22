@@ -26,7 +26,9 @@ async function seedSettings() {
     principal_name: '',
     principal_message: 'Welcome to Jamiah Scholars International, where classical Islamic scholarship meets contemporary academic rigour. Our students memorise the Qur’an, study the sacred sciences, and grow into people of character who serve their communities with knowledge and sincerity.',
     about_intro: 'Jamiah Scholars International is an Islamic educational institution offering Hifzul Qur’an, Nazera, Maktab and the full Kitab syllabus alongside essential general education.',
-    result_notice: 'Enter your roll number and select the examination to view your result.'
+    result_notice: 'Enter your roll number and select the examination to view your result.',
+    // Interface language for visitors and staff who have not picked one.
+    default_language: 'en'
   };
   for (const [k, v] of Object.entries(defaults)) {
     await db.run('INSERT IGNORE INTO settings (skey, svalue) VALUES (?, ?)', [k, v]);

@@ -52,7 +52,7 @@ router.get('/', async (req, res, next) => {
     const maxDept = Math.max(1, ...byDepartment.map((d) => Number(d.c)));
 
     res.render('admin/dashboard', {
-      title: 'Dashboard',
+      title: res.locals.t('admin.dashboard'),
       period,
       stats: {
         students, staffCount, pendingAdmissions, unreadMessages,

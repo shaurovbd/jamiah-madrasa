@@ -1,22 +1,22 @@
-<div class="page-bar"><h1>Attendance</h1></div>
+<div class="page-bar"><h1><%= t('admin.nav.attendance') %></h1></div>
 <%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
 
 <div class="card" style="margin-bottom:1.1rem">
   <div class="card-body">
     <form class="filters" method="get" action="/admin/attendance">
-      <div class="field"><label for="class_id">Class <span class="req">*</span></label>
+      <div class="field"><label for="class_id"><%= t('common.class') %> <span class="req">*</span></label>
         <select id="class_id" name="class_id" required>
-          <option value="">— Select —</option>
+          <option value=""><%= t('results.select_placeholder') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
-      <div class="field"><label for="section_id">Section</label>
+      <div class="field"><label for="section_id"><%= t('common.section') %></label>
         <select id="section_id" name="section_id">
-          <option value="">All sections</option>
+          <option value=""><%= t('a.att.all_sections') %></option>
           <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>" <%= filters.section_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
         </select></div>
-      <div class="field"><label for="date">Date</label>
+      <div class="field"><label for="date"><%= t('common.date') %></label>
         <input id="date" name="date" type="date" value="<%= filters.date %>"></div>
-      <button class="btn btn-primary" type="submit">Load roster</button>
+      <button class="btn btn-primary" type="submit"><%= t('a.att.load_roster') %></button>
     </form>
   </div>
 </div>
@@ -31,15 +31,15 @@
 
       <div class="card">
         <div class="card-head">
-          <h2><%= h.fmtDate(filters.date) %> · <%= students.length %> students</h2>
+          <h2><%= fmtDate(filters.date) %> · <%= students.length %> students</h2>
           <span class="spacer"></span>
-          <% if (alreadyTaken) { %><span class="badge badge-green">Already recorded — editing</span><% } %>
-          <button class="btn btn-light btn-sm" type="button" id="allPresent">Mark all present</button>
+          <% if (alreadyTaken) { %><span class="badge badge-green"><%= t('a.att.already_recorded') %></span><% } %>
+          <button class="btn btn-light btn-sm" type="button" id="allPresent"><%= t('a.att.mark_all_present') %></button>
         </div>
         <div class="card-body flush">
           <div class="table-wrap">
             <table class="data">
-              <thead><tr><th>Roll</th><th>Name</th><th style="width:330px">Status</th><th>Remarks</th></tr></thead>
+              <thead><tr><th><%= t('common.roll') %></th><th><%= t('common.name') %></th><th style="width:330px"><%= t('common.status') %></th><th><%= t('a.remarks') %></th></tr></thead>
               <tbody>
                 <% students.forEach(function (s) { %>
                   <tr>
@@ -51,12 +51,12 @@
                           <label class="chk">
                             <input type="radio" name="status[id<%= s.id %>]" value="<%= st %>"
                               <%= (s.status || 'present') === st ? 'checked' : '' %>>
-                            <%= st.charAt(0).toUpperCase() + st.slice(1) %>
+                            <%= label('attendance', st) %>
                           </label>
                         <% }); %>
                       </div>
                     </td>
-                    <td><input type="text" name="remarks[id<%= s.id %>]" value="<%= s.remarks || '' %>" placeholder="Optional"></td>
+                    <td><input type="text" name="remarks[id<%= s.id %>]" value="<%= s.remarks || '' %>" placeholder="<%= t('common.optional') %>"></td>
                   </tr>
                 <% }); %>
               </tbody>
@@ -64,7 +64,7 @@
           </div>
         </div>
         <div class="card-body" style="border-top:1px solid var(--a-line)">
-          <button class="btn btn-primary" type="submit">Save attendance</button>
+          <button class="btn btn-primary" type="submit"><%= t('a.att.save') %></button>
         </div>
       </div>
     </form>
@@ -75,11 +75,11 @@
     </script>
   <% } else { %>
     <div class="card"><div class="card-body empty">
-      <div class="big">☗</div><p>No active students in this class or section.</p></div></div>
+      <div class="big">☗</div><p><%= t('a.att.no_students_section') %></p></div></div>
   <% } %>
 <% } else { %>
   <div class="card"><div class="card-body empty">
-    <div class="big">✓</div><p>Choose a class and date, then load the roster.</p></div></div>
+    <div class="big">✓</div><p><%= t('a.att.choose_then_load') %></p></div></div>
 <% } %>
 
 <script>
