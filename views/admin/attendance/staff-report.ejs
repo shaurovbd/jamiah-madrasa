@@ -40,6 +40,7 @@
               <th class="num">A</th>
               <th class="num"><%= t('a.satt.col_paid_leave') %></th>
               <th class="num"><%= t('a.satt.col_unpaid_leave') %></th>
+              <th class="num"><%= t('a.satt.col_early_out') %></th>
               <th class="num">%</th>
             </tr>
           </thead>
@@ -60,6 +61,7 @@
                 <td class="num"><%= r.absent %></td>
                 <td class="num"><%= r.paidLeave %></td>
                 <td class="num"><%= r.unpaidLeave %></td>
+                <td class="num"<%= r.earlyOut ? ' style="color:#8a4b00;font-weight:600"' : '' %>><%= r.earlyOut %></td>
                 <td class="num"><strong style="color:<%= r.percent >= 75 ? '#145c3a' : '#b3261e' %>"><%= r.percent %>%</strong></td>
               </tr>
             <% }); %>

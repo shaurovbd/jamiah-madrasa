@@ -223,15 +223,21 @@ router.post('/shifts', async (req, res, next) => {
   try {
     const name = String(req.body.name || '').trim();
     const code = String(req.body.code || '').trim().toUpperCase().slice(0, 10);
-    const start = sh.toTimeValue(req.body.start_time);
-    const end = sh.toTimeValue(req.body.end_time);
-    if (!name || !code || !start || !end) {
+    const entryStart = sh.toTimeValue(req.body.entry_start);
+    const entryEnd = sh.toTimeValue(req.body.entry_end);
+    const exitStart = sh.toTimeValue(req.body.exit_start);
+    const exitEnd = sh.toTimeValue(req.body.exit_end);
+    if (!name || !code || !entryStart || !entryEnd || !exitStart || !exitEnd) {
       req.flash('error', 'f.shift.required');
       return res.redirect('/admin/academics/shifts');
     }
-    // An end before the start would make every arrival look late and every
-    // report nonsensical, so it is refused rather than quietly stored.
-    if (sh.toMinutes(end) <= sh.toMinutes(start)) {
+    // The four times have to run forwards. Out of order they would make every
+    // arrival look late, or every departure early, and the month's report
+    // would be nonsense, so they are refused rather than quietly stored.
+    const inOrder = sh.toMinutes(entryStart) <= sh.toMinutes(entryEnd)
+      && sh.toMinutes(entryEnd) < sh.toMinutes(exitStart)
+      && sh.toMinutes(exitStart) <= sh.toMinutes(exitEnd);
+    if (!inOrder) {
       req.flash('error', 'f.shift.bad_window');
       return res.redirect('/admin/academics/shifts');
     }
@@ -243,8 +249,7 @@ router.post('/shifts', async (req, res, next) => {
     if (clash) { req.flash('error', 'f.shift.code_exists'); return res.redirect('/admin/academics/shifts'); }
 
     const vals = [
-      name, code, start, end,
-      Math.max(0, h.toNum(req.body.grace_minutes, 10)),
+      name, code, entryStart, entryEnd, exitStart, exitEnd,
       Math.max(0, h.toNum(req.body.half_day_after, 90)),
       sh.packOffDays(req.body.weekly_off || []),
       req.body.is_active ? 1 : 0,
@@ -253,15 +258,15 @@ router.post('/shifts', async (req, res, next) => {
 
     if (id) {
       await db.run(
-        `UPDATE shifts SET name=?, code=?, start_time=?, end_time=?, grace_minutes=?,
+        `UPDATE shifts SET name=?, code=?, entry_start=?, entry_end=?, exit_start=?, exit_end=?,
                 half_day_after=?, weekly_off=?, is_active=?, sort_order=? WHERE id=?`,
         [...vals, id]
       );
       req.flash('success', 'f.shift.updated');
     } else {
       await db.run(
-        `INSERT INTO shifts (name, code, start_time, end_time, grace_minutes,
-                half_day_after, weekly_off, is_active, sort_order) VALUES (?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO shifts (name, code, entry_start, entry_end, exit_start, exit_end,
+                half_day_after, weekly_off, is_active, sort_order) VALUES (?,?,?,?,?,?,?,?,?,?)`,
         vals
       );
       req.flash('success', 'f.shift.added');
