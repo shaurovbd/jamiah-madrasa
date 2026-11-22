@@ -44,9 +44,15 @@ CREATE TABLE IF NOT EXISTS shifts (
   id             INT AUTO_INCREMENT PRIMARY KEY,
   name           VARCHAR(60) NOT NULL,
   code           VARCHAR(10) NOT NULL,
-  start_time     TIME NOT NULL,
-  end_time       TIME NOT NULL,
-  grace_minutes  INT NOT NULL DEFAULT 10,
+  -- Arriving between entry_start and entry_end is on time; leaving between
+  -- exit_start and exit_end is a full day. Clock times rather than a grace
+  -- period, because that is how the office writes them and how a fingerprint
+  -- reader decides which shift a punch belongs to.
+  entry_start    TIME NOT NULL,
+  entry_end      TIME NOT NULL,
+  exit_start     TIME NOT NULL,
+  exit_end       TIME NOT NULL,
+  -- Minutes after entry_start beyond which an arrival is only half a day.
   half_day_after INT NOT NULL DEFAULT 90,
   weekly_off     VARCHAR(20) NOT NULL DEFAULT '5',
   is_active      TINYINT(1) NOT NULL DEFAULT 1,

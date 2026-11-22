@@ -11,7 +11,8 @@
         <table class="data">
           <thead><tr>
             <th><%= t('common.name') %></th>
-            <th><%= t('a.shift.window') %></th>
+            <th><%= t('a.shift.entry_window') %></th>
+            <th><%= t('a.shift.exit_window') %></th>
             <th><%= t('a.shift.late_after') %></th>
             <th><%= t('a.shift.weekly_off') %></th>
             <th class="num"><%= t('a.classes') %></th>
@@ -24,8 +25,9 @@
               <tr<%= s.is_active ? '' : ' style="opacity:.55"' %>>
                 <td><strong><%= s.name %></strong> <small class="sub">(<%= s.code %>)</small>
                   <% if (!s.is_active) { %><br><span class="badge"><%= t('a.shift.inactive') %></span><% } %></td>
-                <td style="white-space:nowrap"><%= sh.window(s) %></td>
-                <td style="white-space:nowrap"><%= t('a.shift.grace_n', { n: s.grace_minutes }) %></td>
+                <td style="white-space:nowrap"><%= sh.entryWindow(s) %></td>
+                <td style="white-space:nowrap"><%= sh.exitWindow(s) %></td>
+                <td style="white-space:nowrap"><%= t('a.shift.grace_n', { n: sh.graceMinutes(s) }) %></td>
                 <td>
                   <% var off = sh.offDays(s.weekly_off); %>
                   <%= off.length ? off.map(function (d) { return t('day.short.' + ['sun','mon','tue','wed','thu','fri','sat'][d]); }).join(', ') : '—' %>
@@ -65,25 +67,35 @@
           <input id="code" name="code" type="text" required maxlength="10" placeholder="M" value="<%= edit ? edit.code : '' %>">
           <span class="hint"><%= t('a.shift.code_hint') %></span>
         </div>
-        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+        <div style="margin-bottom:.4rem"><strong><%= t('a.shift.entry_window') %></strong></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.3rem">
           <div class="field">
-            <label for="start_time"><%= t('a.shift.start') %> <span class="req">*</span></label>
-            <input id="start_time" name="start_time" type="time" required value="<%= edit ? sh.hhmm(edit.start_time) : '07:30' %>">
+            <label for="entry_start"><%= t('a.shift.entry_start') %> <span class="req">*</span></label>
+            <input id="entry_start" name="entry_start" type="time" required value="<%= edit ? sh.hhmm(edit.entry_start) : '07:30' %>">
           </div>
           <div class="field">
-            <label for="end_time"><%= t('a.shift.end') %> <span class="req">*</span></label>
-            <input id="end_time" name="end_time" type="time" required value="<%= edit ? sh.hhmm(edit.end_time) : '11:30' %>">
+            <label for="entry_end"><%= t('a.shift.entry_end') %> <span class="req">*</span></label>
+            <input id="entry_end" name="entry_end" type="time" required value="<%= edit ? sh.hhmm(edit.entry_end) : '07:40' %>">
           </div>
         </div>
-        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+        <span class="hint" style="display:block;margin-bottom:.8rem"><%= t('a.shift.entry_hint') %></span>
+
+        <div style="margin-bottom:.4rem"><strong><%= t('a.shift.exit_window') %></strong></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.3rem">
           <div class="field">
-            <label for="grace_minutes"><%= t('a.shift.grace') %></label>
-            <input id="grace_minutes" name="grace_minutes" type="number" min="0" value="<%= edit ? edit.grace_minutes : 10 %>">
+            <label for="exit_start"><%= t('a.shift.exit_start') %> <span class="req">*</span></label>
+            <input id="exit_start" name="exit_start" type="time" required value="<%= edit ? sh.hhmm(edit.exit_start) : '11:30' %>">
           </div>
           <div class="field">
-            <label for="half_day_after"><%= t('a.shift.half_day_after') %></label>
-            <input id="half_day_after" name="half_day_after" type="number" min="0" value="<%= edit ? edit.half_day_after : 90 %>">
+            <label for="exit_end"><%= t('a.shift.exit_end') %> <span class="req">*</span></label>
+            <input id="exit_end" name="exit_end" type="time" required value="<%= edit ? sh.hhmm(edit.exit_end) : '12:00' %>">
           </div>
+        </div>
+        <span class="hint" style="display:block;margin-bottom:.8rem"><%= t('a.shift.exit_hint') %></span>
+
+        <div class="field" style="margin-bottom:.3rem">
+          <label for="half_day_after"><%= t('a.shift.half_day_after') %></label>
+          <input id="half_day_after" name="half_day_after" type="number" min="0" value="<%= edit ? edit.half_day_after : 90 %>">
         </div>
         <span class="hint" style="display:block;margin-bottom:.8rem"><%= t('a.shift.rules_hint') %></span>
 

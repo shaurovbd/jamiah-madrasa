@@ -311,10 +311,15 @@ router.get('/staff/report', async (req, res, next) => {
     );
 
     const records = await db.query(
-      `SELECT staff_id, DAY(adate) AS d, status, leave_type FROM staff_attendance
-        WHERE DATE_FORMAT(adate, '%Y-%m') = ?`,
+      `SELECT staff_id, DAY(adate) AS d, status, leave_type, out_time, shift_id
+         FROM staff_attendance WHERE DATE_FORMAT(adate, '%Y-%m') = ?`,
       [period]
     );
+    // Every shift, not just the active ones: a record taken under a shift
+    // since retired still has to be judged by that shift's own exit window.
+    const allShifts = await db.query('SELECT * FROM shifts');
+    const shiftById = new Map(allShifts.map((s) => [s.id, s]));
+
     const map = {};
     for (const r of records) {
       map[r.staff_id] = map[r.staff_id] || {};
@@ -331,12 +336,15 @@ router.get('/staff/report', async (req, res, next) => {
       const leave = list.filter((r) => r.status === 'leave').length;
       const paidLeave = list.filter((r) => r.status === 'leave' && r.leave_type !== 'unpaid').length;
       const unpaidLeave = leave - paidLeave;
+      // Counted separately from the status: someone can be late and also
+      // leave early, and a status can only say one thing.
+      const earlyOut = list.filter((r) => sh.leftEarly(shiftById.get(r.shift_id), r.out_time)).length;
       const taken = list.length;
       // Half a day worked counts as half a day present, which is what the
       // month-end salary sheet needs.
       const worked = present + late + halfDay * 0.5;
       return {
-        ...f, marks, present, late, halfDay, absent, leave, paidLeave, unpaidLeave, taken, worked,
+        ...f, marks, present, late, halfDay, absent, leave, paidLeave, unpaidLeave, earlyOut, taken, worked,
         percent: taken ? Math.round((worked / taken) * 100) : 0
       };
     });
