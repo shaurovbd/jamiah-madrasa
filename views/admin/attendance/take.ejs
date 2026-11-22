@@ -14,6 +14,11 @@
           <option value=""><%= t('a.att.all_sections') %></option>
           <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>" <%= filters.section_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
         </select></div>
+      <div class="field"><label for="shift_id"><%= t('common.shift') %></label>
+        <select id="shift_id" name="shift_id">
+          <option value=""><%= t('a.att.all_shifts') %></option>
+          <% shifts.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.shift_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+        </select></div>
       <div class="field"><label for="date"><%= t('common.date') %></label>
         <input id="date" name="date" type="date" value="<%= filters.date %>"></div>
       <button class="btn btn-primary" type="submit"><%= t('a.att.load_roster') %></button>
@@ -21,18 +26,26 @@
   </div>
 </div>
 
+<% if (weeklyOff) { %>
+  <div class="card" style="margin-bottom:1.1rem"><div class="card-body">
+    <strong><%= t('a.att.weekly_off_warning', { shift: shift.name, date: fmtDate(filters.date) }) %></strong>
+  </div></div>
+<% } %>
+
 <% if (filters.class_id) { %>
   <% if (students.length) { %>
     <form method="post" action="/admin/attendance">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="class_id" value="<%= filters.class_id %>">
       <input type="hidden" name="section_id" value="<%= filters.section_id || '' %>">
+      <input type="hidden" name="shift_id" value="<%= filters.shift_id || '' %>">
       <input type="hidden" name="date" value="<%= filters.date %>">
 
       <div class="card">
         <div class="card-head">
-          <h2><%= fmtDate(filters.date) %> · <%= students.length %> students</h2>
+          <h2><%= fmtDate(filters.date) %> · <%= t('a.att.n_students', { n: students.length }) %></h2>
           <span class="spacer"></span>
+          <% if (shift) { %><span class="badge"><%= shift.name %> · <%= sh.window(shift) %></span><% } %>
           <% if (alreadyTaken) { %><span class="badge badge-green"><%= t('a.att.already_recorded') %></span><% } %>
           <button class="btn btn-light btn-sm" type="button" id="allPresent"><%= t('a.att.mark_all_present') %></button>
         </div>

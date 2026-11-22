@@ -1,0 +1,74 @@
+<div class="page-bar">
+  <h1><%= t('admin.nav.attendance') %></h1>
+  <span class="spacer"></span>
+  <% if (rows.length) { %><button class="btn btn-light no-print" onclick="window.print()"><%= t('common.print') %></button><% } %>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="card no-print" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/attendance/staff/report">
+      <div class="field"><label for="department_id"><%= t('common.department') %></label>
+        <select id="department_id" name="department_id">
+          <option value=""><%= t('a.satt.all_departments') %></option>
+          <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= filters.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="shift_id"><%= t('common.shift') %></label>
+        <select id="shift_id" name="shift_id">
+          <option value=""><%= t('a.att.all_shifts') %></option>
+          <% shifts.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.shift_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="period"><%= t('common.month') %></label>
+        <input id="period" name="period" type="month" value="<%= filters.period %>"></div>
+      <button class="btn btn-primary" type="submit"><%= t('a.att.show_report') %></button>
+    </form>
+  </div>
+</div>
+
+<% if (rows.length) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= fmtPeriod(filters.period) %></h2>
+      <span class="spacer"></span><span class="sub"><%= t('a.satt.legend') %></span></div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table class="data compact">
+          <thead>
+            <tr>
+              <th><%= t('common.name') %></th>
+              <% days.forEach(function (d) { %><th style="text-align:center;padding:.3rem"><%= d %></th><% }); %>
+              <th class="num"><%= t('a.satt.col_worked') %></th>
+              <th class="num">A</th>
+              <th class="num"><%= t('a.satt.col_paid_leave') %></th>
+              <th class="num"><%= t('a.satt.col_unpaid_leave') %></th>
+              <th class="num">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach(function (r) { %>
+              <tr>
+                <td style="white-space:nowrap"><strong><%= r.name %></strong><br><small class="sub"><%= r.designation || r.staff_no %></small></td>
+                <% days.forEach(function (d) {
+                     var rec = r.marks[d];
+                     var st = rec ? rec.status : '';
+                     var letter = st === 'present' ? 'P' : st === 'absent' ? 'A' : st === 'late' ? 'L'
+                                : st === 'half_day' ? 'H' : st === 'leave' ? 'V' : '';
+                     var color = st === 'absent' ? '#b3261e' : st === 'leave' ? '#7a5a08'
+                               : st === 'late' ? '#1b4a85' : st === 'half_day' ? '#8a4b00' : '#145c3a'; %>
+                  <td style="text-align:center;padding:.3rem;color:<%= letter ? color : '#c9cfcc' %>;font-weight:<%= letter ? 600 : 400 %>"><%= letter || '·' %></td>
+                <% }); %>
+                <td class="num"><%= r.worked %></td>
+                <td class="num"><%= r.absent %></td>
+                <td class="num"><%= r.paidLeave %></td>
+                <td class="num"><%= r.unpaidLeave %></td>
+                <td class="num"><strong style="color:<%= r.percent >= 75 ? '#145c3a' : '#b3261e' %>"><%= r.percent %>%</strong></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <div class="card"><div class="card-body empty">
+    <div class="big">▤</div><p><%= t('a.satt.none_found') %></p></div></div>
+<% } %>

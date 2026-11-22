@@ -38,12 +38,29 @@ CREATE TABLE IF NOT EXISTS departments (
   sort_order  INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Daily sittings (সকাল / দিবা). A class carries the default shift, a student
+-- or a staff member may sit in a different one.
+CREATE TABLE IF NOT EXISTS shifts (
+  id             INT AUTO_INCREMENT PRIMARY KEY,
+  name           VARCHAR(60) NOT NULL,
+  code           VARCHAR(10) NOT NULL,
+  start_time     TIME NOT NULL,
+  end_time       TIME NOT NULL,
+  grace_minutes  INT NOT NULL DEFAULT 10,
+  half_day_after INT NOT NULL DEFAULT 90,
+  weekly_off     VARCHAR(20) NOT NULL DEFAULT '5',
+  is_active      TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order     INT NOT NULL DEFAULT 0,
+  UNIQUE KEY uq_shift_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS staff (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   staff_no      VARCHAR(30) NOT NULL UNIQUE,
   name          VARCHAR(140) NOT NULL,
   designation   VARCHAR(120),
   department_id INT NULL,
+  shift_id      INT NULL,
   qualification VARCHAR(200),
   phone         VARCHAR(40),
   email         VARCHAR(160),
@@ -55,16 +72,19 @@ CREATE TABLE IF NOT EXISTS staff (
   user_id       INT NULL,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_staff_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+  CONSTRAINT fk_staff_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL,
   CONSTRAINT fk_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS classes (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   department_id INT NULL,
+  shift_id      INT NULL,
   name          VARCHAR(100) NOT NULL,
   level         INT NOT NULL DEFAULT 0,
   sort_order    INT NOT NULL DEFAULT 0,
-  CONSTRAINT fk_class_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+  CONSTRAINT fk_class_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+  CONSTRAINT fk_class_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS sections (
@@ -107,6 +127,7 @@ CREATE TABLE IF NOT EXISTS students (
   department_id       INT NULL,
   class_id            INT NULL,
   section_id          INT NULL,
+  shift_id            INT NULL,
   academic_year_id    INT NULL,
   admission_date      DATE NULL,
   is_resident         TINYINT(1) NOT NULL DEFAULT 0,
@@ -116,8 +137,10 @@ CREATE TABLE IF NOT EXISTS students (
   CONSTRAINT fk_student_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
   CONSTRAINT fk_student_class FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL,
   CONSTRAINT fk_student_section FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE SET NULL,
+  CONSTRAINT fk_student_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL,
   CONSTRAINT fk_student_year FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE SET NULL,
   INDEX idx_student_class (class_id, section_id),
+  INDEX idx_student_shift (shift_id),
   INDEX idx_student_roll (roll_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -172,6 +195,7 @@ CREATE TABLE IF NOT EXISTS attendance (
   student_id INT NOT NULL,
   class_id   INT NULL,
   section_id INT NULL,
+  shift_id   INT NULL,
   adate      DATE NOT NULL,
   status     ENUM('present','absent','late','leave') NOT NULL DEFAULT 'present',
   remarks    VARCHAR(200),
@@ -179,7 +203,32 @@ CREATE TABLE IF NOT EXISTS attendance (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_att (student_id, adate),
   CONSTRAINT fk_att_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  CONSTRAINT fk_att_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL,
   INDEX idx_att_date (adate, class_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Teachers and other staff. Separate from `attendance`: no class or section,
+-- but arrival and departure times, a leave type and a stand-in teacher.
+CREATE TABLE IF NOT EXISTS staff_attendance (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  staff_id      INT NOT NULL,
+  shift_id      INT NULL,
+  adate         DATE NOT NULL,
+  status        ENUM('present','absent','late','half_day','leave') NOT NULL DEFAULT 'present',
+  in_time       TIME NULL,
+  out_time      TIME NULL,
+  leave_type    ENUM('casual','sick','earned','unpaid','maternity','official') NULL,
+  substitute_id INT NULL,
+  remarks       VARCHAR(200) NULL,
+  taken_by      INT NULL,
+  created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_staff_att (staff_id, adate),
+  CONSTRAINT fk_satt_staff FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE CASCADE,
+  CONSTRAINT fk_satt_shift FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL,
+  CONSTRAINT fk_satt_sub FOREIGN KEY (substitute_id) REFERENCES staff(id) ON DELETE SET NULL,
+  CONSTRAINT fk_satt_user FOREIGN KEY (taken_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_satt_date (adate, shift_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS exams (

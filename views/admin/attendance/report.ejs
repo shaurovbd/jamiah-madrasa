@@ -13,6 +13,11 @@
           <option value=""><%= t('results.select_placeholder') %></option>
           <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %>
         </select></div>
+      <div class="field"><label for="shift_id"><%= t('common.shift') %></label>
+        <select id="shift_id" name="shift_id">
+          <option value=""><%= t('a.att.all_shifts') %></option>
+          <% shifts.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.shift_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+        </select></div>
       <div class="field"><label for="period"><%= t('common.month') %></label>
         <input id="period" name="period" type="month" value="<%= filters.period %>"></div>
       <button class="btn btn-primary" type="submit"><%= t('a.att.show_report') %></button>

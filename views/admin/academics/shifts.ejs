@@ -1,0 +1,114 @@
+<div class="page-bar"><h1><%= t('a.ac.structure') %></h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.shifts') %></h2>
+      <span class="spacer"></span><span class="sub"><%= t('a.shift.hint') %></span></div>
+    <div class="card-body flush">
+      <% if (shifts.length) { %>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr>
+            <th><%= t('common.name') %></th>
+            <th><%= t('a.shift.window') %></th>
+            <th><%= t('a.shift.late_after') %></th>
+            <th><%= t('a.shift.weekly_off') %></th>
+            <th class="num"><%= t('a.classes') %></th>
+            <th class="num"><%= t('admin.nav.students') %></th>
+            <th class="num"><%= t('admin.nav.staff') %></th>
+            <th class="actions"></th>
+          </tr></thead>
+          <tbody>
+            <% shifts.forEach(function (s) { %>
+              <tr<%= s.is_active ? '' : ' style="opacity:.55"' %>>
+                <td><strong><%= s.name %></strong> <small class="sub">(<%= s.code %>)</small>
+                  <% if (!s.is_active) { %><br><span class="badge"><%= t('a.shift.inactive') %></span><% } %></td>
+                <td style="white-space:nowrap"><%= sh.window(s) %></td>
+                <td style="white-space:nowrap"><%= t('a.shift.grace_n', { n: s.grace_minutes }) %></td>
+                <td>
+                  <% var off = sh.offDays(s.weekly_off); %>
+                  <%= off.length ? off.map(function (d) { return t('day.short.' + ['sun','mon','tue','wed','thu','fri','sat'][d]); }).join(', ') : '—' %>
+                </td>
+                <td class="num"><%= s.class_count %></td>
+                <td class="num"><%= s.student_count %></td>
+                <td class="num"><%= s.staff_count %></td>
+                <td class="actions">
+                  <a class="btn btn-light btn-sm" href="/admin/academics/shifts?edit=<%= s.id %>"><%= t('common.edit') %></a>
+                  <form method="post" action="/admin/academics/shifts/<%= s.id %>" style="display:inline" data-confirm="<%= t('a.shift.confirm_delete') %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
+                    <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %><div class="empty"><%= t('a.shift.none') %></div><% } %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2><%= edit ? t('a.shift.edit') : t('a.shift.add') %></h2></div>
+    <div class="card-body">
+      <form method="post" action="/admin/academics/shifts">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% if (edit) { %><input type="hidden" name="id" value="<%= edit.id %>"><% } %>
+
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="name"><%= t('common.name') %> <span class="req">*</span></label>
+          <input id="name" name="name" type="text" required placeholder="<%= t('a.shift.name_ph') %>" value="<%= edit ? edit.name : '' %>">
+        </div>
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="code"><%= t('a.shift.code') %> <span class="req">*</span></label>
+          <input id="code" name="code" type="text" required maxlength="10" placeholder="M" value="<%= edit ? edit.code : '' %>">
+          <span class="hint"><%= t('a.shift.code_hint') %></span>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+          <div class="field">
+            <label for="start_time"><%= t('a.shift.start') %> <span class="req">*</span></label>
+            <input id="start_time" name="start_time" type="time" required value="<%= edit ? sh.hhmm(edit.start_time) : '07:30' %>">
+          </div>
+          <div class="field">
+            <label for="end_time"><%= t('a.shift.end') %> <span class="req">*</span></label>
+            <input id="end_time" name="end_time" type="time" required value="<%= edit ? sh.hhmm(edit.end_time) : '11:30' %>">
+          </div>
+        </div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+          <div class="field">
+            <label for="grace_minutes"><%= t('a.shift.grace') %></label>
+            <input id="grace_minutes" name="grace_minutes" type="number" min="0" value="<%= edit ? edit.grace_minutes : 10 %>">
+          </div>
+          <div class="field">
+            <label for="half_day_after"><%= t('a.shift.half_day_after') %></label>
+            <input id="half_day_after" name="half_day_after" type="number" min="0" value="<%= edit ? edit.half_day_after : 90 %>">
+          </div>
+        </div>
+        <span class="hint" style="display:block;margin-bottom:.8rem"><%= t('a.shift.rules_hint') %></span>
+
+        <div class="field" style="margin-bottom:.8rem">
+          <label><%= t('a.shift.weekly_off') %></label>
+          <% var off = sh.offDays(edit ? edit.weekly_off : '5'); %>
+          <div class="chk-list">
+            <% WEEKDAYS.forEach(function (d) { %>
+              <label class="chk"><input type="checkbox" name="weekly_off" value="<%= d.n %>" <%= off.indexOf(d.n) !== -1 ? 'checked' : '' %>> <%= t('day.short.' + ['sun','mon','tue','wed','thu','fri','sat'][d.n]) %></label>
+            <% }); %>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:.8rem">
+          <label for="sort_order"><%= t('a.shift.sort_order') %></label>
+          <input id="sort_order" name="sort_order" type="number" value="<%= edit ? edit.sort_order : shifts.length + 1 %>">
+        </div>
+
+        <label class="chk" style="margin-bottom:.9rem"><input type="checkbox" name="is_active" value="1" <%= !edit || edit.is_active ? 'checked' : '' %>> <%= t('a.shift.is_active') %></label>
+
+        <div>
+          <button class="btn btn-primary" type="submit"><%= edit ? t('common.save_changes') : t('a.shift.add') %></button>
+          <% if (edit) { %><a class="btn btn-light" href="/admin/academics/shifts"><%= t('common.cancel') %></a><% } %>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
