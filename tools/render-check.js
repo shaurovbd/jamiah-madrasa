@@ -51,7 +51,7 @@ const staffRow = {
   department_id: 1, dept_name: 'Kitab', phone: '+8801700000000', email: 's@example.com',
   shift_id: 1, own_shift_id: 1, shift_name: 'Morning',
   in_time: '07:28:00', out_time: '11:35:00', leave_type: null, substitute_id: null, remarks: '',
-  marks: {}, worked: 20, absent: 1, paidLeave: 1, unpaidLeave: 0, late: 0, halfDay: 0, taken: 22, percent: 91,
+  marks: {}, worked: 20, absent: 1, paidLeave: 1, unpaidLeave: 0, earlyOut: 2, late: 0, halfDay: 0, taken: 22, percent: 91,
   status: 'active', joining_date: '2020-01-01', salary: 25000, address: 'Khulna',
   nid: '', photo: null, gender: 'male', created_at: '2026-01-01'
 };
@@ -104,13 +104,15 @@ function localsFor(lang) {
     subjects: [{ id: 1, name: 'Tajweed', class_id: 1, class_name: 'Class 1', full_marks: 100, pass_marks: 33, teacher_id: 1, teacher_name: 'Mufti Yusuf', sort_order: 1 }],
     years: [{ id: 1, name: '2026', start_date: '2026-01-01', end_date: '2026-12-31', is_current: 1 }],
     shifts: [{
-      id: 1, name: 'Morning', code: 'M', start_time: '07:30:00', end_time: '11:30:00',
-      grace_minutes: 10, half_day_after: 90, weekly_off: '5', is_active: 1, sort_order: 1,
+      id: 1, name: 'Morning', code: 'M',
+      entry_start: '07:30:00', entry_end: '08:05:00', exit_start: '11:30:00', exit_end: '12:00:00',
+      half_day_after: 90, weekly_off: '5', is_active: 1, sort_order: 1,
       class_count: 2, student_count: 10, staff_count: 3, record_count: 40
     }],
     shift: {
-      id: 1, name: 'Morning', code: 'M', start_time: '07:30:00', end_time: '11:30:00',
-      grace_minutes: 10, half_day_after: 90, weekly_off: '5', is_active: 1
+      id: 1, name: 'Morning', code: 'M',
+      entry_start: '07:30:00', entry_end: '08:05:00', exit_start: '11:30:00', exit_end: '12:00:00',
+      half_day_after: 90, weekly_off: '5', is_active: 1
     },
     weeklyOff: false,
     sh: shiftLib,

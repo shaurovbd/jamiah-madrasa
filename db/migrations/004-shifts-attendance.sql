@@ -31,13 +31,9 @@ CREATE TABLE IF NOT EXISTS shifts (
 
 -- Seeded only while the table is still empty, so re-running the migrations
 -- never duplicates these rows or undoes the office's edits to them.
-INSERT INTO shifts (name, code, start_time, end_time, grace_minutes, half_day_after, weekly_off, is_active, sort_order)
-SELECT * FROM (
-            SELECT 'সকাল' AS name, 'M' AS code, '07:30:00' AS start_time, '11:30:00' AS end_time,
-                   10 AS grace_minutes, 90 AS half_day_after, '5' AS weekly_off, 1 AS is_active, 1 AS sort_order
-  UNION ALL SELECT 'দিবা', 'D', '12:00:00', '16:30:00', 10, 90, '5', 1, 2
-) AS seed
-WHERE NOT EXISTS (SELECT 1 FROM (SELECT 1 FROM shifts LIMIT 1) AS existing);
+-- Seeding is left to 005-shift-entry-exit.sql: on a fresh database this
+-- table already has the four entry/exit columns, while on an upgraded one it
+-- still has the old three at this point, and one INSERT cannot suit both.
 
 /* --------------------------------------------------- shift_id references */
 
