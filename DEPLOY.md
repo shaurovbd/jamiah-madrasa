@@ -34,7 +34,8 @@ key: cPanel → **SSH Access → Manage SSH Keys → Generate a New Key**, then 
 the public key and add it under the repository's **Settings → Deploy keys** on GitHub.
 
 Later updates: push to GitHub, then **Manage → Update from Remote** in cPanel, and restart
-the Node.js app.
+the Node.js app. If the update adds a file to `db/migrations/`, run `npm run migrate` before
+restarting — see *Updating an existing install* below.
 
 ---
 
@@ -115,8 +116,43 @@ Back on the Node.js App screen, press **Restart**. Then check:
 1. **Users → Change my password.**
 2. **Settings** — institution name, address, phone, email, principal's message.
 3. **Classes & Subjects** — adjust the seeded departments, classes and subjects.
-4. **Fee Setup** — fee heads and the amount each class pays.
-5. **Students** — add students, or approve them through **Admissions**.
+4. **Classes & Subjects → Shifts** — check the two seeded shifts (সকাল and দিবা): their
+   timings, the grace period, the half-day cut-off and the weekly holiday. Then set each
+   class's shift on the **Classes** tab, because student attendance and the teacher
+   lateness rules both read it.
+5. **Staff** — set each teacher's shift, so teacher attendance judges arrivals against the
+   right timings.
+6. **Fee Setup** — fee heads and the amount each class pays.
+7. **Students** — add students, or approve them through **Admissions**.
+
+---
+
+## Updating an existing install
+
+`npm run setup` is for a new, empty database: it applies `schema.sql`, which creates tables
+but never alters existing ones. On a site that already holds data, the schema changes live in
+`db/migrations/`, and those are applied by `npm run migrate`. Nothing applies them for you —
+not the git update, not a restart.
+
+So, for every update:
+
+1. cPanel → **Git™ Version Control → Manage → Update from Remote**.
+2. **Setup Node.js App → Run NPM Install** (only if `package.json` changed).
+3. Open **Terminal**, enter the virtual environment, then:
+   ```bash
+   cd ~/jamiah-madrasa
+   npm run migrate
+   ```
+   It prints each statement as `ok` or `skip  already applied`. Running it twice is safe, and
+   a run that stops halfway can simply be run again.
+4. **Restart** the Node.js app.
+
+Migrating before the restart matters: Passenger keeps serving the old code until you restart,
+so the database is ready by the time the new code first sees it.
+
+Skipping step 3 breaks the pages that use the new tables — they return 500 and the browser
+shows "We're sorry, something went wrong", while the rest of the site looks fine. If that
+happens, run the migration and restart; nothing is lost.
 
 ---
 

@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
+const sh = require('../../lib/shifts');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ const TABS = [
   ['/admin/academics/classes', 'a.classes'],
   ['/admin/academics/sections', 'a.sections'],
   ['/admin/academics/subjects', 'a.subjects'],
+  ['/admin/academics/shifts', 'a.shifts'],
   ['/admin/academics/years', 'a.ac.years']
 ];
 
@@ -61,18 +63,21 @@ router.delete('/departments/:id', async (req, res, next) => {
 /* ------------------------------------------------------------- classes */
 router.get('/classes', async (req, res, next) => {
   try {
-    const [classes, departments] = await Promise.all([
-      db.query(`SELECT c.*, d.name AS dept_name,
+    const [classes, departments, shifts] = await Promise.all([
+      db.query(`SELECT c.*, d.name AS dept_name, sf.name AS shift_name,
                        (SELECT COUNT(*) FROM sections s WHERE s.class_id = c.id) AS section_count,
                        (SELECT COUNT(*) FROM subjects s WHERE s.class_id = c.id) AS subject_count,
                        (SELECT COUNT(*) FROM students st WHERE st.class_id = c.id AND st.status = 'active') AS student_count
-                  FROM classes c LEFT JOIN departments d ON d.id = c.department_id
+                  FROM classes c
+                  LEFT JOIN departments d ON d.id = c.department_id
+                  LEFT JOIN shifts sf ON sf.id = c.shift_id
                  ORDER BY d.sort_order, c.level, c.id`),
-      db.query('SELECT id, name FROM departments ORDER BY sort_order, id')
+      db.query('SELECT id, name FROM departments ORDER BY sort_order, id'),
+      db.query('SELECT id, name FROM shifts WHERE is_active = 1 ORDER BY sort_order, id')
     ]);
     const edit = h.toInt(req.query.edit)
       ? await db.one('SELECT * FROM classes WHERE id = ?', [h.toInt(req.query.edit)]) : null;
-    res.render('admin/academics/classes', { title: res.locals.t('a.classes'), TABS, classes, departments, edit });
+    res.render('admin/academics/classes', { title: res.locals.t('a.classes'), TABS, classes, departments, shifts, edit });
   } catch (err) { next(err); }
 });
 
@@ -81,12 +86,13 @@ router.post('/classes', async (req, res, next) => {
     const name = String(req.body.name || '').trim();
     if (!name) { req.flash('error', 'f.ac.class_required'); return res.redirect('/admin/academics/classes'); }
     const id = h.toInt(req.body.id);
-    const vals = [h.toInt(req.body.department_id), name, h.toNum(req.body.level, 0), h.toNum(req.body.level, 0)];
+    const vals = [h.toInt(req.body.department_id), h.toInt(req.body.shift_id), name,
+                  h.toNum(req.body.level, 0), h.toNum(req.body.level, 0)];
     if (id) {
-      await db.run('UPDATE classes SET department_id=?, name=?, level=?, sort_order=? WHERE id=?', [...vals, id]);
+      await db.run('UPDATE classes SET department_id=?, shift_id=?, name=?, level=?, sort_order=? WHERE id=?', [...vals, id]);
       req.flash('success', 'f.ac.class_updated');
     } else {
-      const r = await db.run('INSERT INTO classes (department_id, name, level, sort_order) VALUES (?,?,?,?)', vals);
+      const r = await db.run('INSERT INTO classes (department_id, shift_id, name, level, sort_order) VALUES (?,?,?,?,?)', vals);
       await db.run('INSERT INTO sections (class_id, name, capacity) VALUES (?,?,?)', [r.insertId, 'A', 40]);
       req.flash('success', 'f.ac.class_added');
     }
@@ -191,6 +197,102 @@ router.delete('/subjects/:id', async (req, res, next) => {
     await db.run('DELETE FROM subjects WHERE id = ?', [h.toInt(req.params.id)]);
     req.flash('success', 'f.ac.subject_deleted');
     res.redirect('/admin/academics/subjects');
+  } catch (err) { next(err); }
+});
+
+/* -------------------------------------------------------------- shifts */
+router.get('/shifts', async (req, res, next) => {
+  try {
+    const shifts = await db.query(
+      `SELECT s.*,
+              (SELECT COUNT(*) FROM classes c WHERE c.shift_id = s.id) AS class_count,
+              (SELECT COUNT(*) FROM students st WHERE st.shift_id = s.id AND st.status = 'active') AS student_count,
+              (SELECT COUNT(*) FROM staff f WHERE f.shift_id = s.id AND f.status = 'active') AS staff_count,
+              (SELECT COUNT(*) FROM attendance a WHERE a.shift_id = s.id) AS record_count
+         FROM shifts s ORDER BY s.sort_order, s.id`
+    );
+    const edit = h.toInt(req.query.edit)
+      ? await db.one('SELECT * FROM shifts WHERE id = ?', [h.toInt(req.query.edit)]) : null;
+    res.render('admin/academics/shifts', {
+      title: res.locals.t('a.shifts'), TABS, shifts, edit, WEEKDAYS: sh.WEEKDAYS, sh
+    });
+  } catch (err) { next(err); }
+});
+
+router.post('/shifts', async (req, res, next) => {
+  try {
+    const name = String(req.body.name || '').trim();
+    const code = String(req.body.code || '').trim().toUpperCase().slice(0, 10);
+    const start = sh.toTimeValue(req.body.start_time);
+    const end = sh.toTimeValue(req.body.end_time);
+    if (!name || !code || !start || !end) {
+      req.flash('error', 'f.shift.required');
+      return res.redirect('/admin/academics/shifts');
+    }
+    // An end before the start would make every arrival look late and every
+    // report nonsensical, so it is refused rather than quietly stored.
+    if (sh.toMinutes(end) <= sh.toMinutes(start)) {
+      req.flash('error', 'f.shift.bad_window');
+      return res.redirect('/admin/academics/shifts');
+    }
+
+    const id = h.toInt(req.body.id);
+    const clash = await db.one(
+      'SELECT id FROM shifts WHERE code = ? AND id <> ?', [code, id || 0]
+    );
+    if (clash) { req.flash('error', 'f.shift.code_exists'); return res.redirect('/admin/academics/shifts'); }
+
+    const vals = [
+      name, code, start, end,
+      Math.max(0, h.toNum(req.body.grace_minutes, 10)),
+      Math.max(0, h.toNum(req.body.half_day_after, 90)),
+      sh.packOffDays(req.body.weekly_off || []),
+      req.body.is_active ? 1 : 0,
+      h.toNum(req.body.sort_order, 0)
+    ];
+
+    if (id) {
+      await db.run(
+        `UPDATE shifts SET name=?, code=?, start_time=?, end_time=?, grace_minutes=?,
+                half_day_after=?, weekly_off=?, is_active=?, sort_order=? WHERE id=?`,
+        [...vals, id]
+      );
+      req.flash('success', 'f.shift.updated');
+    } else {
+      await db.run(
+        `INSERT INTO shifts (name, code, start_time, end_time, grace_minutes,
+                half_day_after, weekly_off, is_active, sort_order) VALUES (?,?,?,?,?,?,?,?,?)`,
+        vals
+      );
+      req.flash('success', 'f.shift.added');
+    }
+    res.redirect('/admin/academics/shifts');
+  } catch (err) { next(err); }
+});
+
+router.delete('/shifts/:id', async (req, res, next) => {
+  try {
+    const id = h.toInt(req.params.id);
+    // Deleting a shift that is in use would blank the shift on its classes and
+    // on every attendance row ever taken under it (both FKs are SET NULL), and
+    // the month's reports would lose the column silently. Deactivating keeps
+    // the history readable and takes it out of the dropdowns just the same.
+    const inUse = await db.scalar(
+      `SELECT (SELECT COUNT(*) FROM classes WHERE shift_id = ?)
+            + (SELECT COUNT(*) FROM students WHERE shift_id = ?)
+            + (SELECT COUNT(*) FROM staff WHERE shift_id = ?)
+            + (SELECT COUNT(*) FROM attendance WHERE shift_id = ?)
+            + (SELECT COUNT(*) FROM staff_attendance WHERE shift_id = ?) AS c`,
+      [id, id, id, id, id]
+    );
+    if (inUse) {
+      await db.run('UPDATE shifts SET is_active = 0 WHERE id = ?', [id]);
+      req.flash('error', 'f.shift.in_use');
+    } else {
+      await db.run('DELETE FROM shifts WHERE id = ?', [id]);
+      req.flash('success', 'f.shift.deleted');
+    }
+    res.redirect('/admin/academics/shifts');
   } catch (err) { next(err); }
 });
 

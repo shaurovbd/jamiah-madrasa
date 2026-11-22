@@ -38,9 +38,12 @@ router.get('/', async (req, res, next) => {
 router.get('/new', async (req, res, next) => {
   try {
     const last = await db.one('SELECT MAX(id) AS id FROM staff');
-    const departments = await db.query('SELECT id, name FROM departments ORDER BY sort_order, id');
+    const [departments, shifts] = await Promise.all([
+      db.query('SELECT id, name FROM departments ORDER BY sort_order, id'),
+      db.query('SELECT id, name FROM shifts WHERE is_active = 1 ORDER BY sort_order, id')
+    ]);
     res.render('admin/staff/form', {
-      title: res.locals.t('a.staff.add_member'), isNew: true, departments,
+      title: res.locals.t('a.staff.add_member'), isNew: true, departments, shifts,
       member: { staff_no: `STF-${String((last && last.id ? last.id : 0) + 1).padStart(3, '0')}`, status: 'active' }
     });
   } catch (err) { next(err); }
@@ -57,10 +60,11 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
     if (dup) { req.flash('error', i18n.pack('f.staff.no_in_use', { no: b.staff_no })); return res.redirect('/admin/staff/new'); }
 
     const r = await db.run(
-      `INSERT INTO staff (staff_no, name, designation, department_id, qualification, phone, email,
+      `INSERT INTO staff (staff_no, name, designation, department_id, shift_id, qualification, phone, email,
          address, photo, join_date, salary, status)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [b.staff_no.trim(), b.name.trim(), h.orNull(b.designation), h.toInt(b.department_id), h.orNull(b.qualification),
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [b.staff_no.trim(), b.name.trim(), h.orNull(b.designation), h.toInt(b.department_id),
+       h.toInt(b.shift_id), h.orNull(b.qualification),
        h.orNull(b.phone), h.orNull(b.email), h.orNull(b.address), req.file ? req.file.filename : null,
        h.orNull(b.join_date), h.toNum(b.salary, 0), b.status === 'inactive' ? 'inactive' : 'active']
     );
@@ -73,8 +77,9 @@ router.get('/:id', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     const member = await db.one(
-      `SELECT s.*, d.name AS dept_name, u.username, u.role
+      `SELECT s.*, d.name AS dept_name, sf.name AS shift_name, u.username, u.role
          FROM staff s LEFT JOIN departments d ON d.id = s.department_id
+         LEFT JOIN shifts sf ON sf.id = s.shift_id
          LEFT JOIN users u ON u.id = s.user_id WHERE s.id = ?`, [id]
     );
     if (!member) return next();
@@ -90,8 +95,13 @@ router.get('/:id/edit', async (req, res, next) => {
   try {
     const member = await db.one('SELECT * FROM staff WHERE id = ?', [h.toInt(req.params.id)]);
     if (!member) return next();
-    const departments = await db.query('SELECT id, name FROM departments ORDER BY sort_order, id');
-    res.render('admin/staff/form', { title: res.locals.t('a.title.edit', { name: member.name }), member, isNew: false, departments });
+    const [departments, shifts] = await Promise.all([
+      db.query('SELECT id, name FROM departments ORDER BY sort_order, id'),
+      db.query('SELECT id, name FROM shifts WHERE is_active = 1 ORDER BY sort_order, id')
+    ]);
+    res.render('admin/staff/form', {
+      title: res.locals.t('a.title.edit', { name: member.name }), member, isNew: false, departments, shifts
+    });
   } catch (err) { next(err); }
 });
 
@@ -104,9 +114,10 @@ router.put('/:id', upload.image.single('photo'), async (req, res, next) => {
     if (req.file && existing.photo) upload.remove(existing.photo);
 
     await db.run(
-      `UPDATE staff SET staff_no=?, name=?, designation=?, department_id=?, qualification=?, phone=?, email=?,
+      `UPDATE staff SET staff_no=?, name=?, designation=?, department_id=?, shift_id=?, qualification=?, phone=?, email=?,
          address=?, photo=?, join_date=?, salary=?, status=? WHERE id=?`,
-      [b.staff_no.trim(), b.name.trim(), h.orNull(b.designation), h.toInt(b.department_id), h.orNull(b.qualification),
+      [b.staff_no.trim(), b.name.trim(), h.orNull(b.designation), h.toInt(b.department_id),
+       h.toInt(b.shift_id), h.orNull(b.qualification),
        h.orNull(b.phone), h.orNull(b.email), h.orNull(b.address), req.file ? req.file.filename : existing.photo,
        h.orNull(b.join_date), h.toNum(b.salary, 0), b.status === 'inactive' ? 'inactive' : 'active', id]
     );
