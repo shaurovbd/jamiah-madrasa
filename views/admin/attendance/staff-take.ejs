@@ -1,0 +1,115 @@
+<div class="page-bar"><h1><%= t('admin.nav.attendance') %></h1></div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body">
+    <form class="filters" method="get" action="/admin/attendance/staff">
+      <div class="field"><label for="department_id"><%= t('common.department') %></label>
+        <select id="department_id" name="department_id">
+          <option value=""><%= t('a.satt.all_departments') %></option>
+          <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= filters.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="shift_id"><%= t('common.shift') %></label>
+        <select id="shift_id" name="shift_id">
+          <option value=""><%= t('a.att.all_shifts') %></option>
+          <% shifts.forEach(function (s) { %><option value="<%= s.id %>" <%= filters.shift_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="date"><%= t('common.date') %></label>
+        <input id="date" name="date" type="date" value="<%= filters.date %>"></div>
+      <button class="btn btn-primary" type="submit"><%= t('a.satt.load_staff') %></button>
+    </form>
+  </div>
+</div>
+
+<% if (weeklyOff) { %>
+  <div class="card" style="margin-bottom:1.1rem"><div class="card-body">
+    <strong><%= t('a.att.weekly_off_warning', { shift: shift.name, date: fmtDate(filters.date) }) %></strong>
+  </div></div>
+<% } %>
+
+<% if (staff.length) { %>
+  <form method="post" action="/admin/attendance/staff">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="department_id" value="<%= filters.department_id || '' %>">
+    <input type="hidden" name="shift_id" value="<%= filters.shift_id || '' %>">
+    <input type="hidden" name="date" value="<%= filters.date %>">
+
+    <div class="card">
+      <div class="card-head">
+        <h2><%= fmtDate(filters.date) %> · <%= t('a.satt.n_staff', { n: staff.length }) %></h2>
+        <span class="spacer"></span>
+        <% if (alreadyTaken) { %><span class="badge badge-green"><%= t('a.att.already_recorded') %></span><% } %>
+        <button class="btn btn-light btn-sm" type="button" id="allPresent"><%= t('a.att.mark_all_present') %></button>
+      </div>
+      <div class="card-body flush">
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr>
+              <th><%= t('common.name') %></th>
+              <th style="width:330px"><%= t('common.status') %></th>
+              <th><%= t('a.satt.in_out') %></th>
+              <th><%= t('a.satt.leave_type') %></th>
+              <th><%= t('a.satt.substitute') %></th>
+              <th><%= t('a.remarks') %></th>
+            </tr></thead>
+            <tbody>
+              <% staff.forEach(function (f) { %>
+                <tr>
+                  <td>
+                    <strong><%= f.name %></strong><br>
+                    <small class="sub"><%= f.staff_no %><%= f.designation ? ' · ' + f.designation : '' %><%= f.shift_name ? ' · ' + f.shift_name : '' %></small>
+                    <input type="hidden" name="row_shift_id[id<%= f.id %>]" value="<%= f.own_shift_id || '' %>">
+                  </td>
+                  <td>
+                    <div class="chk-list">
+                      <% STATUSES.forEach(function (st) { %>
+                        <label class="chk">
+                          <input type="radio" name="status[id<%= f.id %>]" value="<%= st %>"
+                            <%= (f.status || 'present') === st ? 'checked' : '' %>>
+                          <%= label('staff_attendance', st) %>
+                        </label>
+                      <% }); %>
+                    </div>
+                  </td>
+                  <td style="white-space:nowrap">
+                    <input type="time" name="in_time[id<%= f.id %>]" value="<%= sh.hhmm(f.in_time) %>" style="width:7.5rem" aria-label="<%= t('a.satt.in_time') %>">
+                    <input type="time" name="out_time[id<%= f.id %>]" value="<%= sh.hhmm(f.out_time) %>" style="width:7.5rem" aria-label="<%= t('a.satt.out_time') %>">
+                  </td>
+                  <td>
+                    <select name="leave_type[id<%= f.id %>]">
+                      <option value="">—</option>
+                      <% LEAVE_TYPES.forEach(function (lt) { %>
+                        <option value="<%= lt %>" <%= f.leave_type === lt ? 'selected' : '' %>><%= label('leave_type', lt) %></option>
+                      <% }); %>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="substitute_id[id<%= f.id %>]">
+                      <option value="">—</option>
+                      <% staff.forEach(function (other) { if (other.id !== f.id) { %>
+                        <option value="<%= other.id %>" <%= f.substitute_id === other.id ? 'selected' : '' %>><%= other.name %></option>
+                      <% } }); %>
+                    </select>
+                  </td>
+                  <td><input type="text" name="remarks[id<%= f.id %>]" value="<%= f.remarks || '' %>" placeholder="<%= t('common.optional') %>"></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-body" style="border-top:1px solid var(--a-line)">
+        <button class="btn btn-primary" type="submit"><%= t('a.satt.save') %></button>
+        <span class="hint" style="display:block;margin-top:.5rem"><%= t('a.satt.derive_hint') %></span>
+      </div>
+    </div>
+  </form>
+  <script>
+    document.getElementById('allPresent').addEventListener('click', function () {
+      document.querySelectorAll('input[type=radio][value=present]').forEach(function (r) { r.checked = true; });
+    });
+  </script>
+<% } else { %>
+  <div class="card"><div class="card-body empty">
+    <div class="big">☖</div><p><%= t('a.satt.none_found') %></p></div></div>
+<% } %>

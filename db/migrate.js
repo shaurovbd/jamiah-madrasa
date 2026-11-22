@@ -18,6 +18,18 @@ const ALREADY_APPLIED = new Set([
 ]);
 
 /**
+ * Re-adding a named foreign key does not report ER_DUP_KEYNAME. It comes back
+ * as ER_CANT_CREATE_TABLE carrying the storage engine's errno 121, "duplicate
+ * key on write or update" — which here means the constraint name is taken, i.e.
+ * this statement ran before. Everything else behind ER_CANT_CREATE_TABLE is a
+ * genuine failure (a missing referenced table, a type mismatch), so the errno
+ * is matched rather than the code alone.
+ */
+function isDuplicateConstraint(err) {
+  return err.code === 'ER_CANT_CREATE_TABLE' && /errno:\s*121\b/.test(err.sqlMessage || '');
+}
+
+/**
  * Splits a migration file into statements.
  *
  * Walks the text once so that quoted strings are respected: a `;`, a `--` or
@@ -93,7 +105,7 @@ function statements(sql) {
         await conn.query(stmt);
         console.log('   ok   ', stmt.split('\n')[0].slice(0, 70));
       } catch (err) {
-        if (ALREADY_APPLIED.has(err.code)) {
+        if (ALREADY_APPLIED.has(err.code) || isDuplicateConstraint(err)) {
           console.log('   skip  already applied —', err.sqlMessage);
         } else {
           console.error('   FAIL  ', stmt.split('\n')[0].slice(0, 70));

@@ -20,6 +20,11 @@
           <select id="department_id" name="department_id"><option value=""><%= t('common.opt_none') %></option>
             <% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= member.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %>
           </select></div>
+        <div class="field"><label for="shift_id"><%= t('common.shift') %></label>
+          <select id="shift_id" name="shift_id"><option value=""><%= t('common.opt_none') %></option>
+            <% shifts.forEach(function (s) { %><option value="<%= s.id %>" <%= member.shift_id === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+          </select>
+          <span class="hint"><%= t('a.staff.shift_hint') %></span></div>
         <div class="field"><label for="qualification"><%= t('common.qualification') %></label>
           <input id="qualification" name="qualification" type="text" value="<%= member.qualification || '' %>"></div>
         <div class="field"><label for="phone"><%= t('common.phone') %></label>

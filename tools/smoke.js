@@ -25,9 +25,11 @@ const PUBLIC_PAGES = [
 const ADMIN_PAGES = [
   '/admin', '/admin/students', '/admin/students/new', '/admin/staff', '/admin/staff/new',
   '/admin/admissions', '/admin/academics/departments', '/admin/academics/classes',
-  '/admin/academics/sections', '/admin/academics/subjects', '/admin/academics/years',
+  '/admin/academics/sections', '/admin/academics/subjects', '/admin/academics/shifts',
+  '/admin/academics/years',
   '/admin/routine/classes', '/admin/routine/periods', '/admin/routine/teachers',
-  '/admin/attendance', '/admin/attendance/report', '/admin/exams', '/admin/hifz',
+  '/admin/attendance', '/admin/attendance/report',
+  '/admin/attendance/staff', '/admin/attendance/staff/report', '/admin/exams', '/admin/hifz',
   '/admin/hifz/overview', '/admin/fees', '/admin/fees/structure', '/admin/fees/generate',
   '/admin/fees/dues', '/admin/ledger', '/admin/library', '/admin/library/issues',
   '/admin/hostel', '/admin/notices', '/admin/events', '/admin/gallery',

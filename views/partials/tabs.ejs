@@ -1,5 +1,16 @@
+<%
+  /* Highlight only the most specific matching tab. Several tab sets now nest
+     one path inside another (/admin/attendance/staff under /admin/attendance),
+     and a plain startsWith() lights up both. */
+  var activeTab = '';
+  TABS.forEach(function (tab) {
+    var p = tab[0];
+    var hit = currentPath === p || currentPath.indexOf(p + '/') === 0;
+    if (hit && p.length > activeTab.length) activeTab = p;
+  });
+%>
 <div class="tabs">
   <% TABS.forEach(function (tab) { %>
-    <a href="<%= tab[0] %>" class="<%= currentPath.startsWith(tab[0]) ? 'active' : '' %>"><%= t(tab[1]) %></a>
+    <a href="<%= tab[0] %>" class="<%= tab[0] === activeTab ? 'active' : '' %>"><%= t(tab[1]) %></a>
   <% }); %>
 </div>
