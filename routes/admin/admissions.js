@@ -75,11 +75,23 @@ router.post('/:id/approve', async (req, res, next) => {
     if (dup) { req.flash('error', i18n.pack('f.adm.no_in_use', { no: admissionNo })); return res.redirect(`/admin/admissions/${id}`); }
 
     const studentId = await db.transaction(async (conn) => {
+      /* If no roll number was typed, assign the next free one in the target class. */
+      let rollNo = h.orNull(b.roll_no);
+      const classId = h.toInt(b.class_id) || app.class_id;
+      if (!rollNo && classId) {
+        const [[row]] = await conn.execute(
+          `SELECT COALESCE(MAX(CAST(roll_no AS UNSIGNED)), 0) + 1 AS next
+             FROM students
+            WHERE class_id = ? AND roll_no REGEXP '^[0-9]+$'`,
+          [classId]
+        );
+        rollNo = String(row.next);
+      }
       const [r] = await conn.execute(
         `INSERT INTO students (admission_no, roll_no, name, father_name, mother_name, guardian_phone, dob,
            gender, address, department_id, class_id, section_id, academic_year_id, admission_date, is_resident, status)
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'active')`,
-        [admissionNo, h.orNull(b.roll_no), app.name, app.father_name, app.mother_name, app.guardian_phone,
+        [admissionNo, rollNo, app.name, app.father_name, app.mother_name, app.guardian_phone,
          app.dob, app.gender, app.address, h.toInt(b.department_id) || app.department_id,
          h.toInt(b.class_id) || app.class_id, h.toInt(b.section_id), h.toInt(b.academic_year_id),
          h.orNull(b.admission_date) || h.today(), b.is_resident ? 1 : 0]
