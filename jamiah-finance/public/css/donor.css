@@ -1,0 +1,91 @@
+/* ------------------------------------------------------------------
+   স্পনসর ও অনুদান বিভাগ
+   ------------------------------------------------------------------ */
+.d-nav{
+  display:flex; gap:.3rem; margin-bottom:1rem; flex-wrap:wrap;
+  border-bottom:1px solid var(--a-line); padding-bottom:.5rem;
+}
+.d-nav a{
+  padding:.4rem .85rem; border-radius:7px; font-size:.86rem; font-weight:600;
+  color:var(--a-body); text-decoration:none; border:1px solid transparent;
+}
+.d-nav a:hover{ background:var(--a-wash); text-decoration:none; }
+.d-nav a.is-on{ background:var(--a-green); color:#fff; }
+
+.d-tabs{ display:flex; gap:.3rem; margin-bottom:1rem; flex-wrap:wrap; }
+.d-tabs button{
+  border:1px solid var(--a-line); background:#fff; color:var(--a-body);
+  padding:.42rem .85rem; border-radius:7px; cursor:pointer;
+  font-family:inherit; font-size:.86rem; font-weight:600;
+}
+.d-tabs button:hover{ border-color:var(--a-green); }
+.d-tabs button.is-on{ background:var(--a-green); border-color:var(--a-green); color:#fff; }
+
+.d-check{ display:flex; align-items:center; gap:.4rem; font-size:.84rem; white-space:nowrap; }
+.d-check input{ width:auto; }
+.d-pick{ width:2rem; text-align:center; }
+.d-pick input{ width:auto; }
+
+.d-notes{
+  margin-top:.8rem; padding:.6rem .8rem; background:var(--a-wash);
+  border-left:3px solid var(--a-line); border-radius:4px;
+  font-size:.84rem; white-space:pre-wrap; color:var(--a-body);
+}
+.d-desc{ font-size:.9rem; color:var(--a-body); margin:0 0 1rem; line-height:1.65; }
+
+/* ---------- প্রগ্রেস বার ---------- */
+.d-prog{
+  position:relative; height:1.6rem; background:var(--a-wash);
+  border:1px solid var(--a-line); border-radius:999px; overflow:hidden;
+}
+.d-prog-fill{
+  height:100%; background:var(--a-green); border-radius:999px;
+  transition:width .4s ease; min-width:2px;
+}
+.d-prog-label{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:.78rem; font-weight:700; color:var(--a-ink); text-shadow:0 0 3px #fff;
+}
+.d-prog-sm{ height:.55rem; border-radius:999px; }
+.d-prog-sm .d-prog-label{ display:none; }
+
+.d-camp{ margin-bottom:1rem; }
+.d-camp-top{ display:flex; justify-content:space-between; gap:1rem; align-items:baseline;
+  flex-wrap:wrap; margin-bottom:.5rem; }
+.d-camp-title{ font-weight:700; font-size:1rem; }
+.d-camp-title a{ color:var(--a-ink); }
+.d-camp-nums{ font-size:.84rem; color:var(--a-muted); font-variant-numeric:tabular-nums; }
+.d-camp-nums strong{ color:var(--a-green); }
+
+/* ---------- রিপোর্টের বার ---------- */
+.d-bars{ display:grid; gap:.45rem; }
+.d-bar-row{ display:grid; grid-template-columns:11rem 1fr 7rem; gap:.6rem; align-items:center;
+  font-size:.84rem; }
+.d-bar-track{ background:var(--a-wash); border-radius:4px; height:1.1rem; overflow:hidden;
+  border:1px solid var(--a-line); }
+.d-bar-fill{ height:100%; background:var(--a-green); }
+.d-bar-fill.alt{ background:var(--a-accent); }
+.d-bar-val{ text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+.d-bar-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.d-legend{ display:flex; gap:1rem; font-size:.78rem; color:var(--a-muted); margin-bottom:.6rem; }
+.d-legend i{ display:inline-block; width:.8rem; height:.8rem; border-radius:2px;
+  margin-right:.3rem; vertical-align:-1px; }
+.d-legend i.now{ background:var(--a-green); }
+.d-legend i.prev{ background:var(--a-accent); }
+
+/* ---------- বার্ষিক বিবরণী ---------- */
+.d-stmt .data{ font-size:.82rem; }
+.d-stmt-funds{
+  margin-top:1rem; padding:.7rem .9rem; background:var(--a-wash);
+  border-radius:var(--a-radius); font-size:.86rem;
+}
+.d-stmt-funds strong{ display:block; margin-bottom:.4rem; }
+.d-stmt-thanks{
+  margin-top:1rem; padding:.8rem 1rem; border-left:3px solid var(--a-green);
+  background:var(--a-wash); border-radius:4px; font-size:.88rem; line-height:1.75;
+}
+
+@media (max-width:760px){
+  .d-bar-row{ grid-template-columns:8rem 1fr 6rem; font-size:.78rem; }
+}

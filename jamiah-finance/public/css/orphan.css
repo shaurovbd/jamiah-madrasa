@@ -1,0 +1,64 @@
+/* ------------------------------------------------------------------
+   এতিম স্পনসর বিভাগ
+   ------------------------------------------------------------------ */
+.o-consent{
+  margin-top:1rem; padding:.7rem .85rem; border:1px solid var(--a-line);
+  border-left:3px solid var(--a-accent); border-radius:var(--a-radius);
+  background:#fff; font-size:.86rem;
+}
+.o-consent-btns{ display:flex; gap:.35rem; margin-top:.5rem; flex-wrap:wrap; }
+
+.o-cov{ display:flex; align-items:center; gap:.5rem; }
+.o-cov .d-prog{ flex:1; height:.75rem; }
+.o-cov-pct{ font-size:.78rem; font-variant-numeric:tabular-nums; min-width:2.8rem;
+  text-align:right; color:var(--a-muted); }
+
+.o-card{
+  border:1px solid var(--a-line); border-radius:var(--a-radius);
+  background:#fff; box-shadow:var(--a-shadow); padding:.9rem; margin-bottom:.8rem;
+}
+.o-card-top{ display:flex; justify-content:space-between; gap:1rem; align-items:baseline;
+  flex-wrap:wrap; margin-bottom:.5rem; }
+.o-card-name{ font-weight:700; }
+.o-card-name a{ color:var(--a-ink); }
+.o-card-meta{ font-size:.8rem; color:var(--a-muted); }
+.o-gap{ font-weight:700; color:#b3261e; font-variant-numeric:tabular-nums; }
+
+/* ---------- দাতাকে পাঠানোর প্রতিবেদন ---------- */
+.o-report .o-rep-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-top:.6rem;
+}
+.o-rep-photo{ margin-bottom:.5rem; }
+.o-rep-photo img{
+  width:100%; max-width:34mm; border-radius:4px; border:1px solid var(--a-line);
+  display:block;
+}
+.o-rep-progress{ margin-top:1rem; }
+.o-rep-progress h3{
+  font-size:.95rem; margin:0 0 .4rem; padding:.25rem .5rem;
+  background:var(--a-wash); border-radius:4px;
+}
+.o-rep-comment{
+  margin-top:.6rem; padding:.6rem .8rem; border-left:3px solid var(--a-green);
+  background:var(--a-wash); border-radius:4px; font-size:.86rem; line-height:1.7;
+}
+.o-rep-comment strong{ display:block; margin-bottom:.2rem; font-size:.78rem;
+  color:var(--a-muted); }
+.o-rep-letter{ margin-top:.6rem; }
+.o-rep-letter img{ width:100%; max-width:80mm; border:1px solid var(--a-line);
+  border-radius:4px; margin-top:.3rem; }
+.o-rep-history, .o-rep-pay{
+  margin-top:1rem; padding:.6rem .85rem; background:var(--a-wash);
+  border-radius:var(--a-radius); font-size:.85rem;
+}
+.o-rep-note{
+  margin-top:1rem; padding:.55rem .8rem; border:1px dashed var(--a-line);
+  border-radius:4px; font-size:.78rem; color:var(--a-muted); line-height:1.65;
+}
+
+@media print{
+  .o-rep-grid{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width:760px){
+  .o-report .o-rep-grid{ grid-template-columns:1fr; }
+}

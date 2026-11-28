@@ -1,0 +1,61 @@
+/* ঋণ ও বাকি ব্যবস্থাপনা */
+
+.ln-cards{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:.8rem; margin-bottom:1rem;
+}
+.ln-card{
+  background:var(--a-card, #fff); border:1px solid var(--a-line);
+  border-radius:9px; padding:.8rem .9rem; border-left:4px solid var(--a-green);
+}
+.ln-card.is-owed{ border-left-color:#b3261e; }
+.ln-card h3{ margin:0 0 .25rem; font-size:.78rem; font-weight:600; color:var(--a-muted); }
+.ln-card .amt{ font-size:1.5rem; font-weight:700; color:var(--a-ink); line-height:1.2; }
+.ln-card .meta{ margin-top:.3rem; font-size:.74rem; color:var(--a-muted); }
+.ln-card .over{ color:#b3261e; font-weight:600; }
+
+/* দিক বাছাই */
+.ln-dir{ display:grid; grid-template-columns:1fr 1fr; gap:.7rem; margin-bottom:1rem; }
+.ln-pick{
+  display:flex; gap:.6rem; align-items:flex-start; cursor:pointer;
+  border:1px solid var(--a-line); border-radius:8px; padding:.7rem .8rem;
+}
+.ln-pick:hover{ background:var(--a-wash); }
+.ln-pick input{ margin-top:.2rem; }
+.ln-pick span{ display:flex; flex-direction:column; gap:.15rem; }
+.ln-pick strong{ font-size:.9rem; color:var(--a-ink); }
+.ln-pick small{ font-size:.75rem; color:var(--a-muted); }
+.ln-pick:has(input:checked){ border-color:var(--a-green); background:var(--a-wash); }
+
+.ln-effect{
+  font-size:.8rem; color:var(--a-muted); line-height:1.6;
+  background:var(--a-wash); border-radius:6px; padding:.45rem .6rem;
+}
+.ln-effect b{ color:var(--a-ink); }
+
+.ln-detail{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start; }
+@media (max-width:860px){
+  .ln-detail{ grid-template-columns:1fr; }
+  .ln-dir{ grid-template-columns:1fr; }
+}
+
+.ln-danger{
+  display:flex; gap:.5rem; flex-wrap:wrap;
+  border-top:1px solid var(--a-line); margin-top:.9rem; padding-top:.8rem;
+}
+.btn-warn{ background:#fdecea; color:#8c1d18; border:1px solid #f5c6c2; }
+.btn-warn:hover{ filter:brightness(.97); }
+
+/* অবস্থার ব্যাজ */
+.ln-badge{
+  display:inline-block; padding:.12rem .45rem; border-radius:4px;
+  font-size:.72rem; font-weight:600; white-space:nowrap;
+}
+.ln-active{ background:var(--a-wash); color:var(--a-green); }
+.ln-settled{ background:#e8f3ee; color:#166049; }
+.ln-written_off{ background:#fdecea; color:#8c1d18; }
+.ln-cancelled{ background:#eee; color:#666; }
+.ln-overdue{ background:#fdecea; color:#8c1d18; }
+
+.ln-bar{ height:5px; background:var(--a-line); border-radius:3px; overflow:hidden; margin-top:.25rem; }
+.ln-bar i{ display:block; height:100%; background:var(--a-green); }

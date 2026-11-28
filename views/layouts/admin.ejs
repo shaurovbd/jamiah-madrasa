@@ -56,6 +56,23 @@
       <a href="/admin/fees/structure" class="<%= on('/admin/fees/structure') %>"><span class="ic">⚙</span> <%= t('admin.nav.fee_setup') %></a>
       <a href="/admin/fees/dues" class="<%= on('/admin/fees/dues') %>"><span class="ic">!</span> <%= t('admin.nav.dues') %></a>
       <a href="/admin/ledger" class="<%= on('/admin/ledger') %>"><span class="ic">₪</span> <%= t('admin.nav.ledger') %></a>
+      <a href="/admin/ledger/day-book" class="<%= on('/admin/ledger/day-book') %>"><span class="ic">▤</span> <%= t('admin.nav.daybook') %></a>
+      <a href="/admin/receipts" class="<%= on('/admin/receipts') %>"><span class="ic">▭</span> <%= t('admin.nav.receipts') %></a>
+      <a href="/admin/receipts/books" class="<%= on('/admin/receipts/books') %>"><span class="ic">▨</span> <%= t('admin.nav.receipt_books') %></a>
+      <a href="/admin/loans" class="<%= on('/admin/loans') %>"><span class="ic">⇄</span> <%= t('admin.nav.loans') %></a>
+      <a href="/admin/loans/overdue" class="<%= on('/admin/loans/overdue') %>"><span class="ic">⚠</span> <%= t('admin.nav.loans_overdue') %></a>
+      <% } %>
+
+      <% if (can('accountant')) { %>
+      <div class="side-group"><%= t('admin.group.donation') %></div>
+      <a href="/admin/donors" class="<%= on('/admin/donors') %>"><span class="ic">♡</span> <%= t('admin.nav.donors') %></a>
+      <a href="/admin/donors/campaigns" class="<%= on('/admin/donors/campaigns') %>"><span class="ic">◈</span> <%= t('admin.nav.campaigns') %></a>
+      <a href="/admin/donors/followups" class="<%= on('/admin/donors/followups') %>"><span class="ic">☏</span> <%= t('admin.nav.followups') %></a>
+      <% } %>
+
+      <% if (can()) { %>
+      <a href="/admin/orphans" class="<%= on('/admin/orphans') %>"><span class="ic">❂</span> <%= t('admin.nav.orphans') %></a>
+      <a href="/admin/orphans/sponsorships" class="<%= on('/admin/orphans/sponsorships') %>"><span class="ic">⚭</span> <%= t('admin.nav.sponsorships') %></a>
       <% } %>
 
       <% if (can('librarian')) { %>

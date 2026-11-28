@@ -1,0 +1,187 @@
+/* ------------------------------------------------------------------
+   রশিদ — ফর্ম, প্রিন্ট (A4 / হাফ / থার্মাল), পাবলিক যাচাই পেজ
+   রঙ-ফন্ট theme-tokens.css থেকেই।
+   ------------------------------------------------------------------ */
+
+/* ---------- ধরনের পিল ---------- */
+.r-types{ display:flex; flex-wrap:wrap; gap:.4rem; }
+.r-type{
+  border:1px solid var(--a-line); background:#fff; color:var(--a-body);
+  border-radius:7px; padding:.42rem .75rem; cursor:pointer;
+  font-family:inherit; font-size:.84rem; font-weight:600; line-height:1.25;
+}
+.r-type small{ display:block; font-weight:400; font-size:.7rem; color:var(--a-muted); }
+.r-type:hover{ border-color:var(--a-green); }
+.r-type.is-on{ background:var(--a-green); border-color:var(--a-green); color:#fff; }
+.r-type.is-on small{ color:rgba(255,255,255,.82); }
+
+.r-amount-field input{ font-size:1.15rem; font-weight:700; text-align:right;
+  font-variant-numeric:tabular-nums; }
+.r-words{ color:var(--a-green); font-weight:600; }
+
+.r-summary{ border-top:1px solid var(--a-line); }
+.r-preview{
+  border:1px solid var(--a-line); border-radius:var(--a-radius);
+  background:var(--a-wash); padding:.7rem .9rem; margin-bottom:1rem; font-size:.86rem;
+}
+.r-prev-row{ display:flex; justify-content:space-between; gap:1rem; padding:.16rem 0; }
+.r-prev-words{
+  margin-top:.4rem; padding-top:.4rem; border-top:1px solid var(--a-line);
+  color:var(--a-green); font-weight:600;
+}
+.r-void-row td{ opacity:.55; text-decoration:line-through; }
+
+/* ==================================================================
+   প্রিন্টযোগ্য রশিদ
+   ================================================================== */
+.rcpt{
+  position:relative; background:#fff; color:#1a1a1a;
+  font-family:var(--bengali); margin:1rem auto; padding:14mm 12mm;
+  border:1px solid var(--a-line); border-radius:4px;
+  box-sizing:border-box;
+}
+.rcpt-a4{ width:210mm; min-height:148mm; }
+.rcpt-half{ width:210mm; min-height:140mm; padding:10mm 12mm; }
+.rcpt-thermal{ width:76mm; padding:4mm 3mm; font-size:11px; border-radius:0; }
+
+.rcpt-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;
+  border-bottom:2px solid var(--a-green); padding-bottom:.6rem; }
+.rcpt-name{ font-size:1.4rem; font-weight:800; color:var(--a-green); line-height:1.2; }
+.rcpt-name-en{ font-size:.78rem; color:#666; letter-spacing:.04em; }
+.rcpt-addr{ font-size:.74rem; color:#555; margin-top:.15rem; }
+.rcpt-thermal .rcpt-head{ display:block; text-align:center; border-bottom:1px dashed #999; }
+.rcpt-thermal .rcpt-name{ font-size:1rem; }
+.rcpt-thermal .rcpt-name-en{ font-size:.62rem; }
+
+.rcpt-qr svg{ width:26mm; height:26mm; display:block; }
+.rcpt-qr-cap{ font-size:.62rem; text-align:center; color:#666; margin-top:2px; }
+.rcpt-qr-sm{ display:flex; justify-content:center; margin:.5rem 0; }
+.rcpt-qr-sm svg{ width:20mm; height:20mm; }
+
+.rcpt-title{
+  text-align:center; font-weight:700; font-size:1.02rem; margin:.7rem 0 .5rem;
+  padding:.25rem; background:var(--a-wash); border-radius:4px;
+}
+.rcpt-thermal .rcpt-title{ font-size:.82rem; background:none; margin:.4rem 0; }
+
+.rcpt-meta{ display:flex; justify-content:space-between; gap:1rem; font-size:.86rem; margin-bottom:.6rem; }
+.rcpt-meta span{ color:#666; display:block; font-size:.72rem; }
+.rcpt-thermal .rcpt-meta{ font-size:.74rem; }
+
+.rcpt-kv{ width:100%; border-collapse:collapse; font-size:.88rem; }
+.rcpt-kv td{ padding:.26rem 0; vertical-align:top; border-bottom:1px dotted #ddd; }
+.rcpt-kv .k{ width:38%; color:#555; }
+.rcpt-kv .v{ font-weight:600; }
+.rcpt-thermal .rcpt-kv{ font-size:.74rem; }
+.rcpt-thermal .rcpt-kv .k{ width:42%; }
+
+.rcpt-amount{
+  margin:.8rem 0; padding:.6rem .8rem; border:1.5px solid var(--a-green);
+  border-radius:5px; background:var(--a-wash); text-align:center;
+}
+.rcpt-amount-fig{ font-size:1.5rem; font-weight:800; color:var(--a-green); }
+.rcpt-amount-words{ font-size:.82rem; margin-top:.2rem; font-weight:600; }
+.rcpt-thermal .rcpt-amount{ padding:.35rem; margin:.5rem 0; }
+.rcpt-thermal .rcpt-amount-fig{ font-size:1.05rem; }
+.rcpt-thermal .rcpt-amount-words{ font-size:.68rem; }
+
+.rcpt-foot{ display:flex; justify-content:space-between; gap:2rem; margin-top:2.4rem; }
+.rcpt-sign{ flex:1; text-align:center; font-size:.76rem; color:#444; }
+.rcpt-sign span{ display:block; border-top:1px solid #555; margin:0 .4rem .25rem; height:1.8rem; }
+.rcpt-thermal .rcpt-foot{ margin-top:1.2rem; }
+.rcpt-thermal .rcpt-sign{ font-size:.66rem; }
+
+.rcpt-verify{
+  margin-top:.7rem; padding-top:.4rem; border-top:1px dotted #ccc;
+  font-size:.62rem; color:#888; text-align:center; word-break:break-all;
+}
+.rcpt-voidnote{
+  border:1px solid #b3261e; background:color-mix(in oklab,#b3261e 7%,#fff);
+  color:#8c1d18; border-radius:4px; padding:.4rem .6rem; font-size:.8rem; margin-top:.5rem;
+}
+
+/* জলছাপ */
+.rcpt-dup, .rcpt-cancel{
+  position:absolute; top:46%; left:50%; transform:translate(-50%,-50%) rotate(-24deg);
+  font-size:3.6rem; font-weight:800; letter-spacing:.1em; pointer-events:none;
+  opacity:.14; white-space:nowrap;
+}
+.rcpt-dup{ color:#555; }
+.rcpt-cancel{ color:#b3261e; opacity:.17; }
+.rcpt-thermal .rcpt-dup, .rcpt-thermal .rcpt-cancel{ font-size:1.6rem; }
+
+.rcpt-bar{
+  display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;
+  max-width:210mm; margin:0 auto 2rem; padding:0 1rem;
+}
+
+/* ---------- প্রিন্ট ---------- */
+@media print{
+  .rcpt-bar{ display:none !important; }
+  .rcpt{ margin:0; border:none; border-radius:0; box-shadow:none; }
+  .rcpt-a4{ width:auto; min-height:auto; padding:10mm; }
+  .rcpt-half{ width:auto; min-height:auto; padding:8mm; }
+  .rcpt-thermal{ width:auto; padding:2mm; }
+  body{ background:#fff; }
+}
+@page{ margin:8mm; }
+
+/* ==================================================================
+   পাবলিক যাচাই পেজ (মোবাইলে QR স্ক্যান করে আসে)
+   ================================================================== */
+.vfy{
+  max-width:26rem; margin:2.5rem auto; padding:1.6rem 1.3rem;
+  background:#fff; border:1px solid var(--a-line); border-radius:var(--a-radius);
+  box-shadow:var(--a-shadow); font-family:var(--bengali); text-align:center;
+}
+.vfy-mark{
+  width:3.4rem; height:3.4rem; margin:0 auto .8rem; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.9rem; font-weight:800; color:#fff;
+}
+.vfy-ok .vfy-mark{ background:var(--a-green); }
+.vfy-void .vfy-mark{ background:var(--a-accent); color:#2a2000; }
+.vfy-bad .vfy-mark{ background:#b3261e; }
+.vfy h1{ font-size:1.12rem; margin:0 0 .3rem; color:var(--a-ink); }
+.vfy p{ font-size:.88rem; color:var(--a-muted); line-height:1.6; }
+.vfy-org{ font-size:.82rem; color:var(--a-muted); margin-bottom:1rem; }
+.vfy-kv{ width:100%; border-collapse:collapse; text-align:left; font-size:.9rem; }
+.vfy-kv td{ padding:.4rem .2rem; border-bottom:1px solid var(--a-line); }
+.vfy-kv td:first-child{ color:var(--a-muted); width:42%; }
+.vfy-words{
+  margin-top:.8rem; padding:.5rem; background:var(--a-wash);
+  border-radius:5px; font-size:.84rem; font-weight:600; color:var(--a-green);
+}
+.vfy-note{ margin-top:1rem; font-size:.8rem; color:var(--a-muted); line-height:1.6; }
+
+/* ---- টোকেন ছাড়া যাচাই: নম্বর ও মোবাইল দিয়ে খোঁজা ---- */
+.vfy-ask{ text-align:left; }
+.vfy-ask h1{ text-align:center; }
+.vfy-ask .vfy-org{ text-align:center; }
+.vfy-lead{ margin:0 0 1rem; }
+.vfy-err{
+  margin:0 0 .9rem; padding:.6rem .7rem; border-radius:6px;
+  background:#fdecea; color:#8c1d18; font-size:.84rem; line-height:1.55;
+  border:1px solid #f5c6c2;
+}
+.vfy-form{ display:flex; flex-direction:column; gap:.7rem; }
+.vfy-form label{
+  display:flex; flex-direction:column; gap:.3rem;
+  font-size:.82rem; color:var(--a-muted);
+}
+.vfy-form input{
+  padding:.55rem .6rem; border:1px solid var(--a-line); border-radius:6px;
+  font:inherit; font-size:.95rem; color:var(--a-ink); background:#fff;
+}
+.vfy-form input:focus{ outline:2px solid var(--a-green); outline-offset:1px; }
+.vfy-form button{
+  margin-top:.3rem; padding:.6rem; border:0; border-radius:6px; cursor:pointer;
+  background:var(--a-green); color:#fff; font:inherit; font-weight:600; font-size:.92rem;
+}
+.vfy-form button:hover{ filter:brightness(1.08); }
+.vfy-foot{ margin-top:1.1rem; font-size:.78rem; }
+
+@media (max-width:480px){
+  .vfy{ margin:1rem .7rem; padding:1.2rem 1rem; }
+  .rcpt-a4, .rcpt-half{ width:100%; padding:6mm; }
+}

@@ -1,0 +1,36 @@
+<div class="page-bar">
+  <div><h1>Settings</h1><p class="sub">Institution details used across the website, receipts and marksheets</p></div>
+</div>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label">Students</div><div class="value"><%= h.num(counts.students || 0) %></div></div>
+  <div class="stat-card blue"><div class="label">Staff</div><div class="value"><%= h.num(counts.staff || 0) %></div></div>
+  <div class="stat-card gold"><div class="label">Invoices</div><div class="value"><%= h.num(counts.invoices || 0) %></div></div>
+  <div class="stat-card"><div class="label">Examinations</div><div class="value"><%= h.num(counts.exams || 0) %></div></div>
+</div>
+
+<form method="post" action="/admin/settings">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="card">
+    <div class="card-head"><h2>Institution details</h2></div>
+    <div class="card-body">
+      <div class="form-grid two">
+        <% FIELDS.forEach(function (f) {
+             var key = f[0], label = f[1], type = f[2]; %>
+          <div class="field <%= type === 'textarea' ? 'full' : '' %>">
+            <label for="<%= key %>"><%= label %></label>
+            <% if (type === 'textarea') { %>
+              <textarea id="<%= key %>" name="<%= key %>" style="min-height:110px"><%= values[key] || '' %></textarea>
+            <% } else { %>
+              <input id="<%= key %>" name="<%= key %>" type="<%= type %>" value="<%= values[key] || '' %>">
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Save settings</button>
+        <a class="btn btn-light" href="/" target="_blank">Preview website ↗</a>
+      </div>
+    </div>
+  </div>
+</form>

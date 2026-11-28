@@ -14,19 +14,28 @@ const mysql = require('mysql2/promise');
 
 const ALREADY_APPLIED = new Set([
   'ER_DUP_FIELDNAME', 'ER_DUP_KEYNAME', 'ER_DUP_ENTRY',
-  'ER_CANT_DROP_FIELD_OR_KEY', 'ER_TABLE_EXISTS_ERROR'
+  'ER_CANT_DROP_FIELD_OR_KEY', 'ER_TABLE_EXISTS_ERROR',
+  // Re-adding a named foreign key, on servers new enough to say so plainly.
+  'ER_FK_DUP_NAME'
 ]);
 
 /**
- * Re-adding a named foreign key does not report ER_DUP_KEYNAME. It comes back
- * as ER_CANT_CREATE_TABLE carrying the storage engine's errno 121, "duplicate
- * key on write or update" — which here means the constraint name is taken, i.e.
- * this statement ran before. Everything else behind ER_CANT_CREATE_TABLE is a
- * genuine failure (a missing referenced table, a type mismatch), so the errno
- * is matched rather than the code alone.
+ * Re-adding a named foreign key means the statement ran before, but servers
+ * disagree about how to say it. Newer ones raise ER_FK_DUP_NAME, which is in
+ * the set above. Older ones raise the generic ER_CANT_CREATE_TABLE carrying
+ * the storage engine's errno 121, "duplicate key on write or update".
+ *
+ * Both forms are matched, and narrowly: everything else behind
+ * ER_CANT_CREATE_TABLE is a genuine failure (a missing referenced table, a
+ * type mismatch), so the errno is checked rather than the code alone. The
+ * message is matched too, because which of the two a server picks is not
+ * something this project can pin down — it was found the hard way, by a
+ * migration that was repeatable in testing and died on the live server.
  */
 function isDuplicateConstraint(err) {
-  return err.code === 'ER_CANT_CREATE_TABLE' && /errno:\s*121\b/.test(err.sqlMessage || '');
+  const msg = err.sqlMessage || err.message || '';
+  if (/duplicate foreign key constraint name/i.test(msg)) return true;
+  return err.code === 'ER_CANT_CREATE_TABLE' && /errno:\s*121\b/.test(msg);
 }
 
 /**

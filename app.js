@@ -229,6 +229,9 @@ app.use('/', require('./routes/public'));
 app.use('/', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 
+// হিসাব ও অর্থ মডিউল (jamiah-finance/) — লেজার, রশিদ, দাতা, এতিম
+require('./finance-mount')(app);
+
 // ---------------------------------------------------------------- health
 app.get('/healthz', (req, res) => res.json({ ok: true, uptime: process.uptime() }));
 

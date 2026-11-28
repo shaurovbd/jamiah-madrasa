@@ -1,0 +1,39 @@
+(function(){'use strict';
+var acc=document.querySelector('[data-accent-input]'); if(!acc) return;
+var body=document.body;
+var hex=document.querySelector('[data-accent-hex]');
+var acc2=document.querySelector('[data-accent2-input]');
+var rad=document.querySelector('[data-radius-input]');
+var radOut=document.querySelector('[data-radius-out]');
+var glow=document.querySelector('[data-glow-input]');
+var presets=[].slice.call(document.querySelectorAll('[data-theme-presets] .theme-swatch'));
+var D='#166049', D2='#c3952f';
+function norm(v){v=String(v==null?'':v).trim(); if(!v) return null; if(v.charAt(0)!=='#') v='#'+v;
+ if(/^#[0-9a-f]{3}$/i.test(v)) v='#'+v[1]+v[1]+v[2]+v[2]+v[3]+v[3];
+ return /^#[0-9a-f]{6}$/i.test(v)?v.toLowerCase():null;}
+function picked(n,d){var e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:d;}
+function apply(){
+ var a=norm(acc.value)||D;
+ body.style.setProperty('--a-seed',a);
+ body.style.setProperty('--a-seed-2',(acc2&&norm(acc2.value))||D2);
+ if(rad){var px=Math.max(8,Math.min(28,parseInt(rad.value,10)||9));
+  body.style.setProperty('--a-radius',px+'px'); if(radOut) radOut.textContent=px+' px';}
+ body.setAttribute('data-sidebar',picked('sidebar_style','gradient'));
+ body.setAttribute('data-surface',picked('surface_style','solid'));
+ body.setAttribute('data-glow',glow&&glow.checked?'on':'off');
+ presets.forEach(function(el){var on=norm(el.getAttribute('data-accent'))===a;
+  el.setAttribute('aria-pressed',on?'true':'false');
+  var s=el.querySelector('.sw-state'); if(s) s.textContent=on?'Selected':'Tap to apply';});}
+acc.addEventListener('input',function(){if(hex)hex.value=norm(acc.value)||acc.value;apply();});
+if(hex){hex.addEventListener('input',function(){var v=norm(hex.value);if(v){acc.value=v;apply();}});
+ hex.addEventListener('blur',function(){hex.value=norm(acc.value)||D;});}
+if(acc2)acc2.addEventListener('input',apply);
+if(rad)rad.addEventListener('input',apply);
+if(glow)glow.addEventListener('change',apply);
+[].forEach.call(document.querySelectorAll('input[name="sidebar_style"],input[name="surface_style"]'),function(e){e.addEventListener('change',apply);});
+presets.forEach(function(el){el.addEventListener('click',function(){
+ var a=norm(el.getAttribute('data-accent')); if(!a)return;
+ acc.value=a; if(hex)hex.value=a;
+ var b=norm(el.getAttribute('data-accent-2')); if(acc2&&b)acc2.value=b;
+ apply();});});
+apply();}());

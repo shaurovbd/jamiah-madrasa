@@ -75,7 +75,10 @@ router.use('/attendance', requireRole('teacher'),               require('./atten
 router.use('/exams',      requireRole('teacher'),               require('./exams'));
 router.use('/hifz',       requireRole('teacher'),               require('./hifz'));
 router.use('/fees',       requireRole('accountant'),            require('./fees'));
-router.use('/ledger',     requireRole('accountant'),            require('./ledger'));
+// পুরনো সরল আয়-ব্যয় পাতা — নতুন দ্বি-খাতা খতিয়ান (finance-mount.js)
+// এখন /admin/ledger এ বসে, তাই এটি বন্ধ। কোড ও ledger_entries টেবিল
+// মুছে ফেলা হয়নি; এই তিন লাইন সরালেই পুরনোটা ফিরে আসবে।
+// router.use('/ledger',     requireRole('accountant'),            require('./ledger'));
 router.use('/library',    requireRole('librarian'),             require('./library'));
 router.use('/hostel',     requireRole('accountant'),            require('./hostel'));
 router.use('/notices',    requireRole(),                        require('./notices'));
