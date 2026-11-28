@@ -2,6 +2,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+const { logLogin } = require('../lib/activity-log');
 
 const router = express.Router();
 
@@ -23,11 +24,19 @@ router.post('/login', async (req, res, next) => {
       [username]
     );
     // Same message either way, so the form does not reveal which usernames exist.
-    if (!user || !user.is_active || !(await bcrypt.compare(password, user.password_hash))) {
+    // The page still says the same thing in every case; the reason is only
+    // for the admin reading Settings → Logs.
+    let failReason = null;
+    if (!user) failReason = 'unknown_user';
+    else if (!user.is_active) failReason = 'inactive';
+    else if (!(await bcrypt.compare(password, user.password_hash))) failReason = 'wrong_password';
+    if (failReason) {
+      logLogin(req, { event: 'failed', userId: user ? user.id : null, username, reason: failReason });
       req.flash('error', 'auth.invalid');
       return res.redirect('/login');
     }
     await db.run('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
+    logLogin(req, { event: 'login', userId: user.id, username: user.username });
     req.session.user = { id: user.id, name: user.name, username: user.username, role: user.role, email: user.email };
     const back = req.session.returnTo;
     delete req.session.returnTo;
@@ -38,6 +47,8 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.get('/logout', (req, res) => {
+  const u = req.session && req.session.user;
+  if (u) logLogin(req, { event: 'logout', userId: u.id, username: u.username });
   req.session.destroy(() => res.redirect('/login'));
 });
 

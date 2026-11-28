@@ -1,0 +1,211 @@
+<%
+  /* Translate a module or action name, falling back to the raw value when
+     there is no string for it (a module added after this page was written). */
+  var tr = function (key, raw) { var v = t(key); return v === key ? raw : v; };
+  var modLabel = function (m) { return tr('admin.nav.' + m, m); };
+  var actLabel = function (a) { return tr('a.log.act.' + a, a); };
+  var actColor = function (a) {
+    if (a === 'delete' || a === 'void' || a === 'reject' || a === 'cancel' || a === 'reverse') return 'red';
+    if (a === 'create' || a === 'approve' || a === 'generate' || a === 'pay' || a === 'payment') return 'green';
+    if (a === 'update') return 'amber';
+    return 'blue';
+  };
+  var show = function (v) {
+    if (v === null || v === undefined || v === '') return '—';
+    return typeof v === 'object' ? JSON.stringify(v) : String(v);
+  };
+%>
+<style>
+  .log-when{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .log-details summary{cursor:pointer;color:var(--a-green);font-size:.82rem}
+  .log-details table{margin-top:.4rem;font-size:.82rem}
+  .log-details td{padding:.2rem .5rem;vertical-align:top;word-break:break-word}
+  .log-details td:first-child{color:var(--a-muted);white-space:nowrap}
+  .log-pre{background:#0f1a17;color:#d8e6e0;border-radius:var(--a-radius);padding:.9rem 1rem;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;max-height:480px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0}
+  .log-path{font:12px ui-monospace,Menlo,Consolas,monospace;color:var(--a-muted)}
+</style>
+
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.logs') %></h1><p class="sub"><%= t('a.log.sub') %></p></div>
+  <% if (tab === 'activity') { %>
+    <div><a class="btn btn-light" data-no-spa href="/admin/logs/activity.csv<%= h.qs(query, { page: '' }) %>"><%= t('a.log.export_csv') %></a></div>
+  <% } %>
+</div>
+
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<% if (tab === 'missing') { %>
+  <div class="card"><div class="card-body">
+    <div class="empty"><div class="big">☰</div><p><%= t('a.log.missing') %></p><p><code>npm run migrate</code></p></div>
+  </div></div>
+
+<% } else if (tab === 'activity') { %>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label"><%= t('a.log.today') %></div><div class="value"><%= h.num(stats.today) %></div></div>
+    <div class="stat-card blue"><div class="label"><%= t('a.log.matching') %></div><div class="value"><%= h.num(stats.total) %></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.1rem"><div class="card-body">
+    <form class="filters" method="get" action="/admin/logs/activity">
+      <div class="field"><label for="f-user"><%= t('a.log.user') %></label>
+        <select id="f-user" name="user"><option value=""><%= t('common.all') %></option>
+          <% users.forEach(function (u) { %><option value="<%= u.id %>" <%= filters.user === u.id ? 'selected' : '' %>><%= u.name %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="f-module"><%= t('a.log.module') %></label>
+        <select id="f-module" name="module"><option value=""><%= t('common.all') %></option>
+          <% modules.forEach(function (m) { %><option value="<%= m %>" <%= filters.module === m ? 'selected' : '' %>><%= modLabel(m) %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="f-action"><%= t('a.log.action') %></label>
+        <select id="f-action" name="action"><option value=""><%= t('common.all') %></option>
+          <% actions.forEach(function (a) { %><option value="<%= a %>" <%= filters.action === a ? 'selected' : '' %>><%= actLabel(a) %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="f-from"><%= t('a.log.from') %></label><input id="f-from" type="date" name="from" value="<%= filters.from %>"></div>
+      <div class="field"><label for="f-to"><%= t('a.log.to') %></label><input id="f-to" type="date" name="to" value="<%= filters.to %>"></div>
+      <div class="field grow"><label for="f-q"><%= t('common.search') %></label>
+        <input id="f-q" type="search" name="q" placeholder="<%= t('a.log.search_ph') %>" value="<%= filters.q %>"></div>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
+      <a class="btn btn-light" href="/admin/logs/activity"><%= t('common.reset') %></a>
+    </form>
+  </div></div>
+
+  <div class="card">
+    <div class="card-body flush">
+      <% if (rows.length) { %>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th><%= t('a.log.time') %></th><th><%= t('a.log.user') %></th><th><%= t('a.log.action') %></th><th><%= t('a.log.module') %></th><th><%= t('a.log.record') %></th><th>IP</th></tr></thead>
+        <tbody>
+          <% rows.forEach(function (r) { %>
+          <tr>
+            <td class="log-when"><%= when(r.created_at) %></td>
+            <td><strong><%= r.user_name || '—' %></strong><% if (r.user_role) { %><br><small class="sub"><%= tr('role.' + r.user_role, r.user_role) %></small><% } %></td>
+            <td><span class="badge badge-<%= actColor(r.action) %>"><%= actLabel(r.action) %></span></td>
+            <td><%= modLabel(r.module) %></td>
+            <td>
+              <%= r.record_label || (r.record_id ? '#' + r.record_id : '—') %>
+              <% if (r.record_label && r.record_id) { %> <small class="sub">#<%= r.record_id %></small><% } %>
+              <div class="log-path"><%= r.method %> <%= r.path %></div>
+              <% if (r.detailsObj && typeof r.detailsObj === 'object' && Object.keys(r.detailsObj).length) { %>
+              <details class="log-details"><summary><%= t('a.log.details') %></summary>
+                <table>
+                  <% Object.keys(r.detailsObj).forEach(function (k) { %>
+                    <tr><td><%= k %></td><td><%= show(r.detailsObj[k]) %></td></tr>
+                  <% }); %>
+                </table>
+              </details>
+              <% } %>
+            </td>
+            <td class="log-path"><%= r.ip_address || '—' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table></div>
+      <% } else { %><div class="empty"><div class="big">☰</div><p><%= t('a.log.none') %></p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+
+<% } else if (tab === 'logins') { %>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label"><%= t('a.log.logins_today') %></div><div class="value"><%= h.num(stats.todayOk) %></div></div>
+    <div class="stat-card red"><div class="label"><%= t('a.log.failed_today') %></div><div class="value"><%= h.num(stats.todayFailed) %></div></div>
+  </div>
+
+  <% if (suspicious.length) { %>
+  <div class="card" style="margin-bottom:1.1rem;border-color:#e8b4ae">
+    <div class="card-head"><h2>⚠ <%= t('a.log.suspicious') %></h2></div>
+    <div class="card-body flush"><div class="table-wrap"><table class="data compact">
+      <thead><tr><th>IP</th><th><%= t('a.log.failures') %></th><th><%= t('a.log.usernames_tried') %></th><th><%= t('a.log.last_try') %></th></tr></thead>
+      <tbody>
+        <% suspicious.forEach(function (s) { %>
+        <tr><td class="log-path"><a href="/admin/logs/logins?q=<%= encodeURIComponent(s.ip_address || '') %>"><%= s.ip_address %></a></td>
+            <td><span class="badge badge-red"><%= h.num(s.c) %></span></td><td><%= s.names %></td><td class="log-when"><%= when(s.last_at) %></td></tr>
+        <% }); %>
+      </tbody>
+    </table></div></div>
+  </div>
+  <% } %>
+
+  <div class="card" style="margin-bottom:1.1rem"><div class="card-body">
+    <form class="filters" method="get" action="/admin/logs/logins">
+      <div class="field"><label for="f-event"><%= t('a.log.result') %></label>
+        <select id="f-event" name="event"><option value=""><%= t('common.all') %></option>
+          <% ['login','failed','logout'].forEach(function (e) { %><option value="<%= e %>" <%= filters.event === e ? 'selected' : '' %>><%= t('a.log.ev.' + e) %></option><% }); %>
+        </select></div>
+      <div class="field"><label for="f-from"><%= t('a.log.from') %></label><input id="f-from" type="date" name="from" value="<%= filters.from %>"></div>
+      <div class="field"><label for="f-to"><%= t('a.log.to') %></label><input id="f-to" type="date" name="to" value="<%= filters.to %>"></div>
+      <div class="field grow"><label for="f-q"><%= t('common.search') %></label>
+        <input id="f-q" type="search" name="q" placeholder="<%= t('a.log.login_search_ph') %>" value="<%= filters.q %>"></div>
+      <button class="btn btn-primary" type="submit"><%= t('common.filter') %></button>
+      <a class="btn btn-light" href="/admin/logs/logins"><%= t('common.reset') %></a>
+    </form>
+  </div></div>
+
+  <div class="card">
+    <div class="card-body flush">
+      <% if (rows.length) { %>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th><%= t('a.log.time') %></th><th><%= t('auth.username') %></th><th><%= t('a.log.result') %></th><th>IP</th><th><%= t('a.log.device') %></th></tr></thead>
+        <tbody>
+          <% rows.forEach(function (r) { %>
+          <tr>
+            <td class="log-when"><%= when(r.created_at) %></td>
+            <td><strong><%= r.username || '—' %></strong></td>
+            <td>
+              <span class="badge badge-<%= r.event === 'login' ? 'green' : (r.event === 'failed' ? 'red' : 'grey') %>"><%= t('a.log.ev.' + r.event) %></span>
+              <% if (r.reason) { %><br><small class="sub"><%= tr('a.log.reason.' + r.reason, r.reason) %></small><% } %>
+            </td>
+            <td class="log-path"><%= r.ip_address || '—' %></td>
+            <td><small class="sub"><%= r.user_agent || '—' %></small></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table></div>
+      <% } else { %><div class="empty"><div class="big">☰</div><p><%= t('a.log.none') %></p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+  <p class="sub" style="margin-top:.7rem"><%= t('a.log.kept_days', { days: keepDays }) %></p>
+
+<% } else if (tab === 'errors') { %>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card red"><div class="label"><%= t('a.log.errors_today') %></div><div class="value"><%= h.num(stats.today) %></div></div>
+    <div class="stat-card"><div class="label"><%= t('a.log.errors_total') %></div><div class="value"><%= h.num(stats.total) %></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.1rem">
+    <div class="card-body flush">
+      <% if (rows.length) { %>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th><%= t('a.log.time') %></th><th><%= t('a.log.page') %></th><th><%= t('a.log.message') %></th><th><%= t('a.log.user') %></th></tr></thead>
+        <tbody>
+          <% rows.forEach(function (r) { %>
+          <tr>
+            <td class="log-when"><%= when(r.created_at) %></td>
+            <td class="log-path"><%= r.method %> <%= r.path %></td>
+            <td>
+              <strong><%= r.message || '—' %></strong>
+              <% if (r.stack) { %><details class="log-details"><summary><%= t('a.log.details') %></summary><pre class="log-pre"><%= r.stack %></pre></details><% } %>
+            </td>
+            <td><%= r.user_name || '—' %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table></div>
+      <% } else { %><div class="empty"><div class="big">✓</div><p><%= t('a.log.no_errors') %></p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+  <p class="sub" style="margin:-.4rem 0 1.1rem"><%= t('a.log.kept_days', { days: keepDays }) %></p>
+
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.log.server_log') %></h2></div>
+    <div class="card-body">
+      <% if (stderr.ok && stderr.text) { %>
+        <p class="sub" style="margin-bottom:.6rem"><%= t('a.log.server_log_hint', { kb: h.num(Math.round(stderr.size / 1024)), at: when(stderr.mtime) }) %></p>
+        <pre class="log-pre"><%= stderr.text %></pre>
+      <% } else { %>
+        <div class="empty"><p><%= t('a.log.server_log_none') %></p></div>
+      <% } %>
+    </div>
+  </div>
+<% } %>

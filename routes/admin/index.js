@@ -88,5 +88,6 @@ router.use('/pages',      requireRole(),                        require('./pages
 router.use('/messages',   requireRole(),                        require('./messages'));
 router.use('/users',      requireRole(),                        require('./users'));
 router.use('/settings',   requireRole(),                        require('./settings'));
+router.use('/logs',       requireRole(),                        require('./logs'));
 
 module.exports = router;

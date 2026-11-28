@@ -104,7 +104,7 @@ for (const [k, where] of used) {
 
 // enum.* and a few keys are looked up from variables, so exclude those prefixes
 // from the unused report rather than chasing false positives.
-const DYNAMIC_PREFIXES = ['enum.', 'role.', 'lang.'];
+const DYNAMIC_PREFIXES = ['enum.', 'role.', 'lang.', 'a.log.act.', 'a.log.ev.', 'a.log.reason.'];
 const unused = enKeys.filter((k) =>
   !used.has(k) && !DYNAMIC_PREFIXES.some((p) => k.startsWith(p)));
 for (const k of unused) warn.push(`defined but never referenced: ${k}`);

@@ -1,0 +1,67 @@
+/* Date picker (public/js/date-picker.js). Colours follow the Appearance settings
+   through the --a-* tokens, so it matches whatever accent the panel uses. */
+
+.dp-field{
+  width:100%;display:flex;align-items:center;gap:.5rem;text-align:left;cursor:pointer;
+  padding:.52rem .7rem;border:1px solid var(--a-line);border-radius:7px;background:#fff;
+  font-family:var(--sans);font-size:.92rem;color:var(--a-ink);line-height:1.35;min-height:2.42rem;
+  transition:border-color .15s, box-shadow .15s;
+}
+.dp-field:hover{border-color:color-mix(in oklab, var(--a-green) 45%, var(--a-line))}
+.dp-field:focus-visible,.dp-field[aria-expanded="true"]{outline:none;border-color:var(--a-green);box-shadow:0 0 0 3px color-mix(in oklab, var(--a-green) 18%, transparent)}
+.dp-field:disabled{background:#f6f8f7;color:var(--a-muted);cursor:not-allowed}
+.dp-field .dp-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dp-field.dp-empty .dp-text{color:var(--a-muted)}
+.dp-field .dp-ic{display:grid;place-items:center;color:var(--a-green);opacity:.85}
+.dp-field.dp-invalid{border-color:#b3261e;box-shadow:0 0 0 3px rgba(179,38,30,.14)}
+
+.dp-pop{
+  position:absolute;z-index:1000;width:316px;padding:.8rem;
+  background:#fff;border:1px solid var(--a-line);border-radius:14px;
+  box-shadow:0 18px 40px -16px rgba(20,30,25,.35),0 2px 6px rgba(20,30,25,.08);
+  font-family:var(--sans);color:var(--a-ink);animation:dp-in .14s ease-out;
+}
+@keyframes dp-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+.dp-head{display:flex;align-items:center;gap:.35rem;margin-bottom:.6rem}
+.dp-nav{
+  flex:0 0 32px;height:32px;border:0;border-radius:50%;cursor:pointer;
+  background:var(--a-wash,#eef3f0);color:var(--a-green);font-size:1.25rem;line-height:1;
+  display:grid;place-items:center;transition:background .15s,color .15s;
+}
+.dp-nav:hover{background:var(--a-green);color:#fff}
+.dp-pop .dp-sel{
+  flex:1;min-width:0;width:auto;padding:.32rem 1.5rem .32rem .55rem;font-size:.88rem;font-weight:600;
+  color:var(--a-ink);background-color:#fff;border:1px solid var(--a-line);border-radius:8px;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2373817a' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .5rem center;
+}
+.dp-pop .dp-year{flex:0 0 80px}
+.dp-pop .dp-sel:focus{outline:2px solid var(--a-green);outline-offset:-1px}
+
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-dow{text-align:center;font-size:.7rem;font-weight:700;letter-spacing:.04em;color:var(--a-muted);padding:.25rem 0 .35rem;text-transform:uppercase}
+.dp-day{
+  aspect-ratio:1;border:0;border-radius:50%;background:transparent;cursor:pointer;
+  font:500 .86rem/1 var(--sans);color:var(--a-ink);display:grid;place-items:center;
+  transition:background .12s,color .12s;
+}
+.dp-day:hover:not(:disabled){background:var(--a-chip,#e3ece7)}
+.dp-day:focus-visible{outline:2px solid var(--a-green);outline-offset:1px}
+.dp-fri{color:#b3261e}
+.dp-dow.dp-fri{color:#c0645c}
+.dp-today{box-shadow:inset 0 0 0 1.5px var(--a-green);font-weight:700}
+.dp-sel-day,.dp-sel-day:hover:not(:disabled){background:var(--a-green);color:#fff;font-weight:700;box-shadow:0 4px 10px -4px color-mix(in oklab, var(--a-green) 70%, transparent)}
+.dp-day:disabled{color:#c4ccc8;cursor:not-allowed;text-decoration:line-through}
+
+.dp-foot{display:flex;justify-content:space-between;margin-top:.55rem;padding-top:.55rem;border-top:1px solid var(--a-line)}
+.dp-link{border:0;background:none;cursor:pointer;font:600 .84rem var(--sans);color:var(--a-green);padding:.3rem .55rem;border-radius:6px}
+.dp-link:hover:not(:disabled){background:var(--a-wash,#eef3f0)}
+.dp-link:disabled{opacity:.4;cursor:not-allowed}
+.dp-clear{color:var(--a-muted)}
+
+@media (max-width:480px){
+  .dp-pop{width:calc(100vw - 16px)}
+}
+@media print{.dp-pop{display:none}}

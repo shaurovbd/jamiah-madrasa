@@ -19,6 +19,7 @@ const methodOverride = require('method-override');
 const helpers = require('./lib/helpers');
 const settingsLib = require('./lib/settings');
 const i18n = require('./lib/i18n');
+const activityLog = require('./lib/activity-log');
 
 const app = express();
 
@@ -224,6 +225,12 @@ app.use((req, res, next) => {
   });
 });
 
+// ---------------------------------------------------------------- logs
+// Records every successful change under /admin (Settings → Logs). Sits after
+// the CSRF check, so rejected forms are not counted as changes.
+app.use(activityLog.trackAdminWrites);
+activityLog.startCleanup();
+
 // ---------------------------------------------------------------- routes
 app.use('/', require('./routes/public'));
 app.use('/', require('./routes/auth'));
@@ -247,6 +254,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   console.error('[error]', err && err.stack ? err.stack : err);
+  activityLog.logError(req, err, 500);
   const isDev = (process.env.NODE_ENV || 'development') !== 'production';
   // The language middleware may itself be what failed, so fall back to a
   // translator rather than assuming res.locals.t exists.

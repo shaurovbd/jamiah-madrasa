@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/admin.css">
 <link rel="stylesheet" href="/css/theme-tokens.css">
+<link rel="stylesheet" href="/css/date-picker.css">
 <%- typeof style !== 'undefined' ? style : '' %>
 </head>
 <%# The Appearance settings. Named `thm` rather than `t`, which is the
@@ -94,6 +95,7 @@
       <div class="side-group"><%= t('admin.group.system') %></div>
       <a href="/admin/users" class="<%= on('/admin/users') %>"><span class="ic">☘</span> <%= t('admin.nav.users') %></a>
       <a href="/admin/settings" class="<%= on('/admin/settings') %>"><span class="ic">⚙</span> <%= t('admin.nav.settings') %></a>
+      <a href="/admin/logs" class="<%= on('/admin/logs') %>"><span class="ic">☰</span> <%= t('admin.nav.logs') %></a>
       <% } %>
 
       <div class="side-group">&nbsp;</div>
@@ -150,5 +152,6 @@
 <script src="/js/theme-picker.js" defer></script>
 <script src="/js/spa-nav.js" defer></script>
 <script src="/js/student-form.js" defer></script>
+<script src="/js/date-picker.js" defer></script>
 </body>
 </html>
