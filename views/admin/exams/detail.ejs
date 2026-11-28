@@ -1,8 +1,10 @@
+<% var limited = typeof scope !== 'undefined' && scope && scope.limited; %>
 <div class="page-bar">
   <div><h1><%= exam.name %></h1>
     <p class="sub"><%= exam.year_name || 'No academic year' %><%= exam.start_date ? ' · ' + fmtDate(exam.start_date) : '' %></p></div>
   <span class="spacer"></span>
   <a class="btn btn-light" href="/admin/exams"><%= t('a.exam.back_all') %></a>
+  <% if (!limited) { %>
   <form method="post" action="/admin/exams/<%= exam.id %>/publish" style="display:inline"
         data-confirm="<%= exam.is_published ? 'Hide these results from the public website?' : 'Publish these results so students can look them up on the website?' %>">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -11,6 +13,7 @@
       <%= exam.is_published ? 'Unpublish results' : 'Publish results' %>
     </button>
   </form>
+  <% } %>
 </div>
 
 <% if (exam.is_published) { %>
@@ -41,6 +44,7 @@
               <td class="actions">
                 <a class="btn btn-primary btn-sm" href="/admin/exams/<%= exam.id %>/marks?class_id=<%= c.id %>"><%= t('a.exam.enter_marks') %></a>
                 <a class="btn btn-light btn-sm" href="/admin/exams/<%= exam.id %>/results?class_id=<%= c.id %>"><%= t('a.exam.results') %></a>
+                <% if (canAccess('print')) { %><a class="btn btn-light btn-sm" target="_blank" href="/admin/print/admit-cards?exam_id=<%= exam.id %>&amp;class_id=<%= c.id %>"><%= t('a.print.admit_cards') %></a><% } %>
               </td>
             </tr>
           <% }); %>

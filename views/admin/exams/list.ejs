@@ -1,3 +1,4 @@
+<% var limited = typeof scope !== 'undefined' && scope && scope.limited; %>
 <div class="page-bar"><h1><%= t('settings.count.examinations') %></h1></div>
 
 <div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
@@ -18,11 +19,13 @@
                 <td><span class="badge badge-<%= e.is_published ? 'green' : 'grey' %>"><%= e.is_published ? 'Published' : 'Draft' %></span></td>
                 <td class="actions">
                   <a class="btn btn-light btn-sm" href="/admin/exams/<%= e.id %>"><%= t('common.open') %></a>
+                  <% if (!limited) { %>
                   <a class="btn btn-light btn-sm" href="/admin/exams?edit=<%= e.id %>"><%= t('common.edit') %></a>
                   <form method="post" action="/admin/exams/<%= e.id %>" style="display:inline" data-confirm="Delete <%= e.name %> and all marks recorded for it?">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE">
                     <button class="btn btn-danger btn-sm" type="submit"><%= t('common.delete') %></button>
                   </form>
+                  <% } %>
                 </td>
               </tr>
             <% }); %>
@@ -33,6 +36,7 @@
     </div>
   </div>
 
+  <% if (!limited) { %>
   <div class="card">
     <div class="card-head"><h2><%= edit ? 'Edit examination' : 'New examination' %></h2></div>
     <div class="card-body">
@@ -65,4 +69,5 @@
       </form>
     </div>
   </div>
+  <% } %>
 </div>

@@ -6,7 +6,7 @@ const h = require('../../lib/helpers');
 const i18n = require('../../lib/i18n');
 
 const router = express.Router();
-const ROLES = ['admin', 'teacher', 'accountant', 'librarian'];
+const { ROLES } = require('../../lib/roles');
 
 router.get('/', async (req, res, next) => {
   try {

@@ -20,6 +20,8 @@ const helpers = require('./lib/helpers');
 const settingsLib = require('./lib/settings');
 const i18n = require('./lib/i18n');
 const activityLog = require('./lib/activity-log');
+const roles = require('./lib/roles');
+const sms = require('./lib/sms');
 
 const app = express();
 
@@ -162,7 +164,8 @@ app.get('/lang/:code', (req, res) => {
 app.use(async (req, res, next) => {
   try {
     const settings = await settingsLib.all();
-    res.locals.settings = settings;
+    // The SMS gateway key stays out of every page's template data.
+    res.locals.settings = Object.assign({}, settings, { sms_api_key: undefined });
     res.locals.site = {
       name: settings.site_name || 'Jamiah Scholars International',
       short: settings.site_short || 'Jamiah Scholars',
@@ -175,6 +178,8 @@ app.use(async (req, res, next) => {
     };
     res.locals.currency = settings.currency_symbol || 'Tk';
     res.locals.user = req.session.user || null;
+    // Sidebar and pages ask canAccess('fees') etc.; the map is lib/roles.js.
+    res.locals.canAccess = (area) => Boolean(req.session.user) && roles.can(req.session.user.role, area);
 
     // --- theme (Appearance settings) ---
     // Kept from the server's own Appearance work: the admin layout reads these
@@ -230,6 +235,7 @@ app.use((req, res, next) => {
 // the CSRF check, so rejected forms are not counted as changes.
 app.use(activityLog.trackAdminWrites);
 activityLog.startCleanup();
+sms.resumePending();
 
 // ---------------------------------------------------------------- routes
 app.use('/', require('./routes/public'));

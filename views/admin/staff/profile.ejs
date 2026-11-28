@@ -25,7 +25,7 @@
         <dt><%= t('common.address') %></dt><dd><%= member.address || '—' %></dd>
         <dt><%= t('a.joined') %></dt><dd><%= member.join_date ? fmtDate(member.join_date) : '—' %></dd>
         <dt><%= t('a.staff.salary_monthly') %></dt><dd><%= money(member.salary) %></dd>
-        <dt><%= t('a.staff.panel_account') %></dt><dd><%= member.username ? member.username + ' (' + member.role + ')' : 'No login' %></dd>
+        <dt><%= t('a.staff.panel_account') %></dt><dd><%= member.username ? member.username + ' (' + label('role', member.role) + ')' : 'No login' %></dd>
       </dl>
     </div>
   </div>

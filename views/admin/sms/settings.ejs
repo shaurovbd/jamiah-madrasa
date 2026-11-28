@@ -1,0 +1,51 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.sms') %></h1><p class="sub"><%= t('a.sms.settings_sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<div class="grid" style="grid-template-columns:1fr 340px;align-items:start;gap:1.1rem">
+  <form method="post" action="/admin/sms/settings" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.sms.gateway') %></h2></div>
+    <div class="card-body">
+      <div class="choice-grid" style="margin-bottom:1rem">
+        <% PROVIDERS.forEach(function (p) { var pk = 'a.sms.prov.' + p, ph = 'a.sms.prov_hint.' + p; %>
+          <label class="choice"><input type="radio" name="sms_provider" value="<%= p %>" <%= cfg.provider === p ? 'checked' : '' %>>
+            <strong><%= t(pk) %></strong><small><%= t(ph) %></small></label>
+        <% }); %>
+      </div>
+      <div class="form-grid two">
+        <div class="field"><label for="sms_api_key"><%= t('a.sms.api_key') %></label>
+          <input id="sms_api_key" name="sms_api_key" type="password" autocomplete="off" placeholder="<%= hasKey ? '••••••••  ' + t('a.sms.key_saved') : '' %>" <%= keyFromEnv ? 'disabled' : '' %>>
+          <span class="hint"><%= keyFromEnv ? t('a.sms.key_env') : t('a.sms.key_hint') %></span>
+          <% if (hasKey && !keyFromEnv) { %><label class="chk"><input type="checkbox" name="clear_key" value="1"> <%= t('a.sms.clear_key') %></label><% } %>
+        </div>
+        <div class="field"><label for="sms_sender_id"><%= t('a.sms.sender_id') %></label>
+          <input id="sms_sender_id" name="sms_sender_id" type="text" maxlength="40" value="<%= cfg.senderId %>">
+          <span class="hint"><%= t('a.sms.sender_hint') %></span></div>
+      </div>
+      <div class="field" style="margin-top:.8rem"><label for="sms_custom_url"><%= t('a.sms.custom_url') %></label>
+        <input id="sms_custom_url" name="sms_custom_url" type="text" value="<%= cfg.customUrl %>" placeholder="https://example.com/send?key={api_key}&amp;to={number}&amp;text={message}&amp;from={sender}">
+        <span class="hint"><%= t('a.sms.custom_hint') %></span></div>
+
+      <h3 style="margin:1.4rem 0 .6rem;font-size:1rem"><%= t('a.sms.absence_heading') %></h3>
+      <label class="chk" style="margin-bottom:.7rem"><input type="checkbox" name="sms_absent_auto" value="1" <%= cfg.absentAuto ? 'checked' : '' %>> <%= t('a.sms.absence_auto') %></label>
+      <div class="field"><label for="sms_absent_template"><%= t('a.sms.absence_template') %></label>
+        <textarea id="sms_absent_template" name="sms_absent_template" maxlength="600"><%= cfg.absentTemplate %></textarea>
+        <span class="hint"><%= t('a.sms.absence_template_hint') %></span></div>
+
+      <div style="margin-top:1rem"><button class="btn btn-primary" type="submit"><%= t('common.save_settings') %></button></div>
+    </div>
+  </form>
+
+  <form method="post" action="/admin/sms/settings/test" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.sms.test_heading') %></h2></div>
+    <div class="card-body">
+      <p class="hint" style="margin-bottom:.7rem"><%= t('a.sms.test_hint') %></p>
+      <div class="field" style="margin-bottom:.8rem"><label for="test_number"><%= t('a.sms.test_number') %></label>
+        <input id="test_number" name="test_number" type="tel" placeholder="01XXXXXXXXX" required></div>
+      <button class="btn btn-light" type="submit"><%= t('a.sms.send_test') %></button>
+    </div>
+  </form>
+</div>

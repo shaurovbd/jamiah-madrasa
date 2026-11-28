@@ -1,0 +1,129 @@
+<%
+  /* Certificates are worded in the language chosen when they were issued
+     (doc.lang), whatever language the panel itself is in. */
+  var bn = docLang !== 'en';
+  var BN = '০১২৩৪৫৬৭৮৯';
+  var digits = function (v) { return bn ? String(v == null ? '' : v).replace(/\d/g, function (d) { return BN[d]; }) : String(v == null ? '' : v); };
+  // Certificates spell the month out in full: "২৮ নভেম্বর ২০২৬", "28 November 2026".
+  var fd = function (d) {
+    if (!d) return '…………';
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(typeof d === 'string' ? d : h.inputDate(d));
+    if (!m) return String(d);
+    var months = bn ? h.MONTHS_BN : h.MONTHS;
+    return digits(Number(m[3])) + ' ' + months[Number(m[2]) - 1] + ' ' + digits(m[1]);
+  };
+  var v = function (x) { return x ? x : '…………'; };
+  var female = student.gender === 'female';
+  var addr = [student.addr_village, student.addr_post, student.addr_thana, student.addr_district].filter(Boolean).join(', ') || student.address;
+  var title = {
+    testimonial: bn ? 'প্রত্যয়নপত্র' : 'Testimonial',
+    tc: bn ? 'ছাড়পত্র' : 'Transfer Certificate',
+    hifz: bn ? 'সনদপত্র' : 'Certificate of Hifz'
+  }[doc.doc_type];
+  var he = female ? (bn ? 'সে' : 'she') : (bn ? 'সে' : 'he');
+  var his = female ? (bn ? 'তার' : 'her') : (bn ? 'তার' : 'his');
+  var child = bn ? (female ? 'কন্যা' : 'পুত্র') : (female ? 'daughter' : 'son');
+  var conduct = data.conduct || (bn ? 'সন্তোষজনক' : 'good');
+  var orgName = bn && org.name_bn ? org.name_bn : org.name;
+%>
+<style>
+  .cert{position:relative;height:297mm;padding:16mm 18mm;display:flex;flex-direction:column}
+  .cert-frame{position:absolute;inset:9mm;border:1.2mm double var(--accent);border-radius:2mm;pointer-events:none}
+  .cert-frame::after{content:"";position:absolute;inset:2.2mm;border:.35mm solid var(--accent2);border-radius:1mm}
+  .cert.hifz .cert-frame{border-width:2mm;border-style:double}
+  .cert-head{text-align:center;padding-top:6mm}
+  .cert-bism{font:600 6mm "Amiri","Noto Naskh Arabic",serif;color:var(--accent);margin-bottom:3mm}
+  .cert-mark{width:20mm;height:20mm;margin:0 auto 3mm;border-radius:50%;border:.8mm solid var(--accent2);display:grid;place-items:center;font:700 9mm "Lora",serif;color:var(--accent)}
+  .cert-org{font:700 8mm "Lora","Noto Serif Bengali",serif;color:var(--accent);line-height:1.2}
+  .cert-sub{font-size:3.5mm;color:var(--muted);margin-top:1.5mm}
+  .cert-meta{display:flex;justify-content:space-between;font-size:3.4mm;margin:8mm 4mm 0;color:var(--ink)}
+  .cert-title{text-align:center;margin:10mm 0 8mm}
+  .cert-title span{display:inline-block;font:700 7.5mm "Lora","Noto Serif Bengali",serif;color:#fff;background:var(--accent);padding:2mm 10mm;border-radius:20mm;letter-spacing:.04em}
+  .cert.hifz .cert-title span{background:linear-gradient(120deg,var(--accent),color-mix(in oklab,var(--accent) 60%,var(--accent2)))}
+  .cert-body{font:400 4.3mm/2.05 "Noto Serif Bengali","Lora",serif;text-align:justify;margin:0 4mm;flex:0 0 auto}
+  .cert-body b{font-weight:700}
+  .cert-table{margin:6mm 4mm 0;border-collapse:collapse;font-size:3.6mm;width:calc(100% - 8mm)}
+  .cert-table td{border:.25mm solid var(--line);padding:1.6mm 3mm}
+  .cert-table td:first-child{color:var(--muted);width:42%}
+  .cert-dua{text-align:center;font:600 5mm "Amiri",serif;color:var(--accent);margin-top:8mm}
+  .cert-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;padding:0 4mm 4mm}
+  .cert-sign{text-align:center;font-size:3.5mm;min-width:55mm}
+  .cert-sign span{display:block;border-top:.3mm solid var(--ink);padding-top:1.2mm;margin-top:16mm}
+  .cert-qr{text-align:center;font-size:2.6mm;color:var(--muted)}
+  .cert-qr img{width:22mm;height:22mm;display:block;margin:0 auto 1mm}
+  [contenteditable]:hover{outline:1px dashed #c9d3ce;outline-offset:3px}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+<div class="sheet">
+<div class="cert <%= doc.doc_type %>" lang="<%= bn ? 'bn' : 'en' %>">
+  <div class="cert-frame"></div>
+  <div class="cert-head">
+    <div class="cert-bism">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+    <div class="cert-mark">ج</div>
+    <div class="cert-org"><%= orgName %></div>
+    <div class="cert-sub"><%= org.address %><%= org.phone ? ' · ' + (bn ? 'ফোন: ' : 'Phone: ') + digits(org.phone) : '' %><%= org.established ? ' · ' + (bn ? 'স্থাপিত: ' : 'Est. ') + digits(org.established) : '' %></div>
+  </div>
+
+  <div class="cert-meta">
+    <span><%= bn ? 'স্মারক নং' : 'Ref. No.' %>: <b><%= doc.serial_no %></b></span>
+    <span><%= bn ? 'তারিখ' : 'Date' %>: <b><%= fd(data.issue_date) %></b></span>
+  </div>
+
+  <div class="cert-title"><span><%= title %></span></div>
+
+  <div class="cert-body" contenteditable="true" spellcheck="false">
+  <% if (doc.doc_type === 'testimonial') { %>
+    <% if (bn) { %>
+      এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <b><%= student.name %></b>, পিতা: <b><%= v(student.father_name) %></b>, মাতা: <b><%= v(student.mother_name) %></b>, ঠিকানা: <%= v(addr) %>। <%= he %> এই প্রতিষ্ঠানের <%= student.dept_name ? student.dept_name + ' বিভাগের ' : '' %><b><%= v(student.class_name) %></b> শ্রেণির <%= student.status === 'active' ? 'একজন নিয়মিত শিক্ষার্থী' : 'শিক্ষার্থী ছিল' %>। <%= his %> ভর্তি নং <b><%= student.admission_no %></b><%= student.roll_no ? ', রোল নং ' + digits(student.roll_no) : '' %><%= (data.session || student.year_name) ? ', শিক্ষাবর্ষ ' + digits(data.session || student.year_name) : '' %>।
+      আমার জানামতে <%= he %> রাষ্ট্র বা সমাজবিরোধী কোনো কার্যকলাপে জড়িত নয়। অধ্যয়নকালে <%= his %> চরিত্র ও আচরণ <b><%= conduct %></b>।
+      আমি <%= his %> জীবনের সর্বাঙ্গীণ সাফল্য ও উজ্জ্বল ভবিষ্যৎ কামনা করি।
+    <% } else { %>
+      This is to certify that <b><%= student.name %></b>, <%= child %> of <b><%= v(student.father_name) %></b> and <b><%= v(student.mother_name) %></b>, of <%= v(addr) %>, <%= student.status === 'active' ? 'is a regular student' : 'was a student' %> of <b><%= v(student.class_name) %></b><%= student.dept_name ? ' (' + student.dept_name + ')' : '' %> at this institution, admission no. <b><%= student.admission_no %></b><%= student.roll_no ? ', roll no. ' + student.roll_no : '' %><%= (data.session || student.year_name) ? ', session ' + (data.session || student.year_name) : '' %>.
+      To the best of my knowledge <%= he %> has not taken part in any activity against the state or society. <%= female ? 'Her' : 'His' %> character and conduct have been <b><%= conduct %></b>.
+      I wish <%= female ? 'her' : 'him' %> every success in life.
+    <% } %>
+    <% if (data.remarks) { %><br><%= data.remarks %><% } %>
+
+  <% } else if (doc.doc_type === 'tc') { %>
+    <% if (bn) { %>
+      এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <b><%= student.name %></b>, পিতা: <b><%= v(student.father_name) %></b>, মাতা: <b><%= v(student.mother_name) %></b>, এই প্রতিষ্ঠানে <%= student.admission_date ? fd(student.admission_date) + ' তারিখে ' : '' %>ভর্তি হয়ে <b><%= v(data.last_class || student.class_name) %></b> শ্রেণি পর্যন্ত অধ্যয়ন করেছে। <%= data.reason ? '“' + data.reason + '” কারণে ' : '' %><%= he %> <b><%= fd(data.leaving_date) %></b> তারিখে এই প্রতিষ্ঠান ত্যাগ করছে।
+      অধ্যয়নকালে <%= his %> আচরণ <b><%= conduct %></b> ছিল। প্রতিষ্ঠানের নিকট <%= his %> কোনো পাওনা <b><%= data.dues_cleared === 'no' ? 'বাকি আছে' : 'বাকি নেই' %></b>।
+      অন্য যেকোনো প্রতিষ্ঠানে ভর্তিতে <%= his %> কোনো বাধা নেই। আমি <%= his %> উজ্জ্বল ভবিষ্যৎ কামনা করি।
+    <% } else { %>
+      This is to certify that <b><%= student.name %></b>, <%= child %> of <b><%= v(student.father_name) %></b> and <b><%= v(student.mother_name) %></b>, was admitted to this institution<%= student.admission_date ? ' on ' + fd(student.admission_date) : '' %> and studied up to <b><%= v(data.last_class || student.class_name) %></b>. <%= female ? 'She' : 'He' %> leaves the institution on <b><%= fd(data.leaving_date) %></b><%= data.reason ? ' for the following reason: ' + data.reason : '' %>.
+      <%= female ? 'Her' : 'His' %> conduct during the period of study was <b><%= conduct %></b>. <%= data.dues_cleared === 'no' ? 'Dues to the institution remain outstanding.' : 'All dues to the institution have been cleared.' %>
+      There is no objection to <%= female ? 'her' : 'his' %> admission to any other institution. I wish <%= female ? 'her' : 'him' %> a bright future.
+    <% } %>
+  <% } else { %>
+    <% if (bn) { %>
+      এই মর্মে সনদ প্রদান করা যাচ্ছে যে, <b><%= student.name %></b>, পিতা: <b><%= v(student.father_name) %></b>, মাতা: <b><%= v(student.mother_name) %></b>, ভর্তি নং <%= student.admission_no %>, এই প্রতিষ্ঠানের হিফজুল কুরআন বিভাগ থেকে <b><%= fd(data.completion_date) %></b> তারিখে আলহামদুলিল্লাহ সম্পূর্ণ কুরআন মাজিদ <b>হিফজ সম্পন্ন</b> করেছে<%= data.ustad ? '। তার উস্তাদ ' + data.ustad : '' %>।
+      আল্লাহ তাআলা <%= his %> এই হিফজকে কবুল করুন এবং <%= his %> জীবনকে কুরআনের আলোয় আলোকিত করুন।
+    <% } else { %>
+      This is to certify that <b><%= student.name %></b>, <%= child %> of <b><%= v(student.father_name) %></b> and <b><%= v(student.mother_name) %></b>, admission no. <%= student.admission_no %>, completed the <b>memorisation of the entire Holy Qur’an</b> at the Hifzul Qur’an department of this institution on <b><%= fd(data.completion_date) %></b><%= data.ustad ? ', under the supervision of ' + data.ustad : '' %>.
+      May Allah accept <%= female ? 'her' : 'his' %> Hifz and illuminate <%= female ? 'her' : 'his' %> life with the light of the Qur’an.
+    <% } %>
+    <% if (data.remarks) { %><br><%= data.remarks %><% } %>
+  <% } %>
+  </div>
+
+  <% if (doc.doc_type === 'tc') { %>
+  <table class="cert-table">
+    <tr><td><%= bn ? 'ভর্তি নং' : 'Admission no.' %></td><td><%= student.admission_no %></td></tr>
+    <tr><td><%= bn ? 'জন্ম তারিখ' : 'Date of birth' %></td><td><%= fd(student.dob) %></td></tr>
+    <tr><td><%= bn ? 'সর্বশেষ শ্রেণি ও রোল' : 'Last class and roll' %></td><td><%= v(data.last_class || student.class_name) %><%= student.roll_no ? ' / ' + digits(student.roll_no) : '' %></td></tr>
+    <tr><td><%= bn ? 'প্রতিষ্ঠান ত্যাগের তারিখ' : 'Date of leaving' %></td><td><%= fd(data.leaving_date) %></td></tr>
+  </table>
+  <% } %>
+
+  <% if (doc.doc_type === 'hifz') { %><div class="cert-dua">بَارَكَ اللّٰهُ فِيْهِ</div><% } %>
+
+  <div class="cert-foot">
+    <div class="cert-qr"><img src="<%= qrImg %>" alt=""><%= doc.serial_no %></div>
+    <% if (doc.doc_type === 'hifz') { %>
+      <div class="cert-sign"><span><%= bn ? 'উস্তাদ' : 'Ustad' %><% if (data.ustad) { %><br><%= data.ustad %><% } %></span></div>
+    <% } %>
+    <div class="cert-sign"><span><%= org.principal || (bn ? 'মুহতামিম / প্রিন্সিপাল' : 'Principal') %><br><%= orgName %></span></div>
+  </div>
+</div>
+</div>

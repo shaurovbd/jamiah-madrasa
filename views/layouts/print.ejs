@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= langDir %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> | <%= site.short || site.name %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
+<% var thm = (typeof theme !== 'undefined' && theme) || {}; %>
+<style>
+  :root{--accent:<%= thm.accent || '#166049' %>;--accent2:<%= thm.accent2 || '#c3952f' %>;--ink:#1b2420;--muted:#66706b;--line:#d9e0dc}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Inter","Noto Sans Bengali",system-ui,sans-serif;color:var(--ink);background:#e9edeb;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toolbar{position:sticky;top:0;z-index:10;display:flex;gap:.6rem;align-items:center;padding:.7rem 1rem;background:#fff;border-bottom:1px solid var(--line);font-size:.9rem}
+  .toolbar .grow{flex:1;color:var(--muted)}
+  .toolbar button,.toolbar a{font:600 .88rem "Inter","Noto Sans Bengali",sans-serif;border-radius:8px;padding:.5rem .95rem;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;text-decoration:none}
+  .toolbar .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sheet{width:210mm;min-height:297mm;margin:12px auto;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12);position:relative}
+  .empty-note{max-width:560px;margin:3rem auto;text-align:center;color:var(--muted)}
+  @page{size:A4;margin:0}
+  @media print{
+    body{background:#fff}
+    .toolbar{display:none}
+    .sheet{margin:0;box-shadow:none;page-break-after:always;break-after:page}
+    .sheet:last-child{page-break-after:auto;break-after:auto}
+    [contenteditable]{outline:none!important}
+  }
+</style>
+<%- typeof style !== 'undefined' ? style : '' %>
+</head>
+<body>
+<div class="toolbar">
+  <button type="button" class="primary" onclick="window.print()">⎙ <%= t('a.print.print_now') %></button>
+  <a href="/admin/print">← <%= t('a.print.back') %></a>
+  <span class="grow"><%= t('a.print.toolbar_hint') %></span>
+</div>
+<%- body %>
+</body>
+</html>

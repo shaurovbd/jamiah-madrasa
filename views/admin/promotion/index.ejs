@@ -1,0 +1,119 @@
+<div class="page-bar">
+  <div><h1><%= t('a.promo.title') %></h1><p class="sub"><%= t('a.promo.sub') %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/students"><%= t('a.stu.back_all') %></a>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem"><div class="card-body">
+  <form class="filters" method="get" action="/admin/students/promote">
+    <div class="field"><label for="from_class"><%= t('a.promo.from_class') %></label>
+      <select id="from_class" name="from_class" required><option value=""><%= t('common.select') %></option>
+        <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= f.from_class === c.id ? 'selected' : '' %>><%= c.name %><%= c.dept_name ? ' — ' + c.dept_name : '' %></option><% }); %>
+      </select></div>
+    <div class="field"><label for="from_section"><%= t('common.section') %></label>
+      <select id="from_section" name="from_section"><option value=""><%= t('common.all') %></option>
+        <% sections.filter(function (s) { return s.class_id === f.from_class; }).forEach(function (s) { %><option value="<%= s.id %>" <%= f.from_section === s.id ? 'selected' : '' %>><%= s.name %></option><% }); %>
+      </select></div>
+    <div class="field"><label for="exam_id"><%= t('a.promo.by_exam') %></label>
+      <select id="exam_id" name="exam_id"><option value=""><%= t('common.opt_none') %></option>
+        <% exams.forEach(function (e) { %><option value="<%= e.id %>" <%= f.exam_id === e.id ? 'selected' : '' %>><%= e.name %></option><% }); %>
+      </select></div>
+    <button class="btn btn-primary" type="submit"><%= t('a.promo.load') %></button>
+  </form>
+</div></div>
+
+<% if (f.from_class) { %>
+<form method="post" action="/admin/students/promote" id="promoForm" data-confirm="<%= t('a.promo.confirm') %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <input type="hidden" name="from_class" value="<%= f.from_class %>">
+  <input type="hidden" name="from_section" value="<%= f.from_section %>">
+  <input type="hidden" name="exam_id" value="<%= f.exam_id %>">
+
+  <div class="card" style="margin-bottom:1.1rem">
+    <div class="card-head"><h2><%= t('a.promo.students', { count: h.num(students.length) }) %></h2>
+      <span class="spacer"></span><span class="sub" id="pickCount"></span></div>
+    <div class="card-body flush">
+      <% if (students.length) { %>
+      <div class="table-wrap"><table class="data promo-table">
+        <thead><tr><th class="chk"><input type="checkbox" id="pickAll" checked aria-label="<%= t('common.all') %>"></th>
+          <th><%= t('common.roll') %></th><th><%= t('common.name') %></th><th><%= t('common.section') %></th>
+          <% if (f.exam_id) { %><th class="num"><%= t('a.promo.marks') %></th><th class="num"><%= t('a.promo.position') %></th><th><%= t('a.promo.result') %></th><% } %></tr></thead>
+        <tbody>
+          <% students.forEach(function (s) { var pass = !f.exam_id || (s.result && !s.result.failed); %>
+          <tr class="<%= pass ? '' : 'off' %>">
+            <td class="chk"><input type="checkbox" name="ids" value="<%= s.id %>" <%= pass ? 'checked' : '' %> aria-label="<%= s.name %>"></td>
+            <td><%= s.roll_no || '—' %></td>
+            <td><strong><%= s.name %></strong><br><small class="sub"><%= s.admission_no %></small></td>
+            <td><%= s.section_name || '—' %></td>
+            <% if (f.exam_id) { %>
+              <td class="num"><%= s.result ? s.result.total + '/' + s.result.full : '—' %></td>
+              <td class="num"><%= s.result ? s.result.position : '—' %></td>
+              <td><% if (s.result) { %><span class="badge badge-<%= s.result.failed ? 'red' : 'green' %>"><%= t(s.result.failed ? 'a.sms.failed' : 'a.sms.passed') %></span><% } else { %><span class="badge badge-grey"><%= t('a.promo.no_result') %></span><% } %></td>
+            <% } %>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table></div>
+      <% } else { %><div class="empty"><p><%= t('a.promo.none_in_class') %></p></div><% } %>
+    </div>
+  </div>
+
+  <% if (students.length) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.promo.what') %></h2></div>
+    <div class="card-body">
+      <div class="choice-grid" style="margin-bottom:1rem">
+        <% ['promote','passed','left'].forEach(function (a, i) { var ak = 'a.promo.act.' + a, ah = 'a.promo.act_hint.' + a; %>
+          <label class="choice"><input type="radio" name="action" value="<%= a %>" <%= i === 0 ? 'checked' : '' %>><strong><%= t(ak) %></strong><small><%= t(ah) %></small></label>
+        <% }); %>
+      </div>
+      <div class="form-grid" data-promote>
+        <div class="field"><label for="to_class"><%= t('a.promo.to_class') %> <span class="req">*</span></label>
+          <select id="to_class" name="to_class"><option value=""><%= t('common.select') %></option>
+            <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= suggestedClass === c.id ? 'selected' : '' %>><%= c.name %><%= c.dept_name ? ' — ' + c.dept_name : '' %></option><% }); %>
+          </select></div>
+        <div class="field"><label for="to_section"><%= t('common.section') %></label>
+          <select id="to_section" name="to_section"><option value=""><%= t('common.opt_none') %></option>
+            <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>"><%= s.name %></option><% }); %>
+          </select></div>
+        <div class="field"><label for="to_year"><%= t('a.promo.to_year') %></label>
+          <select id="to_year" name="to_year"><option value=""><%= t('a.promo.year_keep') %></option>
+            <% years.forEach(function (y) { %><option value="<%= y.id %>" <%= suggestedYear === y.id ? 'selected' : '' %>><%= y.name %></option><% }); %>
+          </select></div>
+      </div>
+      <label class="chk" style="margin-top:.8rem" data-promote><input type="checkbox" name="clear_roll" value="1"> <%= t('a.promo.clear_roll') %></label>
+      <div style="margin-top:1.1rem"><button class="btn btn-primary" type="submit" id="promoGo"><%= t('a.promo.go') %></button></div>
+    </div>
+  </div>
+  <% } %>
+</form>
+<% } %>
+
+<script>
+(function () {
+  var form = document.getElementById('promoForm'); if (!form) return;
+  var all = document.getElementById('pickAll'), count = document.getElementById('pickCount');
+  var boxes = function () { return form.querySelectorAll('input[name=ids]'); };
+  var label = <%- JSON.stringify(t('a.promo.selected')) %>;
+  function upd() {
+    var n = 0; boxes().forEach(function (b) { if (b.checked) n++; b.closest('tr').classList.toggle('off', !b.checked); });
+    if (count) count.textContent = label.replace('%{count}', n);
+  }
+  if (all) all.addEventListener('change', function () { boxes().forEach(function (b) { b.checked = all.checked; }); upd(); });
+  form.addEventListener('change', function (e) {
+    if (e.target.name === 'ids') upd();
+    var act = form.querySelector('input[name=action]:checked');
+    form.querySelectorAll('[data-promote]').forEach(function (el) { el.style.display = act && act.value !== 'promote' ? 'none' : ''; });
+    if (e.target.id === 'to_class') filterSections();
+  });
+  var sec = document.getElementById('to_section'), cls = document.getElementById('to_class');
+  function filterSections() {
+    if (!sec || !cls) return;
+    sec.querySelectorAll('option[data-class]').forEach(function (o) { o.hidden = o.getAttribute('data-class') !== cls.value; });
+    if (sec.selectedOptions[0] && sec.selectedOptions[0].hidden) sec.value = '';
+  }
+  var fc = document.getElementById('from_class');
+  if (fc) fc.addEventListener('change', function () { document.getElementById('from_section').value = ''; });
+  filterSections(); upd();
+})();
+</script>

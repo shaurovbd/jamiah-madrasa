@@ -4,6 +4,8 @@ const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const i18n = require('../../lib/i18n');
 const sh = require('../../lib/shifts');
+const sc = require('../../lib/scope');
+const sms = require('../../lib/sms');
 
 const router = express.Router();
 
@@ -13,6 +15,11 @@ const TABS = [
   ['/admin/attendance/staff', 'a.att.tab.staff'],
   ['/admin/attendance/staff/report', 'a.att.tab.staff_report']
 ];
+
+/** Class-limited teachers do not take staff attendance, so they do not see those tabs. */
+function tabsFor(scope) {
+  return scope && scope.limited ? TABS.filter((tab) => !tab[0].startsWith('/admin/attendance/staff')) : TABS;
+}
 
 const STUDENT_STATUSES = ['present', 'absent', 'late', 'leave'];
 
@@ -28,11 +35,14 @@ router.get('/', async (req, res, next) => {
     const sectionId = h.toInt(req.query.section_id);
     const date = String(req.query.date || h.today()).slice(0, 10);
 
-    const [classes, sections, shifts] = await Promise.all([
+    const scope = await sc.loadScope(req);
+    let [classes, sections, shifts] = await Promise.all([
       db.query('SELECT id, name, shift_id FROM classes ORDER BY department_id, level'),
       db.query('SELECT id, name, class_id FROM sections ORDER BY class_id, name'),
       activeShifts()
     ]);
+    classes = sc.filterClasses(scope, classes);
+    if (scope.limited) sections = sections.filter((s) => scope.classIds.has(s.class_id));
 
     // On a first visit, no shift in the URL at all, the class's own shift is
     // what the clerk means nine times out of ten, so it is filled in for them.
@@ -67,7 +77,7 @@ router.get('/', async (req, res, next) => {
 
     const alreadyTaken = students.some((s) => s.status);
     res.render('admin/attendance/take', {
-      title: res.locals.t('admin.nav.attendance'), TABS, classes, sections, shifts, students, alreadyTaken,
+      title: res.locals.t('admin.nav.attendance'), TABS: tabsFor(scope), classes, sections, shifts, students, alreadyTaken,
       shift, weeklyOff: sh.isWeeklyOff(shift, date), sh,
       filters: { class_id: classId, section_id: sectionId, shift_id: shiftId, date }
     });
@@ -85,11 +95,20 @@ router.post('/', async (req, res, next) => {
     const userId = req.session.user.id;
     const back = `/admin/attendance${h.qs({ class_id: classId, section_id: sectionId, shift_id: shiftId, date })}`;
 
-    const ids = Object.keys(statuses);
+    // A teacher may only mark students of their own classes.
+    const allowed = await sc.allowedStudentIds(await sc.loadScope(req), Object.keys(statuses).map(h.idFromKey));
+    const ids = Object.keys(statuses).filter((k) => allowed.has(h.idFromKey(k)));
     if (!ids.length) {
       req.flash('error', 'f.att.no_students');
       return res.redirect(back);
     }
+
+    // Who was already marked absent today, so re-saving the sheet does not
+    // send the same guardian a second SMS.
+    const before = new Set((await db.query(
+      `SELECT student_id FROM attendance WHERE adate = ? AND status = 'absent'
+          AND student_id IN (${ids.map(() => '?').join(',')})`,
+      [date, ...ids.map(h.idFromKey)])).map((r) => r.student_id));
 
     let saved = 0;
     await db.transaction(async (conn) => {
@@ -109,6 +128,33 @@ router.post('/', async (req, res, next) => {
     });
 
     req.flash('success', i18n.pack('f.att.saved', { count: saved, date: h.fmtDate(date, res.locals.lang) }));
+
+    // Automatic SMS to the guardian of each student newly marked absent today.
+    // Never allowed to spoil the save: any problem is logged and skipped.
+    try {
+      const newlyAbsent = ids.map(h.idFromKey).filter((id, i) => statuses[ids[i]] === 'absent' && !before.has(id));
+      if (newlyAbsent.length && date === h.today()) {
+        const cfg = await sms.config();
+        if (cfg.absentAuto) {
+          const rows = await db.query(
+            `SELECT s.id, s.name, s.roll_no, s.guardian_phone, c.name AS class_name
+               FROM students s LEFT JOIN classes c ON c.id = s.class_id
+              WHERE s.id IN (${newlyAbsent.map(() => '?').join(',')})`, newlyAbsent);
+          const r = await sms.queue({
+            kind: 'absence', title: res.locals.t('a.sms.absence_title', { date: h.fmtDate(date, 'bn') }),
+            userId,
+            recipients: rows.map((s) => ({
+              phone: s.guardian_phone, name: s.name, student_id: s.id,
+              message: sms.fill(cfg.absentTemplate, { name: s.name, class: s.class_name || '', roll: s.roll_no || '',
+                date: h.fmtDate(date, 'bn'), school: cfg.school })
+            }))
+          });
+          if (r.queued) req.flash('info', i18n.pack('f.sms.absence_queued', { count: r.queued }));
+        }
+      }
+    } catch (e) {
+      console.error('[sms] absence:', e && e.message);
+    }
     res.redirect(back);
   } catch (err) { next(err); }
 });
@@ -119,10 +165,11 @@ router.get('/report', async (req, res, next) => {
     const classId = h.toInt(req.query.class_id);
     const shiftId = h.toInt(req.query.shift_id);
     const period = String(req.query.period || h.currentPeriod()).slice(0, 7);
-    const [classes, shifts] = await Promise.all([
+    let [classes, shifts] = await Promise.all([
       db.query('SELECT id, name FROM classes ORDER BY department_id, level'),
       activeShifts()
     ]);
+    classes = sc.filterClasses(await sc.loadScope(req), classes);
 
     let rows = [];
     let days = [];
@@ -162,9 +209,18 @@ router.get('/report', async (req, res, next) => {
     }
 
     res.render('admin/attendance/report', {
-      title: res.locals.t('a.att.report_title'), TABS, classes, shifts, rows, days,
+      title: res.locals.t('a.att.report_title'), TABS: tabsFor(await sc.loadScope(req)), classes, shifts, rows, days,
       filters: { class_id: classId, shift_id: shiftId, period }
     });
+  } catch (err) { next(err); }
+});
+
+// Staff attendance is the office's job, not a class teacher's.
+router.use('/staff', async (req, res, next) => {
+  try {
+    const scope = await sc.loadScope(req);
+    if (scope.limited) return sc.deny(req, res);
+    next();
   } catch (err) { next(err); }
 });
 

@@ -3,6 +3,7 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const i18n = require('../../lib/i18n');
+const sc = require('../../lib/scope');
 
 const router = express.Router();
 
@@ -17,11 +18,13 @@ router.get('/', async (req, res, next) => {
     const classId = h.toInt(req.query.class_id);
     const date = String(req.query.date || h.today()).slice(0, 10);
 
-    const [classes, teachers] = await Promise.all([
+    const scope = await sc.loadScope(req);
+    let [classes, teachers] = await Promise.all([
       db.query(`SELECT c.id, c.name FROM classes c LEFT JOIN departments d ON d.id = c.department_id
                  ORDER BY d.sort_order, c.level`),
       db.query("SELECT id, name FROM staff WHERE status = 'active' ORDER BY name")
     ]);
+    classes = sc.filterClasses(scope, classes);
 
     let students = [];
     if (classId) {
@@ -48,7 +51,8 @@ router.post('/', async (req, res, next) => {
     const date = String(req.body.date || h.today()).slice(0, 10);
     const classId = h.toInt(req.body.class_id);
     const rows = req.body.row || {};
-    const ids = Object.keys(rows);
+    const allowed = await sc.allowedStudentIds(await sc.loadScope(req), Object.keys(rows).map(h.idFromKey));
+    const ids = Object.keys(rows).filter((k) => allowed.has(h.idFromKey(k)));
     let saved = 0;
 
     await db.transaction(async (conn) => {
@@ -87,10 +91,12 @@ router.post('/', async (req, res, next) => {
 router.get('/overview', async (req, res, next) => {
   try {
     const classId = h.toInt(req.query.class_id);
-    const classes = await db.query(`SELECT c.id, c.name FROM classes c LEFT JOIN departments d ON d.id = c.department_id
-                                     ORDER BY d.sort_order, c.level`);
-    const where = classId ? 'AND s.class_id = ?' : '';
-    const params = classId ? [classId] : [];
+    const scope = await sc.loadScope(req);
+    const classes = sc.filterClasses(scope, await db.query(`SELECT c.id, c.name FROM classes c LEFT JOIN departments d ON d.id = c.department_id
+                                     ORDER BY d.sort_order, c.level`));
+    const lim = sc.classSql(scope, 's');
+    const where = (classId ? 'AND s.class_id = ?' : '') + lim.sql;
+    const params = (classId ? [classId] : []).concat(lim.params);
     const students = await db.query(
       `SELECT s.id, s.name, s.roll_no, s.hifz_para_completed, c.name AS class_name,
               (SELECT COUNT(*) FROM hifz_progress p WHERE p.student_id = s.id) AS entries,
@@ -107,6 +113,7 @@ router.get('/overview', async (req, res, next) => {
 router.get('/student/:id', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
+    if (!(await sc.studentAllowed(await sc.loadScope(req), id))) return sc.deny(req, res);
     const student = await db.one(
       'SELECT s.*, c.name AS class_name FROM students s LEFT JOIN classes c ON c.id = s.class_id WHERE s.id = ?', [id]
     );
@@ -128,6 +135,7 @@ router.get('/student/:id', async (req, res, next) => {
 router.post('/student/:id/para', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
+    if (!(await sc.studentAllowed(await sc.loadScope(req), id))) return sc.deny(req, res);
     let para = h.toNum(req.body.hifz_para_completed, 0);
     if (para < 0) para = 0;
     if (para > 30) para = 30;

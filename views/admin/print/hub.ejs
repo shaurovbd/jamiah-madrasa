@@ -1,0 +1,141 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.print') %></h1><p class="sub"><%= t('a.print.sub') %></p></div>
+</div>
+
+<% if (tableMissing) { %><div class="alert alert-info"><%= t('a.print.table_missing') %> <code>npm run migrate</code></div><% } %>
+
+<div class="grid" style="grid-template-columns:1fr 1fr;align-items:start;gap:1.1rem;margin-bottom:1.1rem">
+  <form class="card" method="get" action="/admin/print/id-cards" target="_blank">
+    <div class="card-head"><h2>🪪 <%= t('a.print.id_cards') %></h2></div>
+    <div class="card-body">
+      <p class="hint" style="margin-bottom:.7rem"><%= t('a.print.id_hint') %></p>
+      <div class="form-grid two">
+        <div class="field"><label for="idc_class"><%= t('common.class') %></label>
+          <select id="idc_class" name="class_id" required data-sections="idc_section"><option value=""><%= t('common.select') %></option>
+            <% classes.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %></option><% }); %></select></div>
+        <div class="field"><label for="idc_section"><%= t('common.section') %></label>
+          <select id="idc_section" name="section_id"><option value=""><%= t('common.all') %></option>
+            <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>"><%= s.name %></option><% }); %></select></div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="margin-top:.9rem"><%= t('a.print.open_print') %> ↗</button>
+    </div>
+  </form>
+
+  <form class="card" method="get" action="/admin/print/admit-cards" target="_blank">
+    <div class="card-head"><h2>📝 <%= t('a.print.admit_cards') %></h2></div>
+    <div class="card-body">
+      <p class="hint" style="margin-bottom:.7rem"><%= t('a.print.admit_hint') %></p>
+      <div class="form-grid">
+        <div class="field"><label for="adm_exam"><%= t('a.print.exam') %></label>
+          <select id="adm_exam" name="exam_id" required><% exams.forEach(function (e) { %><option value="<%= e.id %>"><%= e.name %></option><% }); %></select></div>
+        <div class="field"><label for="adm_class"><%= t('common.class') %></label>
+          <select id="adm_class" name="class_id" required data-sections="adm_section"><option value=""><%= t('common.select') %></option>
+            <% classes.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %></option><% }); %></select></div>
+        <div class="field"><label for="adm_section"><%= t('common.section') %></label>
+          <select id="adm_section" name="section_id"><option value=""><%= t('common.all') %></option>
+            <% sections.forEach(function (s) { %><option value="<%= s.id %>" data-class="<%= s.class_id %>"><%= s.name %></option><% }); %></select></div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="margin-top:.9rem"><%= t('a.print.open_print') %> ↗</button>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-head"><h2>📜 <%= t('a.print.certificates') %></h2></div>
+  <div class="card-body">
+    <% if (!student) { %>
+      <p class="hint" style="margin-bottom:.7rem"><%= t('a.print.pick_student_hint') %></p>
+      <form class="filters" method="get" action="/admin/print">
+        <input type="hidden" name="doc" value="<%= doc %>">
+        <div class="field"><label for="cert_class"><%= t('common.class') %></label>
+          <select id="cert_class" name="class_id"><option value=""><%= t('common.select') %></option>
+            <% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= filters.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %></select></div>
+        <button class="btn btn-light" type="submit"><%= t('a.promo.load') %></button>
+      </form>
+      <% if (pickList.length) { %>
+      <div class="table-wrap" style="margin-top:.9rem"><table class="data compact">
+        <thead><tr><th><%= t('common.roll') %></th><th><%= t('common.name') %></th><th><%= t('a.print.id') %></th><th><%= t('common.status') %></th><th class="actions"></th></tr></thead>
+        <tbody><% pickList.forEach(function (s) { %>
+          <tr><td><%= s.roll_no || '—' %></td><td><strong><%= s.name %></strong></td><td><%= s.admission_no %></td>
+            <td><span class="badge badge-<%= s.status === 'active' ? 'green' : 'grey' %>"><%= label('status', s.status) %></span></td>
+            <td class="actions"><a class="btn btn-primary btn-sm" href="/admin/print?student_id=<%= s.id %>&amp;doc=<%= doc %>"><%= t('common.select') %></a></td></tr>
+        <% }); %></tbody>
+      </table></div>
+      <% } %>
+    <% } else { %>
+      <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
+        <div><strong style="font-size:1.05rem"><%= student.name %></strong><br><span class="sub"><%= student.admission_no %> · <%= student.class_name || '—' %><%= student.section_name ? ' / ' + student.section_name : '' %></span></div>
+        <span class="spacer" style="flex:1"></span>
+        <a class="btn btn-light btn-sm" href="/admin/print?doc=<%= doc %>"><%= t('a.print.change_student') %></a>
+      </div>
+      <form method="post" action="/admin/print/issue" target="_blank" id="certForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="student_id" value="<%= student.id %>">
+        <div class="choice-grid" style="margin-bottom:1rem">
+          <% DOCS.forEach(function (d) { var dk = 'a.print.doc.' + d, dh = 'a.print.doc_hint.' + d; %>
+            <label class="choice"><input type="radio" name="doc_type" value="<%= d %>" <%= doc === d ? 'checked' : '' %>><strong><%= t(dk) %></strong><small><%= t(dh) %></small></label>
+          <% }); %>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label for="doc_lang"><%= t('a.print.doc_lang') %></label>
+            <select id="doc_lang" name="doc_lang"><option value="bn">বাংলা</option><option value="en">English</option></select></div>
+          <div class="field"><label for="issue_date"><%= t('a.print.issue_date') %></label><input id="issue_date" type="date" name="issue_date" value="<%= today %>"></div>
+          <div class="field"><label for="conduct"><%= t('a.print.conduct') %></label><input id="conduct" type="text" name="conduct" placeholder="<%= t('a.print.conduct_ph') %>"></div>
+        </div>
+        <div class="form-grid reveal" data-doc="testimonial" style="margin-top:.8rem">
+          <div class="field"><label for="session"><%= t('a.print.session') %></label><input id="session" type="text" name="session" value="<%= student.year_name || '' %>"></div>
+        </div>
+        <div class="form-grid reveal" data-doc="tc" style="margin-top:.8rem">
+          <div class="field"><label for="leaving_date"><%= t('a.print.leaving_date') %></label><input id="leaving_date" type="date" name="leaving_date" value="<%= today %>"></div>
+          <div class="field"><label for="last_class"><%= t('a.print.last_class') %></label><input id="last_class" type="text" name="last_class" value="<%= student.class_name || '' %>"></div>
+          <div class="field"><label for="dues_cleared"><%= t('a.print.dues') %></label>
+            <select id="dues_cleared" name="dues_cleared"><option value="yes"><%= t('a.print.dues_clear') %></option><option value="no"><%= t('a.print.dues_pending') %></option></select></div>
+          <div class="field" style="grid-column:1/-1"><label for="reason"><%= t('a.print.reason') %></label><input id="reason" type="text" name="reason" placeholder="<%= t('a.print.reason_ph') %>"></div>
+        </div>
+        <div class="form-grid reveal" data-doc="hifz" style="margin-top:.8rem">
+          <div class="field"><label for="completion_date"><%= t('a.print.completion_date') %></label><input id="completion_date" type="date" name="completion_date" value="<%= today %>"></div>
+          <div class="field"><label for="ustad"><%= t('a.print.ustad') %></label><input id="ustad" type="text" name="ustad"></div>
+        </div>
+        <div class="field" style="margin-top:.8rem"><label for="remarks"><%= t('a.print.remarks') %></label><input id="remarks" type="text" name="remarks"></div>
+        <p class="hint" style="margin:.8rem 0"><%= t('a.print.issue_hint') %></p>
+        <button class="btn btn-primary" type="submit"><%= t('a.print.issue') %> ↗</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2><%= t('a.print.register') %></h2></div>
+  <div class="card-body flush">
+    <% if (recent && recent.length) { %>
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th><%= t('a.print.serial') %></th><th><%= t('a.print.document') %></th><th><%= t('common.name') %></th><th><%= t('a.log.time') %></th><th><%= t('a.print.issued_by') %></th><th class="actions"></th></tr></thead>
+      <tbody><% recent.forEach(function (d) { var dk = 'a.print.doc.' + d.doc_type; %>
+        <tr><td><strong><%= d.serial_no %></strong></td><td><%= t(dk) %></td><td><%= d.student_name %><br><small class="sub"><%= d.admission_no %></small></td>
+          <td><%= fmtDate(d.issued_at) %></td><td><%= d.issued_by_name || '—' %></td>
+          <td class="actions"><a class="btn btn-light btn-sm" target="_blank" href="/admin/print/doc/<%= d.id %>"><%= t('a.print.reprint') %></a></td></tr>
+      <% }); %></tbody>
+    </table></div>
+    <% } else { %><div class="empty"><p><%= t('a.print.register_empty') %></p></div><% } %>
+  </div>
+</div>
+
+<script>
+(function () {
+  document.querySelectorAll('select[data-sections]').forEach(function (cls) {
+    var sec = document.getElementById(cls.getAttribute('data-sections'));
+    function f() { sec.querySelectorAll('option[data-class]').forEach(function (o) { o.hidden = o.getAttribute('data-class') !== cls.value; }); if (sec.selectedOptions[0] && sec.selectedOptions[0].hidden) sec.value = ''; }
+    cls.addEventListener('change', f); f();
+  });
+  var form = document.getElementById('certForm'); if (!form) return;
+  function sync() {
+    var d = (form.querySelector('input[name=doc_type]:checked') || {}).value;
+    form.querySelectorAll('[data-doc]').forEach(function (el) {
+      var on = el.getAttribute('data-doc') === d;
+      el.classList.toggle('on', on);
+      el.querySelectorAll('input,select').forEach(function (i) { i.disabled = !on; });
+    });
+  }
+  form.addEventListener('change', sync); sync();
+})();
+</script>

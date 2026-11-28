@@ -5,16 +5,20 @@ const h = require('../../lib/helpers');
 const upload = require('../../lib/upload');
 const { buildMarksheet } = require('../../lib/results');
 const i18n = require('../../lib/i18n');
+const sc = require('../../lib/scope');
 
 const router = express.Router();
 
-async function lookups() {
+async function lookups(scope) {
   const [departments, classes, sections, years] = await Promise.all([
     db.query('SELECT id, name FROM departments ORDER BY sort_order, id'),
     db.query('SELECT id, name, department_id FROM classes ORDER BY department_id, level, id'),
     db.query('SELECT id, name, class_id FROM sections ORDER BY class_id, name'),
     db.query('SELECT id, name, is_current FROM academic_years ORDER BY name DESC')
   ]);
+  if (scope && scope.limited) {
+    return { departments, classes: sc.filterClasses(scope, classes), sections: sections.filter((s) => scope.classIds.has(s.class_id)), years };
+  }
   return { departments, classes, sections, years };
 }
 
@@ -36,7 +40,10 @@ router.get('/', async (req, res, next) => {
     if (classId) { where.push('s.class_id = ?'); params.push(classId); }
     if (sectionId) { where.push('s.section_id = ?'); params.push(sectionId); }
     if (deptId) { where.push('s.department_id = ?'); params.push(deptId); }
-    const whereSql = `WHERE ${where.join(' AND ')}`;
+    const scope = await sc.loadScope(req);
+    const lim = sc.classSql(scope, 's');
+    const whereSql = `WHERE ${where.join(' AND ')}${lim.sql}`;
+    params.push(...lim.params);
 
     const total = await db.scalar(`SELECT COUNT(*) AS c FROM students s ${whereSql}`, params);
     const p = h.paginate(total, req.query.page, 25);
@@ -53,7 +60,7 @@ router.get('/', async (req, res, next) => {
     );
 
     res.render('admin/students/list', {
-      title: res.locals.t('admin.nav.students'), students, p, ...(await lookups()),
+      title: res.locals.t('admin.nav.students'), students, p, ...(await lookups(scope)),
       filters: { q, class_id: classId, section_id: sectionId, department_id: deptId, status }
     });
   } catch (err) { next(err); }
@@ -103,6 +110,7 @@ router.post('/', upload.image.single('photo'), async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
+    if (!(await sc.studentAllowed(await sc.loadScope(req), id))) return sc.deny(req, res);
     const student = await db.one(
       `SELECT s.*, c.name AS class_name, sec.name AS section_name, d.name AS dept_name, y.name AS year_name
          FROM students s

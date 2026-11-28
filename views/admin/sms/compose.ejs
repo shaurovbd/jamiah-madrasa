@@ -1,0 +1,122 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.sms') %></h1><p class="sub"><%= t('a.sms.sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<% if (cfg.provider === 'test') { %>
+  <div class="test-banner">⚠ <%= t('a.sms.test_mode_banner') %>
+    <% if (canAccess('sms_config')) { %> <a href="/admin/sms/settings"><%= t('a.sms.tab.settings') %> →</a><% } %></div>
+<% } %>
+
+<form method="post" action="/admin/sms/preview" id="smsForm">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="grid" style="grid-template-columns:1fr 360px;align-items:start;gap:1.1rem">
+    <div>
+      <div class="card" style="margin-bottom:1.1rem">
+        <div class="card-head"><h2><%= t('a.sms.who') %></h2></div>
+        <div class="card-body">
+          <div class="choice-grid">
+            <% AUDIENCES.forEach(function (a) { var key = 'a.sms.aud.' + a, hint = 'a.sms.aud_hint.' + a; %>
+              <label class="choice"><input type="radio" name="audience" value="<%= a %>" <%= form.audience === a ? 'checked' : '' %>>
+                <strong><%= t(key) %></strong><small><%= t(hint) %></small></label>
+            <% }); %>
+          </div>
+
+          <div class="form-grid reveal" data-for="department" style="margin-top:.9rem">
+            <div class="field"><label for="department_id"><%= t('common.department') %></label>
+              <select id="department_id" name="department_id"><% departments.forEach(function (d) { %><option value="<%= d.id %>" <%= form.department_id === d.id ? 'selected' : '' %>><%= d.name %></option><% }); %></select></div>
+          </div>
+          <div class="form-grid reveal" data-for="class result" style="margin-top:.9rem">
+            <div class="field"><label for="class_id"><%= t('common.class') %></label>
+              <select id="class_id" name="class_id"><% classes.forEach(function (c) { %><option value="<%= c.id %>" <%= form.class_id === c.id ? 'selected' : '' %>><%= c.name %></option><% }); %></select></div>
+          </div>
+          <div class="form-grid reveal" data-for="section" style="margin-top:.9rem">
+            <div class="field"><label for="section_id"><%= t('common.section') %></label>
+              <select id="section_id" name="section_id"><% sections.forEach(function (s) { %><option value="<%= s.id %>" <%= form.section_id === s.id ? 'selected' : '' %>><%= s.class_name %> — <%= s.name %></option><% }); %></select></div>
+          </div>
+          <div class="form-grid reveal" data-for="result" style="margin-top:.9rem">
+            <div class="field"><label for="exam_id"><%= t('a.sms.exam') %></label>
+              <select id="exam_id" name="exam_id"><% exams.forEach(function (e) { %><option value="<%= e.id %>" <%= form.exam_id === e.id ? 'selected' : '' %>><%= e.name %></option><% }); %></select></div>
+          </div>
+          <div class="form-grid reveal" data-for="dues" style="margin-top:.9rem">
+            <div class="field"><label for="min_due"><%= t('a.sms.min_due') %></label>
+              <input id="min_due" name="min_due" type="number" min="1" step="1" value="<%= form.min_due || 1 %>"></div>
+          </div>
+          <div class="reveal" data-for="custom" style="margin-top:.9rem">
+            <div class="field"><label for="numbers"><%= t('a.sms.numbers') %></label>
+              <textarea id="numbers" name="numbers" placeholder="01711000000, 01811000000"><%= form.numbers %></textarea>
+              <span class="hint"><%= t('a.sms.numbers_hint') %></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2><%= t('a.sms.message') %></h2></div>
+        <div class="card-body">
+          <div class="field" style="margin-bottom:.7rem"><label for="title"><%= t('a.sms.batch_title') %></label>
+            <input id="title" name="title" type="text" maxlength="190" value="<%= form.title %>" placeholder="<%= t('a.sms.batch_title_ph') %>"></div>
+          <div class="field"><label for="message"><%= t('a.sms.message') %> <span class="req">*</span></label>
+            <textarea id="message" name="message" required maxlength="1000" style="min-height:130px"><%= form.message %></textarea></div>
+          <div class="sms-meter"><span><%= t('a.sms.chars') %>: <b id="mLen">0</b></span><span><%= t('a.sms.parts') %>: <b id="mParts">0</b></span><span id="mType"></span></div>
+          <div style="margin-top:.6rem"><span class="hint"><%= t('a.sms.placeholders') %></span>
+            <div class="chips">
+              <% ['name','class','roll','school','date'].forEach(function (p) { %><button type="button" class="chip" data-ins="{<%= p %>}">{<%= p %>}</button><% }); %>
+              <span class="reveal-inline" data-for="dues"><button type="button" class="chip" data-ins="{due}">{due}</button></span>
+              <span class="reveal-inline" data-for="result"><% ['exam','total','gpa','grade','position','result'].forEach(function (p) { %><button type="button" class="chip" data-ins="{<%= p %>}">{<%= p %>}</button><% }); %></span>
+            </div>
+          </div>
+          <div style="margin-top:.8rem"><span class="hint"><%= t('a.sms.templates') %></span>
+            <div class="chips">
+              <% ['notice','dues','result','holiday'].forEach(function (k) { var tk = 'a.sms.tpl.' + k, tl = 'a.sms.tpl_label.' + k; %><button type="button" class="chip" data-tpl="<%= t(tk) %>"><%= t(tl) %></button><% }); %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="position:sticky;top:1rem">
+      <div class="card">
+        <div class="card-head"><h2><%= t('a.sms.preview') %></h2></div>
+        <div class="card-body">
+          <div class="sms-phone"><div class="sms-to"><%= t('a.sms.sample_for') %></div><div class="sms-bubble" id="bubble"></div></div>
+          <p class="hint" style="margin:.7rem 0 1rem"><%= t('a.sms.preview_hint') %></p>
+          <button class="btn btn-primary" type="submit" style="width:100%"><%= t('a.sms.next_count') %> →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<style>.reveal-inline{display:none}.reveal-inline.on{display:contents}</style>
+<script>
+(function () {
+  var form = document.getElementById('smsForm'); if (!form) return;
+  var msg = form.querySelector('#message'), bubble = document.getElementById('bubble');
+  var sample = { name: <%- JSON.stringify(t('a.sms.sample.name')) %>, class: <%- JSON.stringify(t('a.sms.sample.class')) %>, roll: '7', school: <%- JSON.stringify(site.short || '') %>,
+    date: <%- JSON.stringify(fmtDate(h.today())) %>, due: <%- JSON.stringify(money(1500)) %>, exam: <%- JSON.stringify(t('a.sms.sample.exam')) %>, total: '412/500', gpa: '4.50', grade: 'A', position: '3', result: <%- JSON.stringify(t('a.sms.passed')) %> };
+  function aud() { var r = form.querySelector('input[name=audience]:checked'); return r ? r.value : 'all'; }
+  function sync() {
+    var a = aud();
+    form.querySelectorAll('[data-for]').forEach(function (el) {
+      var on = el.getAttribute('data-for').split(' ').indexOf(a) !== -1;
+      el.classList.toggle('on', on);
+      el.querySelectorAll('select,input,textarea').forEach(function (i) { i.disabled = !on; });
+    });
+    var text = msg.value.replace(/\{(\w+)\}/g, function (m, k) { return sample[k] !== undefined ? sample[k] : m; });
+    bubble.textContent = text || '…';
+    var uni = /[^\x00-\x7F]/.test(msg.value), len = Array.from(msg.value).length;
+    var parts = !len ? 0 : (uni ? (len <= 70 ? 1 : Math.ceil(len / 67)) : (len <= 160 ? 1 : Math.ceil(len / 153)));
+    document.getElementById('mLen').textContent = len;
+    document.getElementById('mParts').textContent = parts;
+    document.getElementById('mType').textContent = uni ? <%- JSON.stringify(t('a.sms.unicode')) %> : '';
+  }
+  form.addEventListener('change', sync); msg.addEventListener('input', sync);
+  form.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-ins]');
+    if (c) { var s = msg.selectionStart || msg.value.length; msg.value = msg.value.slice(0, s) + c.getAttribute('data-ins') + msg.value.slice(msg.selectionEnd || s); msg.focus(); sync(); }
+    var tp = e.target.closest('[data-tpl]');
+    if (tp) { msg.value = tp.getAttribute('data-tpl'); sync(); }
+  });
+  sync();
+})();
+</script>

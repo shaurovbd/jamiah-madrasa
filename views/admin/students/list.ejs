@@ -1,7 +1,9 @@
 <div class="page-bar">
   <div><h1><%= t('admin.nav.students') %></h1><p class="sub"><%= t('a.stu.count_summary', { count: h.num(p.total), status: label('status', filters.status) }) %></p></div>
   <span class="spacer"></span>
-  <a class="btn btn-primary" href="/admin/students/new"><%= t('a.stu.add') %></a>
+  <% if (canAccess('print') && filters.class_id) { %><a class="btn btn-light" target="_blank" href="/admin/print/id-cards?class_id=<%= filters.class_id %><%= filters.section_id ? '&section_id=' + filters.section_id : '' %>"><%= t('a.print.id_cards') %></a><% } %>
+  <% if (canAccess('promotion')) { %><a class="btn btn-light" href="/admin/students/promote"><%= t('a.promo.title') %></a><% } %>
+  <% if (typeof canEditStudents === 'undefined' || canEditStudents) { %><a class="btn btn-primary" href="/admin/students/new"><%= t('a.stu.add') %></a><% } %>
 </div>
 
 <div class="card" style="margin-bottom:1.1rem">

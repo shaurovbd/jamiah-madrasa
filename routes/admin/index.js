@@ -3,6 +3,8 @@ const express = require('express');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const { requireLogin, requireRole } = require('../../middleware/auth');
+const roles = require('../../lib/roles');
+const scope = require('../../lib/scope');
 
 const router = express.Router();
 
@@ -20,7 +22,7 @@ router.get('/', async (req, res, next) => {
     const todayStr = h.today();
     const role = req.session.user.role;
     // The dashboard only shows what this role can actually open.
-    const can = (...roles) => role === 'admin' || roles.includes(role);
+    const can = (area) => roles.can(role, area);
 
     const [
       students, staffCount, pendingAdmissions, unreadMessages,
@@ -66,28 +68,43 @@ router.get('/', async (req, res, next) => {
 });
 
 /* --------------------------------------------------------------- modules */
-router.use('/students',   requireRole('teacher', 'accountant'), require('./students'));
-router.use('/admissions', requireRole('accountant'),            require('./admissions'));
-router.use('/staff',      requireRole('teacher', 'accountant'), require('./staff'));
-router.use('/academics',  requireRole('teacher'),               require('./academics'));
-router.use('/routine',    requireRole('teacher'),              require('./routine'));
-router.use('/attendance', requireRole('teacher'),               require('./attendance'));
-router.use('/exams',      requireRole('teacher'),               require('./exams'));
-router.use('/hifz',       requireRole('teacher'),               require('./hifz'));
-router.use('/fees',       requireRole('accountant'),            require('./fees'));
+// Who may open what is defined once, in lib/roles.js.
+const area = (name) => requireRole(...roles.rolesFor(name));
+
+// Teachers read student records but do not add, edit or delete them.
+function studentsReadOnly(req, res, next) {
+  const readOnly = roles.STUDENT_READ_ONLY.includes(req.session.user.role);
+  res.locals.canEditStudents = !readOnly;
+  if (!readOnly) return next();
+  const p = req.path;
+  if (req.method !== 'GET' || p === '/new' || /\/edit$/.test(p) || p.startsWith('/promote')) return scope.deny(req, res);
+  next();
+}
+router.use('/students/promote', area('promotion'), require('./promotion'));
+router.use('/students',   area('students'),   studentsReadOnly, scope.guard(), require('./students'));
+router.use('/admissions', area('admissions'), require('./admissions'));
+router.use('/staff',      area('staff'),      require('./staff'));
+router.use('/academics',  area('academics'),  require('./academics'));
+router.use('/routine',    area('routine'),    require('./routine'));
+router.use('/attendance', area('attendance'), scope.guard(), require('./attendance'));
+router.use('/exams',      area('exams'),      scope.guard(), require('./exams'));
+router.use('/hifz',       area('hifz'),       scope.guard(), require('./hifz'));
+router.use('/fees',       area('fees'),       require('./fees'));
 // পুরনো সরল আয়-ব্যয় পাতা — নতুন দ্বি-খাতা খতিয়ান (finance-mount.js)
 // এখন /admin/ledger এ বসে, তাই এটি বন্ধ। কোড ও ledger_entries টেবিল
-// মুছে ফেলা হয়নি; এই তিন লাইন সরালেই পুরনোটা ফিরে আসবে।
-// router.use('/ledger',     requireRole('accountant'),            require('./ledger'));
-router.use('/library',    requireRole('librarian'),             require('./library'));
-router.use('/hostel',     requireRole('accountant'),            require('./hostel'));
-router.use('/notices',    requireRole(),                        require('./notices'));
-router.use('/events',     requireRole(),                        require('./events'));
-router.use('/gallery',    requireRole(),                        require('./gallery'));
-router.use('/pages',      requireRole(),                        require('./pages'));
-router.use('/messages',   requireRole(),                        require('./messages'));
-router.use('/users',      requireRole(),                        require('./users'));
-router.use('/settings',   requireRole(),                        require('./settings'));
-router.use('/logs',       requireRole(),                        require('./logs'));
+// মুছে ফেলা হয়নি; এই লাইন ফেরালেই পুরনোটা ফিরে আসবে।
+// router.use('/ledger',  area('finance'),    require('./ledger'));
+router.use('/library',    area('library'),    require('./library'));
+router.use('/hostel',     area('hostel'),     require('./hostel'));
+router.use('/notices',    area('notices'),    require('./notices'));
+router.use('/events',     area('events'),     require('./events'));
+router.use('/gallery',    area('gallery'),    require('./gallery'));
+router.use('/pages',      area('pages'),      require('./pages'));
+router.use('/messages',   area('messages'),   require('./messages'));
+router.use('/users',      area('users'),      require('./users'));
+router.use('/settings',   area('settings'),   require('./settings'));
+router.use('/logs',       area('logs'),       require('./logs'));
+router.use('/sms',        area('sms'),        require('./sms'));
+router.use('/print',      area('print'),      require('./print'));
 
 module.exports = router;

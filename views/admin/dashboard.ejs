@@ -5,13 +5,13 @@
   </div>
   <span class="spacer"></span>
   <a class="btn btn-light" href="/" target="_blank"><%= t('a.dash.view_site') %></a>
-  <% if (can('accountant')) { %>
+  <% if (can('fees')) { %>
     <a class="btn btn-primary" href="/admin/fees/generate"><%= t('a.dash.generate_invoices') %></a>
   <% } %>
 </div>
 
 <div class="grid g4" style="margin-bottom:1.1rem">
-  <% if (can('teacher','accountant')) { %>
+  <% if (can('students')) { %>
   <div class="stat-card">
     <div class="label"><%= t('a.dash.active_students') %></div>
     <div class="value"><%= h.num(stats.students) %></div>
@@ -23,14 +23,14 @@
     <div class="foot"><a href="/admin/staff"><%= t('a.dash.manage_staff') %></a></div>
   </div>
   <% } %>
-  <% if (can('accountant')) { %>
+  <% if (can('admissions')) { %>
   <div class="stat-card gold">
     <div class="label"><%= t('a.dash.pending_applications') %></div>
     <div class="value"><%= h.num(stats.pendingAdmissions) %></div>
     <div class="foot"><a href="/admin/admissions?status=pending"><%= t('a.dash.review_applications') %></a></div>
   </div>
   <% } %>
-  <% if (can('accountant')) { %>
+  <% if (can('fees')) { %>
   <div class="stat-card red">
     <div class="label"><%= t('a.dash.outstanding_dues') %></div>
     <div class="value" style="font-size:1.4rem"><%= money(stats.totalDue) %></div>
@@ -40,14 +40,14 @@
 </div>
 
 <div class="grid g4" style="margin-bottom:1.3rem">
-  <% if (can('teacher')) { %>
+  <% if (can('attendance')) { %>
   <div class="stat-card">
     <div class="label"><%= t('a.dash.present_today') %></div>
     <div class="value"><%= h.num(stats.presentToday) %></div>
     <div class="foot"><%= h.num(stats.absentToday) %> <%= t('a.dash.absent_sep') %> <a href="/admin/attendance"><%= t('a.dash.take_attendance') %></a></div>
   </div>
   <% } %>
-  <% if (can('accountant')) { %>
+  <% if (can('fees')) { %>
   <div class="stat-card gold">
     <div class="label"><%= t('a.dash.billed_month') %></div>
     <div class="value" style="font-size:1.4rem"><%= money(stats.monthBilled) %></div>
@@ -59,7 +59,7 @@
     <div class="foot"><a href="/admin/ledger"><%= t('admin.nav.ledger') %></a></div>
   </div>
   <% } %>
-  <% if (can('librarian')) { %>
+  <% if (can('library')) { %>
   <div class="stat-card blue">
     <div class="label"><%= t('a.dash.books_on_loan') %></div>
     <div class="value"><%= h.num(stats.booksOut) %></div>
@@ -69,7 +69,7 @@
 </div>
 
 <div class="grid g2" style="align-items:start">
-  <% if (can('teacher','accountant')) { %>
+  <% if (can('students')) { %>
   <div class="card">
     <div class="card-head"><h2><%= t('a.dash.students_by_dept') %></h2></div>
     <div class="card-body">
@@ -88,7 +88,7 @@
   </div>
 
   <% } %>
-  <% if (can('accountant')) { %>
+  <% if (can('admissions')) { %>
   <div class="card">
     <div class="card-head">
       <h2><%= t('a.dash.recent_applications') %></h2>
@@ -148,7 +148,7 @@
     <div class="card-head">
       <h2><%= t('home.upcoming_events') %></h2>
       <span class="spacer"></span>
-      <% if (user.role === 'admin') { %><a class="btn btn-light btn-sm" href="/admin/events"><%= t('a.dash.manage') %></a><% } %>
+      <% if (can('events')) { %><a class="btn btn-light btn-sm" href="/admin/events"><%= t('a.dash.manage') %></a><% } %>
     </div>
     <div class="card-body">
       <% if (upcomingEvents.length) { %>
@@ -159,7 +159,7 @@
           </div>
         <% }); %>
       <% } else { %><div class="empty"><%= t('a.dash.nothing_scheduled') %></div><% } %>
-      <% if (stats.unreadMessages > 0 && user.role === 'admin') { %>
+      <% if (stats.unreadMessages > 0 && can('messages')) { %>
         <p style="margin-top:1rem"><a class="btn btn-gold btn-sm" href="/admin/messages"><%= stats.unreadMessages %> <%= t('a.web.unread_message') %><%= stats.unreadMessages > 1 ? 's' : '' %></a></p>
       <% } %>
     </div>

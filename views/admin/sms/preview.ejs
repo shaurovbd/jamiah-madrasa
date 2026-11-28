@@ -1,0 +1,45 @@
+<%
+  var keep = ['audience','department_id','class_id','section_id','exam_id','min_due','numbers','message','title'];
+  var audKey = 'a.sms.aud.' + form.audience;
+%>
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.sms') %></h1><p class="sub"><%= t('a.sms.confirm_sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: '/admin/sms' }) %>
+
+<% if (cfg.provider === 'test') { %><div class="test-banner">⚠ <%= t('a.sms.test_mode_banner') %></div><% } %>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label"><%= t('a.sms.recipients') %></div><div class="value"><%= h.num(count) %></div><div class="foot"><%= t(audKey) %></div></div>
+  <div class="stat-card blue"><div class="label"><%= t('a.sms.total_parts') %></div><div class="value"><%= h.num(totalParts) %></div><div class="foot"><%= t('a.sms.parts_hint') %></div></div>
+  <% if (missingPhone) { %>
+  <div class="stat-card red"><div class="label"><%= t('a.sms.no_number') %></div><div class="value"><%= h.num(missingPhone) %></div><div class="foot"><%= t('a.sms.no_number_hint') %></div></div>
+  <% } %>
+</div>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-head"><h2><%= t('a.sms.samples') %></h2></div>
+  <div class="card-body">
+    <% if (samples.length) { %>
+      <div class="grid g3">
+        <% samples.forEach(function (s) { %>
+          <div class="sms-phone"><div class="sms-to"><%= s.name ? s.name + ' · ' : '' %><%= s.phone %></div><div class="sms-bubble"><%= s.message %></div></div>
+        <% }); %>
+      </div>
+    <% } else { %><div class="empty"><p><%= t('a.sms.none_found') %></p></div><% } %>
+  </div>
+</div>
+
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+  <form method="get" action="/admin/sms">
+    <% keep.forEach(function (k) { %><input type="hidden" name="<%= k %>" value="<%= form[k] %>"><% }); %>
+    <button class="btn btn-light" type="submit">← <%= t('a.sms.back_edit') %></button>
+  </form>
+  <% if (count) { %>
+  <form method="post" action="/admin/sms/send" data-confirm="<%= t('a.sms.confirm_send', { count: count }) %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% keep.forEach(function (k) { %><input type="hidden" name="<%= k %>" value="<%= form[k] %>"><% }); %>
+    <button class="btn btn-primary" type="submit"><%= t('a.sms.send_now', { count: h.num(count) }) %></button>
+  </form>
+  <% } %>
+</div>

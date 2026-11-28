@@ -12,6 +12,7 @@ const express = require('express');
 const { pool: financePool } = require('./config/finance-db');
 const { pool: mainPool }    = require('./config/db');
 const settings              = require('./lib/settings');
+const { financeRoleFor }    = require('./lib/roles');
 
 const FIN_DIR = path.join(__dirname, 'jamiah-finance');
 
@@ -76,7 +77,9 @@ async function financeRole(req) {
   if (u.finance_role) return u.finance_role;
   const [rows] = await mainPool.query(
     'SELECT finance_role FROM users WHERE id = ? LIMIT 1', [u.id]);
-  u.finance_role = rows.length ? rows[0].finance_role : 'none';
+  // হাতে বসানো finance_role থাকলে সেটাই; না থাকলে মূল রোল থেকে আসে
+  // (হিসাবরক্ষক → accountant, মুহতামিম/অ্যাডমিন → principal)। lib/roles.js
+  u.finance_role = financeRoleFor(u.role, rows.length ? rows[0].finance_role : 'none');
   return u.finance_role;
 }
 

@@ -4,8 +4,18 @@ const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const { buildMarksheet, classRanking } = require('../../lib/results');
 const i18n = require('../../lib/i18n');
+const sc = require('../../lib/scope');
 
 const router = express.Router();
+
+// Creating, deleting and publishing exams is for the office and the principal;
+// a class-limited teacher enters marks and reads results for their own classes.
+async function notLimited(req, res, next) {
+  try {
+    if ((await sc.loadScope(req)).limited) return sc.deny(req, res);
+    next();
+  } catch (err) { next(err); }
+}
 
 /* ----------------------------------------------------------------- list */
 router.get('/', async (req, res, next) => {
@@ -22,7 +32,7 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', notLimited, async (req, res, next) => {
   try {
     const name = String(req.body.name || '').trim();
     if (!name) { req.flash('error', 'f.exam.name_required'); return res.redirect('/admin/exams'); }
@@ -39,7 +49,7 @@ router.post('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', notLimited, async (req, res, next) => {
   try {
     await db.run('DELETE FROM exams WHERE id = ?', [h.toInt(req.params.id)]);
     req.flash('success', 'f.exam.deleted');
@@ -47,7 +57,7 @@ router.delete('/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/:id/publish', async (req, res, next) => {
+router.post('/:id/publish', notLimited, async (req, res, next) => {
   try {
     const id = h.toInt(req.params.id);
     const publish = req.body.publish === '1' ? 1 : 0;
@@ -75,7 +85,7 @@ router.get('/:id', async (req, res, next) => {
          FROM classes c LEFT JOIN departments d ON d.id = c.department_id
         ORDER BY d.sort_order, c.level`, [id]
     );
-    res.render('admin/exams/detail', { title: exam.name, exam, classes });
+    res.render('admin/exams/detail', { title: exam.name, exam, classes: sc.filterClasses(await sc.loadScope(req), classes) });
   } catch (err) { next(err); }
 });
 
@@ -88,9 +98,10 @@ router.get('/:id/marks', async (req, res, next) => {
 
     const classId = h.toInt(req.query.class_id);
     const subjectId = h.toInt(req.query.subject_id);
-    const classes = await db.query('SELECT id, name FROM classes ORDER BY department_id, level');
+    const scope = await sc.loadScope(req);
+    const classes = sc.filterClasses(scope, await db.query('SELECT id, name FROM classes ORDER BY department_id, level'));
     const subjects = classId
-      ? await db.query('SELECT id, name, full_marks, pass_marks FROM subjects WHERE class_id = ? ORDER BY sort_order, id', [classId])
+      ? sc.filterSubjects(scope, await db.query('SELECT id, name, full_marks, pass_marks, class_id FROM subjects WHERE class_id = ? ORDER BY sort_order, id', [classId]), classId)
       : [];
     const subject = subjectId ? subjects.find((s) => s.id === subjectId) : null;
 
@@ -124,7 +135,8 @@ router.post('/:id/marks', async (req, res, next) => {
     const marks = req.body.marks || {};
     const absents = req.body.absent || {};
     const userId = req.session.user.id;
-    const ids = Object.keys(marks);
+    const allowed = await sc.allowedStudentIds(await sc.loadScope(req), Object.keys(marks).map(h.idFromKey));
+    const ids = Object.keys(marks).filter((k) => allowed.has(h.idFromKey(k)));
     let saved = 0, clamped = 0;
 
     await db.transaction(async (conn) => {
@@ -168,7 +180,7 @@ router.get('/:id/results', async (req, res, next) => {
     const exam = await db.one('SELECT * FROM exams WHERE id = ?', [id]);
     if (!exam) return next();
     const classId = h.toInt(req.query.class_id);
-    const classes = await db.query('SELECT id, name FROM classes ORDER BY department_id, level');
+    const classes = sc.filterClasses(await sc.loadScope(req), await db.query('SELECT id, name FROM classes ORDER BY department_id, level'));
     const ranking = classId ? await classRanking(id, classId) : [];
     const klass = classId ? classes.find((c) => c.id === classId) : null;
     res.render('admin/exams/results', { title: res.locals.t('a.title.results', { name: exam.name }), exam, classes, ranking, klass, filters: { class_id: classId } });
@@ -177,6 +189,7 @@ router.get('/:id/results', async (req, res, next) => {
 
 router.get('/:id/marksheet/:studentId', async (req, res, next) => {
   try {
+    if (!(await sc.studentAllowed(await sc.loadScope(req), h.toInt(req.params.studentId)))) return sc.deny(req, res);
     const sheet = await buildMarksheet(h.toInt(req.params.id), h.toInt(req.params.studentId));
     if (!sheet) { req.flash('error', 'f.exam.no_marks_student'); return res.redirect(`/admin/exams/${req.params.id}`); }
     res.render('admin/exams/marksheet', { title: res.locals.t('a.title.marksheet', { name: sheet.student.name }), sheet });

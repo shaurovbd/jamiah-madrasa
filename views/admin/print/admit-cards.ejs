@@ -1,0 +1,58 @@
+<style>
+  .admits{display:grid;grid-template-rows:repeat(2,1fr);height:297mm;padding:8mm 12mm;gap:8mm}
+  .adm{border:.5mm solid var(--accent);border-radius:3mm;padding:6mm 7mm;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .adm::before{content:"";position:absolute;inset:0;border:.3mm solid var(--accent2);border-radius:2mm;margin:1.5mm;pointer-events:none}
+  .adm-head{display:flex;align-items:center;gap:4mm;border-bottom:.3mm solid var(--line);padding-bottom:3mm;margin-bottom:3.5mm}
+  .adm-mark{flex:0 0 13mm;height:13mm;border-radius:50%;border:.6mm solid var(--accent2);display:grid;place-items:center;font:700 6mm "Lora",serif;color:var(--accent)}
+  .adm-org{flex:1}
+  .adm-org b{display:block;font:700 5mm "Lora","Noto Serif Bengali",serif;color:var(--accent)}
+  .adm-org span{font-size:3mm;color:var(--muted)}
+  .adm-title{background:var(--accent);color:#fff;font-weight:700;font-size:3.4mm;letter-spacing:.08em;text-transform:uppercase;padding:1.5mm 4mm;border-radius:1.5mm;white-space:nowrap}
+  .adm-main{display:grid;grid-template-columns:1fr 26mm;gap:5mm;flex:1}
+  .adm-grid{display:grid;grid-template-columns:32mm 1fr;row-gap:1.6mm;font-size:3.4mm;align-content:start}
+  .adm-grid i{font-style:normal;color:var(--muted)}
+  .adm-grid b{font-weight:600}
+  .adm-photo{width:26mm;height:32mm;object-fit:cover;border:.3mm solid var(--line);border-radius:1.5mm;background:#eef2f0;display:grid;place-items:center;color:#9aa6a0;font-size:9mm}
+  .adm-subj{margin-top:3mm;font-size:2.9mm;border-collapse:collapse;width:100%}
+  .adm-subj td{border:.2mm solid var(--line);padding:.8mm 1.6mm}
+  .adm-rules{font-size:2.7mm;color:var(--muted);margin:2.5mm 0 0;padding-left:4mm}
+  .adm-sign{display:flex;justify-content:space-between;margin-top:auto;padding-top:9mm;font-size:3mm}
+  .adm-sign span{border-top:.3mm solid var(--ink);padding-top:1mm;min-width:45mm;text-align:center}
+</style>
+
+<% if (!exam || !students.length) { %>
+  <div class="empty-note"><%= t('a.print.no_students') %></div>
+<% } %>
+<% for (var p = 0; p < students.length; p += 2) { %>
+<div class="sheet"><div class="admits">
+  <% students.slice(p, p + 2).forEach(function (s) { %>
+  <div class="adm">
+    <div class="adm-head">
+      <div class="adm-mark">ج</div>
+      <div class="adm-org"><b><%= org.name %></b><span><%= org.address %><%= org.phone ? ' · ' + org.phone : '' %></span></div>
+      <div class="adm-title"><%= t('a.print.admit_card') %></div>
+    </div>
+    <div class="adm-main">
+      <div>
+        <div class="adm-grid">
+          <i><%= t('a.print.exam') %></i><b><%= exam.name %><%= exam.year_name ? ' (' + exam.year_name + ')' : '' %></b>
+          <i><%= t('common.name') %></i><b><%= s.name %></b>
+          <i><%= t('a.print.id') %></i><b><%= s.admission_no %></b>
+          <i><%= t('common.class') %></i><b><%= s.class_name || '—' %><%= s.section_name ? ' (' + s.section_name + ')' : '' %></b>
+          <i><%= t('common.roll') %></i><b><%= s.roll_no || '—' %></b>
+          <% if (exam.start_date) { %><i><%= t('a.print.exam_dates') %></i><b><%= fmtDate(exam.start_date) %><%= exam.end_date ? ' – ' + fmtDate(exam.end_date) : '' %></b><% } %>
+        </div>
+        <% if (subjects.length) { %>
+        <table class="adm-subj"><tr>
+          <% subjects.slice(0, 12).forEach(function (sub, i) { %><td><%= sub.name %></td><% if (i % 3 === 2 && i < subjects.length - 1) { %></tr><tr><% } %><% }); %>
+        </tr></table>
+        <% } %>
+        <ul class="adm-rules"><li><%= t('a.print.rule1') %></li><li><%= t('a.print.rule2') %></li></ul>
+      </div>
+      <div><% if (s.photo) { %><img class="adm-photo" src="/uploads/<%= s.photo %>" alt=""><% } else { %><div class="adm-photo">☺</div><% } %></div>
+    </div>
+    <div class="adm-sign"><span><%= t('a.print.sig_teacher') %></span><span><%= t('a.print.sig_principal') %></span></div>
+  </div>
+  <% }); %>
+</div></div>
+<% } %>

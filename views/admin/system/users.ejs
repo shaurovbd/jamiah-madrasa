@@ -13,7 +13,7 @@
                 <tr>
                   <td><strong><%= u.name %></strong><% if (u.email) { %><br><small class="sub"><%= u.email %></small><% } %></td>
                   <td><%= u.username %><% if (u.id === user.id) { %> <span class="badge badge-blue"><%= t('a.user.you') %></span><% } %></td>
-                  <td><span class="badge badge-<%= u.role === 'admin' ? 'green' : 'grey' %>"><%= label('role', u.role) %></span></td>
+                  <td><span class="badge badge-<%= u.role === 'admin' ? 'green' : (u.role === 'principal' ? 'blue' : 'grey') %>"><%= label('role', u.role) %></span></td>
                   <td><%= u.last_login ? fmtDate(u.last_login) : 'Never' %></td>
                   <td><span class="badge badge-<%= u.is_active ? 'green' : 'red' %>"><%= u.is_active ? 'Active' : 'Disabled' %></span></td>
                   <td class="actions">
@@ -39,10 +39,9 @@
         <table class="data compact">
           <thead><tr><th><%= t('a.role') %></th><th><%= t('a.user.access') %></th></tr></thead>
           <tbody>
-            <tr><td><strong><%= t('role.admin') %></strong></td><td><%= t('a.user.role_admin') %></td></tr>
-            <tr><td><strong><%= t('role.teacher') %></strong></td><td><%= t('a.user.role_teacher') %></td></tr>
-            <tr><td><strong><%= t('role.accountant') %></strong></td><td><%= t('a.user.role_accountant') %></td></tr>
-            <tr><td><strong><%= t('role.librarian') %></strong></td><td><%= t('a.user.role_librarian') %></td></tr>
+            <% ROLES.forEach(function (r) { var roleKey = 'role.' + r, accessKey = 'a.user.role_' + r; %>
+            <tr><td><strong><%= t(roleKey) %></strong></td><td><%= t(accessKey) %></td></tr>
+            <% }); %>
           </tbody>
         </table>
       </div>
@@ -64,7 +63,7 @@
             <input id="email" name="email" type="email" value="<%= edit ? edit.email || '' : '' %>"></div>
           <div class="field" style="margin-bottom:.7rem"><label for="role"><%= t('a.role') %></label>
             <select id="role" name="role">
-              <% ROLES.forEach(function (r) { %><option value="<%= r %>" <%= edit && edit.role === r ? 'selected' : '' %>><%= label('role', r) %></option><% }); %>
+              <% ROLES.forEach(function (r) { %><option value="<%= r %>" <%= (edit ? edit.role === r : r === 'teacher') ? 'selected' : '' %>><%= label('role', r) %></option><% }); %>
             </select></div>
           <div class="field" style="margin-bottom:.7rem">
             <label for="password"><%= t('auth.password') %> <% if (!edit) { %><span class="req">*</span><% } %></label>

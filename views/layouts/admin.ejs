@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/css/admin.css">
 <link rel="stylesheet" href="/css/theme-tokens.css">
 <link rel="stylesheet" href="/css/date-picker.css">
+<link rel="stylesheet" href="/css/features.css">
 <%- typeof style !== 'undefined' ? style : '' %>
 </head>
 <%# The Appearance settings. Named `thm` rather than `t`, which is the
@@ -17,8 +18,10 @@
 <% var thm = (typeof theme !== 'undefined' && theme) || {}; %>
 <body style="--a-seed:<%= thm.accent || '#166049' %>;--a-seed-2:<%= thm.accent2 || '#c3952f' %>;--a-radius:<%= thm.radius || 9 %>px" data-sidebar="<%= thm.sidebar || 'gradient' %>" data-surface="<%= thm.surface || 'solid' %>" data-glow="<%= thm.glow || 'off' %>">
 <%
-  const role = user ? user.role : 'guest';
-  const can = (...roles) => role === 'admin' || roles.includes(role);
+  /* Who sees which link comes from lib/roles.js, the same map that guards
+     the routes, so a link is never shown that would answer "not allowed". */
+  const can = (area) => typeof canAccess === 'function' && canAccess(area);
+  const any = (...areas) => areas.some(can);
   const on = (p) => currentPath === p || (p !== '/admin' && currentPath.startsWith(p)) ? 'active' : '';
 %>
 <div class="shell">
@@ -33,29 +36,33 @@
     <nav class="side-nav">
       <a href="/admin" class="<%= currentPath === '/admin' ? 'active' : '' %>"><span class="ic">▣</span> <%= t('admin.dashboard') %></a>
 
-      <% if (can('teacher','accountant')) { %>
+      <% if (any('students','admissions','staff','promotion','print','sms')) { %>
       <div class="side-group"><%= t('admin.group.people') %></div>
-      <a href="/admin/students" class="<%= on('/admin/students') %>"><span class="ic">☗</span> <%= t('admin.nav.students') %></a>
-      <% if (can('accountant')) { %>
-      <a href="/admin/admissions" class="<%= on('/admin/admissions') %>"><span class="ic">✎</span> <%= t('admin.nav.admissions') %></a>
-      <% } %>
-      <a href="/admin/staff" class="<%= on('/admin/staff') %>"><span class="ic">☖</span> <%= t('admin.nav.staff') %></a>
+      <% if (can('students')) { %><a href="/admin/students" class="<%= on('/admin/students') && !currentPath.startsWith('/admin/students/promote') ? 'active' : '' %>"><span class="ic">☗</span> <%= t('admin.nav.students') %></a><% } %>
+      <% if (can('admissions')) { %><a href="/admin/admissions" class="<%= on('/admin/admissions') %>"><span class="ic">✎</span> <%= t('admin.nav.admissions') %></a><% } %>
+      <% if (can('staff')) { %><a href="/admin/staff" class="<%= on('/admin/staff') %>"><span class="ic">☖</span> <%= t('admin.nav.staff') %></a><% } %>
+      <% if (can('promotion')) { %><a href="/admin/students/promote" class="<%= on('/admin/students/promote') %>"><span class="ic">⇧</span> <%= t('admin.nav.promotion') %></a><% } %>
+      <% if (can('print')) { %><a href="/admin/print" class="<%= on('/admin/print') %>"><span class="ic">⎙</span> <%= t('admin.nav.print') %></a><% } %>
+      <% if (can('sms')) { %><a href="/admin/sms" class="<%= on('/admin/sms') %>"><span class="ic">✆</span> <%= t('admin.nav.sms') %></a><% } %>
       <% } %>
 
-      <% if (can('teacher')) { %>
+      <% if (any('academics','routine','attendance','exams','hifz')) { %>
       <div class="side-group"><%= t('admin.group.academics') %></div>
-      <a href="/admin/academics" class="<%= on('/admin/academics') %>"><span class="ic">▤</span> <%= t('admin.nav.academics') %></a>
-      <a href="/admin/routine" class="<%= on('/admin/routine') %>"><span class="ic">▦</span> <%= t('admin.nav.routine') %></a>
-      <a href="/admin/attendance" class="<%= on('/admin/attendance') %>"><span class="ic">✓</span> <%= t('admin.nav.attendance') %></a>
-      <a href="/admin/exams" class="<%= on('/admin/exams') %>"><span class="ic">◈</span> <%= t('admin.nav.exams') %></a>
-      <a href="/admin/hifz" class="<%= on('/admin/hifz') %>"><span class="ic">❁</span> <%= t('admin.nav.hifz') %></a>
+      <% if (can('academics')) { %><a href="/admin/academics" class="<%= on('/admin/academics') %>"><span class="ic">▤</span> <%= t('admin.nav.academics') %></a><% } %>
+      <% if (can('routine')) { %><a href="/admin/routine" class="<%= on('/admin/routine') %>"><span class="ic">▦</span> <%= t('admin.nav.routine') %></a><% } %>
+      <% if (can('attendance')) { %><a href="/admin/attendance" class="<%= on('/admin/attendance') %>"><span class="ic">✓</span> <%= t('admin.nav.attendance') %></a><% } %>
+      <% if (can('exams')) { %><a href="/admin/exams" class="<%= on('/admin/exams') %>"><span class="ic">◈</span> <%= t('admin.nav.exams') %></a><% } %>
+      <% if (can('hifz')) { %><a href="/admin/hifz" class="<%= on('/admin/hifz') %>"><span class="ic">❁</span> <%= t('admin.nav.hifz') %></a><% } %>
       <% } %>
 
-      <% if (can('accountant')) { %>
+      <% if (any('fees','finance')) { %>
       <div class="side-group"><%= t('admin.group.finance') %></div>
+      <% if (can('fees')) { %>
       <a href="/admin/fees" class="<%= currentPath === '/admin/fees' || currentPath.startsWith('/admin/fees/invoice') || currentPath.startsWith('/admin/fees/generate') ? 'active' : '' %>"><span class="ic">▦</span> <%= t('admin.nav.fees') %></a>
       <a href="/admin/fees/structure" class="<%= on('/admin/fees/structure') %>"><span class="ic">⚙</span> <%= t('admin.nav.fee_setup') %></a>
       <a href="/admin/fees/dues" class="<%= on('/admin/fees/dues') %>"><span class="ic">!</span> <%= t('admin.nav.dues') %></a>
+      <% } %>
+      <% if (can('finance')) { %>
       <a href="/admin/ledger" class="<%= on('/admin/ledger') %>"><span class="ic">₪</span> <%= t('admin.nav.ledger') %></a>
       <a href="/admin/ledger/day-book" class="<%= on('/admin/ledger/day-book') %>"><span class="ic">▤</span> <%= t('admin.nav.daybook') %></a>
       <a href="/admin/receipts" class="<%= on('/admin/receipts') %>"><span class="ic">▭</span> <%= t('admin.nav.receipts') %></a>
@@ -63,39 +70,41 @@
       <a href="/admin/loans" class="<%= on('/admin/loans') %>"><span class="ic">⇄</span> <%= t('admin.nav.loans') %></a>
       <a href="/admin/loans/overdue" class="<%= on('/admin/loans/overdue') %>"><span class="ic">⚠</span> <%= t('admin.nav.loans_overdue') %></a>
       <% } %>
+      <% } %>
 
-      <% if (can('accountant')) { %>
+      <% if (any('finance','orphans')) { %>
       <div class="side-group"><%= t('admin.group.donation') %></div>
+      <% if (can('finance')) { %>
       <a href="/admin/donors" class="<%= on('/admin/donors') %>"><span class="ic">♡</span> <%= t('admin.nav.donors') %></a>
       <a href="/admin/donors/campaigns" class="<%= on('/admin/donors/campaigns') %>"><span class="ic">◈</span> <%= t('admin.nav.campaigns') %></a>
       <a href="/admin/donors/followups" class="<%= on('/admin/donors/followups') %>"><span class="ic">☏</span> <%= t('admin.nav.followups') %></a>
       <% } %>
-
-      <% if (can()) { %>
+      <% if (can('orphans')) { %>
       <a href="/admin/orphans" class="<%= on('/admin/orphans') %>"><span class="ic">❂</span> <%= t('admin.nav.orphans') %></a>
       <a href="/admin/orphans/sponsorships" class="<%= on('/admin/orphans/sponsorships') %>"><span class="ic">⚭</span> <%= t('admin.nav.sponsorships') %></a>
       <% } %>
+      <% } %>
 
-      <% if (can('librarian')) { %>
+      <% if (any('library','hostel')) { %>
       <div class="side-group"><%= t('admin.group.facilities') %></div>
-      <a href="/admin/library" class="<%= on('/admin/library') %>"><span class="ic">▥</span> <%= t('admin.nav.library') %></a>
-      <% if (can('accountant')) { %>
-      <a href="/admin/hostel" class="<%= on('/admin/hostel') %>"><span class="ic">⌂</span> <%= t('admin.nav.hostel') %></a>
-      <% } %>
+      <% if (can('library')) { %><a href="/admin/library" class="<%= on('/admin/library') %>"><span class="ic">▥</span> <%= t('admin.nav.library') %></a><% } %>
+      <% if (can('hostel')) { %><a href="/admin/hostel" class="<%= on('/admin/hostel') %>"><span class="ic">⌂</span> <%= t('admin.nav.hostel') %></a><% } %>
       <% } %>
 
-      <% if (role === 'admin') { %>
+      <% if (any('notices','events','gallery','pages','messages')) { %>
       <div class="side-group"><%= t('admin.group.website') %></div>
-      <a href="/admin/notices" class="<%= on('/admin/notices') %>"><span class="ic">◉</span> <%= t('admin.nav.notices') %></a>
-      <a href="/admin/events" class="<%= on('/admin/events') %>"><span class="ic">◷</span> <%= t('admin.nav.events') %></a>
-      <a href="/admin/gallery" class="<%= on('/admin/gallery') %>"><span class="ic">▣</span> <%= t('admin.nav.gallery') %></a>
-      <a href="/admin/pages" class="<%= on('/admin/pages') %>"><span class="ic">▭</span> <%= t('admin.nav.pages') %></a>
-      <a href="/admin/messages" class="<%= on('/admin/messages') %>"><span class="ic">✉</span> <%= t('admin.nav.messages') %></a>
+      <% if (can('notices')) { %><a href="/admin/notices" class="<%= on('/admin/notices') %>"><span class="ic">◉</span> <%= t('admin.nav.notices') %></a><% } %>
+      <% if (can('events')) { %><a href="/admin/events" class="<%= on('/admin/events') %>"><span class="ic">◷</span> <%= t('admin.nav.events') %></a><% } %>
+      <% if (can('gallery')) { %><a href="/admin/gallery" class="<%= on('/admin/gallery') %>"><span class="ic">▣</span> <%= t('admin.nav.gallery') %></a><% } %>
+      <% if (can('pages')) { %><a href="/admin/pages" class="<%= on('/admin/pages') %>"><span class="ic">▭</span> <%= t('admin.nav.pages') %></a><% } %>
+      <% if (can('messages')) { %><a href="/admin/messages" class="<%= on('/admin/messages') %>"><span class="ic">✉</span> <%= t('admin.nav.messages') %></a><% } %>
+      <% } %>
 
+      <% if (any('users','settings','logs')) { %>
       <div class="side-group"><%= t('admin.group.system') %></div>
-      <a href="/admin/users" class="<%= on('/admin/users') %>"><span class="ic">☘</span> <%= t('admin.nav.users') %></a>
-      <a href="/admin/settings" class="<%= on('/admin/settings') %>"><span class="ic">⚙</span> <%= t('admin.nav.settings') %></a>
-      <a href="/admin/logs" class="<%= on('/admin/logs') %>"><span class="ic">☰</span> <%= t('admin.nav.logs') %></a>
+      <% if (can('users')) { %><a href="/admin/users" class="<%= on('/admin/users') %>"><span class="ic">☘</span> <%= t('admin.nav.users') %></a><% } %>
+      <% if (can('settings')) { %><a href="/admin/settings" class="<%= on('/admin/settings') %>"><span class="ic">⚙</span> <%= t('admin.nav.settings') %></a><% } %>
+      <% if (can('logs')) { %><a href="/admin/logs" class="<%= on('/admin/logs') %>"><span class="ic">☰</span> <%= t('admin.nav.logs') %></a><% } %>
       <% } %>
 
       <div class="side-group">&nbsp;</div>
@@ -132,6 +141,9 @@
       <% if (flash.success && flash.success.length) { %><div class="alert alert-success"><%= flash.success.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
       <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
       <% if (flash.info && flash.info.length) { %><div class="alert alert-info"><%= flash.info.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
+      <% if (typeof scope !== 'undefined' && scope && scope.limited && !scope.classIds.size) { %>
+        <div class="alert alert-info"><%= t(scope.staffId ? 'a.scope.no_classes' : 'a.scope.no_staff_link') %></div>
+      <% } %>
       <%- body %>
     </div>
   </div>

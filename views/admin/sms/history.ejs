@@ -1,0 +1,61 @@
+<%
+  var stColor = function (s) { return s === 'sent' ? 'green' : (s === 'failed' ? 'red' : (s === 'test' ? 'amber' : 'grey')); };
+  var tr = function (key, raw) { var v = t(key); return v === key ? raw : v; };
+%>
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.sms') %></h1><p class="sub"><%= t('a.sms.history_sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: '/admin/sms/history' }) %>
+
+<% if (!batch) { %>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label"><%= t('a.sms.month_sent') %></div><div class="value"><%= h.num(month.msgs || 0) %></div><div class="foot"><%= t('a.sms.month_parts', { parts: h.num(month.parts || 0) }) %></div></div>
+  </div>
+  <div class="card">
+    <div class="card-body flush">
+      <% if (batches.length) { %>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th><%= t('a.log.time') %></th><th><%= t('a.sms.batch') %></th><th><%= t('a.sms.type') %></th><th class="num"><%= t('a.sms.recipients') %></th><th class="num"><%= t('a.sms.st.sent') %></th><th class="num"><%= t('a.sms.st.failed') %></th><th><%= t('a.log.user') %></th><th class="actions"></th></tr></thead>
+        <tbody>
+          <% batches.forEach(function (b) { var kindKey = 'a.sms.aud.' + b.kind; %>
+          <tr>
+            <td class="log-when"><%= fmtDate(b.created_at) %></td>
+            <td><strong><%= b.title || '—' %></strong><% if (b.provider === 'test') { %> <span class="badge badge-amber"><%= t('a.sms.st.test') %></span><% } %></td>
+            <td><%= tr(kindKey, b.kind) %></td>
+            <td class="num"><%= h.num(b.total) %></td>
+            <td class="num"><%= b.finished_at ? h.num(b.sent) : '…' %></td>
+            <td class="num"><%= b.failed ? h.num(b.failed) : '—' %></td>
+            <td><%= b.user_name || '—' %></td>
+            <td class="actions"><a class="btn btn-light btn-sm" href="/admin/sms/history/<%= b.id %>"><%= t('common.open') %></a></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table></div>
+      <% } else { %><div class="empty"><div class="big">✆</div><p><%= t('a.sms.no_history') %></p></div><% } %>
+    </div>
+    <%- include('../../partials/pager', { p: p, query: query, h: h }) %>
+  </div>
+<% } else { %>
+  <p style="margin-bottom:.8rem"><a href="/admin/sms/history">← <%= t('a.sms.tab.history') %></a></p>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label"><%= t('a.sms.recipients') %></div><div class="value"><%= h.num(batch.total) %></div><div class="foot"><%= batch.title %></div></div>
+    <div class="stat-card"><div class="label"><%= t(batch.provider === 'test' ? 'a.sms.st.test' : 'a.sms.st.sent') %></div><div class="value"><%= h.num((counts.sent || 0) + (counts.test || 0)) %></div></div>
+    <div class="stat-card red"><div class="label"><%= t('a.sms.st.failed') %></div><div class="value"><%= h.num(counts.failed || 0) %></div></div>
+    <div class="stat-card blue"><div class="label"><%= t('a.sms.st.queued') %></div><div class="value"><%= h.num(counts.queued || 0) %></div><% if (counts.queued) { %><div class="foot"><a href=""><%= t('a.sms.refresh') %></a></div><% } %></div>
+  </div>
+  <div class="card">
+    <div class="card-body flush"><div class="table-wrap"><table class="data">
+      <thead><tr><th><%= t('a.sms.to') %></th><th><%= t('a.sms.message') %></th><th><%= t('common.status') %></th></tr></thead>
+      <tbody>
+        <% logs.forEach(function (l) { var stKey = 'a.sms.st.' + l.status; %>
+        <tr>
+          <td><strong><%= l.recipient_name || '—' %></strong><br><small class="sub"><%= l.phone %></small></td>
+          <td style="max-width:520px;white-space:pre-wrap"><%= l.message %></td>
+          <td><span class="badge badge-<%= stColor(l.status) %>"><%= t(stKey) %></span>
+            <% if (l.status === 'failed' && l.response) { %><br><small class="sub" title="<%= l.response %>"><%= l.response.slice(0, 80) %></small><% } %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table></div></div>
+  </div>
+<% } %>
