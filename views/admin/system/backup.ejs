@@ -1,0 +1,50 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.backup') %></h1><p class="sub"><%= t('a.backup.sub') %></p></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.1rem">
+  <% dbs.forEach(function (d) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= t(d.label) %></h2></div>
+    <div class="card-body">
+      <p class="hint" style="margin-bottom:.8rem"><%= t(d.hint) %></p>
+      <table class="data compact" style="margin-bottom:1rem">
+        <tr><td><%= t('a.backup.db_name') %></td><td><code><%= d.name %></code></td></tr>
+        <% if (d.info) { %>
+        <tr><td><%= t('a.backup.tables') %></td><td><%= h.num(d.info.tables) %></td></tr>
+        <tr><td><%= t('a.backup.size') %></td><td><%= (Number(d.info.bytes) / 1048576).toFixed(1) %> MB</td></tr>
+        <% } %>
+      </table>
+      <% if (d.info) { %>
+        <a class="btn btn-primary" data-no-spa href="/admin/backup/download/<%= d.key %>">⬇ <%= t('a.backup.download') %></a>
+      <% } else { %><p class="hint"><%= t('a.backup.not_found') %></p><% } %>
+    </div>
+  </div>
+  <% }); %>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 1fr;gap:1.1rem;align-items:start">
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.backup.how_restore') %></h2></div>
+    <div class="card-body">
+      <ol style="margin:0;padding-left:1.2rem;line-height:1.9">
+        <li><%= t('a.backup.restore1') %></li>
+        <li><%= t('a.backup.restore2') %></li>
+        <li><%= t('a.backup.restore3') %></li>
+      </ol>
+      <p class="hint" style="margin-top:.8rem"><%= t('a.backup.keep_safe') %></p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.backup.recent') %></h2></div>
+    <div class="card-body flush">
+      <% if (last.length) { %>
+      <div class="table-wrap"><table class="data compact">
+        <tbody><% last.forEach(function (l) { %>
+          <tr><td><%= fmtDate(l.created_at) %></td><td><%= l.user_name %></td><td><small class="sub"><%= l.record_label %></small></td></tr>
+        <% }); %></tbody>
+      </table></div>
+      <% } else { %><div class="empty"><p><%= t('a.backup.none_yet') %></p></div><% } %>
+    </div>
+  </div>
+</div>

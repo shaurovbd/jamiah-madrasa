@@ -13,6 +13,7 @@
     </div>
   </details>
   <% } %>
+  <% if (canAccess('portal') && student.guardian_phone) { %><a class="btn btn-light" href="/admin/portal?phone=<%= encodeURIComponent(student.guardian_phone) %>"><%= t('a.portal.pin_button') %></a><% } %>
   <% if (typeof canEditStudents === 'undefined' || canEditStudents) { %><a class="btn btn-primary" href="/admin/students/<%= student.id %>/edit"><%= t('common.edit') %></a><% } %>
 </div>
 

@@ -1,0 +1,113 @@
+<%
+  var dows = ['sun','mon','tue','wed','thu','fri','sat'];
+  var ratingColor = { excellent: 'green', good: 'blue', average: 'amber', weak: 'red' };
+  var digits = function (v) { return lang === 'bn' ? String(v).replace(/\d/g, function (d) { return '০১২৩৪৫৬৭৮৯'[d]; }) : String(v); };
+  var monthLabel = function (p) { return h.monthShort(Number(p.slice(5, 7)) - 1, lang) + ' ' + digits(p.slice(0, 4)); };
+%>
+<% if (children.length > 1) { %>
+<div class="tabs">
+  <% children.forEach(function (c) { %><a class="<%= c.id === child.id ? 'on' : '' %>" href="/parent/child/<%= c.id %>"><%= c.name %></a><% }); %>
+</div>
+<% } %>
+
+<div class="card">
+  <div class="kid">
+    <div class="avatar"><% if (child.photo) { %><img src="/uploads/<%= child.photo %>" alt=""><% } else { %><%= child.name.charAt(0) %><% } %></div>
+    <div>
+      <h1><%= child.name %></h1>
+      <div class="sub"><%= child.class_name || '—' %><%= child.section_name ? ' (' + child.section_name + ')' : '' %><%= child.roll_no ? ' · ' + t('common.roll') + ' ' + child.roll_no : '' %> · <%= child.admission_no %></div>
+    </div>
+  </div>
+  <div class="stats" style="margin-top:1rem">
+    <div class="stat"><div class="l"><%= t('portal.att_overall') %></div><div class="v"><%= Number(overall.total) ? Math.round(Number(overall.present) / Number(overall.total) * 100) + '%' : '—' %></div></div>
+    <div class="stat <%= due > 0 ? 'red' : '' %>"><div class="l"><%= t('portal.fee_due') %></div><div class="v"><%= due > 0 ? money(due) : t('portal.none_due') %></div></div>
+    <% if (child.hifz_para_completed > 0 || hifz.length) { %><div class="stat"><div class="l"><%= t('portal.hifz') %></div><div class="v"><%= t('portal.paras', { n: digits(child.hifz_para_completed) }) %></div></div><% } %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="monthnav">
+    <h2 style="margin:0"><%= t('portal.attendance') %> — <%= monthLabel(month) %></h2>
+    <span>
+      <a class="btn light" style="padding:.3rem .7rem;font-size:.85rem" href="?month=<%= prevMonth %>">‹</a>
+      <% if (nextMonth) { %><a class="btn light" style="padding:.3rem .7rem;font-size:.85rem" href="?month=<%= nextMonth %>">›</a><% } %>
+    </span>
+  </div>
+  <div class="cal">
+    <% dows.forEach(function (d) { var k = 'portal.dow.' + d; %><div class="dow"><%= t(k) %></div><% }); %>
+    <% for (var b = 0; b < cal.firstDow; b++) { %><div></div><% } %>
+    <% for (var d = 1; d <= cal.days; d++) { var st = cal.att[d]; %>
+      <div class="d <%= st || '' %>" title="<%= st ? label('attendance', st) : '' %>"><%= d %></div>
+    <% } %>
+  </div>
+  <div class="legend">
+    <span><i style="background:#d9efe2"></i><%= t('portal.present') %>: <b><%= cal.counts.present %></b></span>
+    <span><i style="background:#fbd9d5"></i><%= t('portal.absent') %>: <b><%= cal.counts.absent %></b></span>
+    <span><i style="background:#fdf3dd"></i><%= t('portal.late') %>: <b><%= cal.counts.late %></b></span>
+    <span><i style="background:#e8f0fb"></i><%= t('portal.leave') %>: <b><%= cal.counts.leave %></b></span>
+  </div>
+</div>
+
+<div class="card">
+  <h2><%= t('portal.results') %></h2>
+  <% if (results.length) { %>
+    <% results.forEach(function (r, i) { var s = r.sheet.summary; %>
+      <div style="<%= i ? 'border-top:1px solid var(--line);padding-top:.8rem;margin-top:.8rem' : '' %>">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
+          <strong style="color:var(--ink)"><%= r.exam.name %></strong>
+          <span class="badge <%= s.failed_count ? 'b-red' : 'b-green' %>"><%= t(s.failed_count ? 'a.sms.failed' : 'a.sms.passed') %></span>
+        </div>
+        <div class="stats" style="margin:.6rem 0">
+          <div class="stat"><div class="l"><%= t('portal.total') %></div><div class="v"><%= s.total_obtained %>/<%= s.total_full %></div></div>
+          <div class="stat"><div class="l">GPA</div><div class="v"><%= s.gpa %></div></div>
+          <div class="stat"><div class="l"><%= t('portal.grade') %></div><div class="v"><%= s.grade %></div></div>
+        </div>
+        <details <%= i === 0 ? 'open' : '' %>><summary><%= t('portal.subjects') %></summary>
+          <table style="margin-top:.4rem"><thead><tr><th><%= t('portal.subject') %></th><th class="num"><%= t('portal.marks') %></th><th class="num"><%= t('portal.grade') %></th></tr></thead>
+            <tbody><% r.sheet.subjects.forEach(function (sub) { %>
+              <tr><td><%= sub.subject %></td><td class="num"><%= sub.is_absent ? t('portal.absent') : (sub.marks === null ? '—' : sub.marks + '/' + sub.full_marks) %></td>
+                <td class="num"><span class="badge <%= sub.passed ? 'b-green' : (sub.marks === null && !sub.is_absent ? 'b-grey' : 'b-red') %>"><%= sub.grade %></span></td></tr>
+            <% }); %></tbody></table>
+        </details>
+      </div>
+    <% }); %>
+  <% } else { %><p class="sub"><%= t('portal.no_results') %></p><% } %>
+</div>
+
+<% if (child.hifz_para_completed > 0 || hifz.length) { %>
+<div class="card">
+  <h2><%= t('portal.hifz_progress') %></h2>
+  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.3rem"><span><%= t('portal.paras_done', { n: digits(child.hifz_para_completed) }) %></span><span><%= digits(30) %></span></div>
+  <div class="progress"><span style="width:<%= Math.min(100, Math.round(child.hifz_para_completed / 30 * 100)) %>%"></span></div>
+  <% if (hifz.length) { %>
+  <table style="margin-top:.9rem"><thead><tr><th><%= t('common.date') %></th><th><%= t('portal.sabak') %></th><th class="hide-sm"><%= t('portal.sabqi_manzil') %></th><th><%= t('portal.rating') %></th></tr></thead>
+    <tbody><% hifz.forEach(function (e) { %>
+      <tr><td><%= fmtDate(e.pdate) %></td>
+        <td><%= e.sabak_surah || '—' %><%= e.sabak_from ? ' ' + e.sabak_from + (e.sabak_to ? '–' + e.sabak_to : '') : '' %><%= e.sabak_lines ? ' (' + e.sabak_lines + ')' : '' %></td>
+        <td class="hide-sm"><%= e.sabqi_para || '—' %> / <%= e.manzil_para || '—' %></td>
+        <td><span class="badge b-<%= ratingColor[e.rating] || 'grey' %>"><%= label('rating', e.rating) %></span></td></tr>
+    <% }); %></tbody></table>
+  <% } %>
+</div>
+<% } %>
+
+<div class="card">
+  <h2><%= t('portal.fees') %></h2>
+  <% if (invoices.length) { %>
+  <table><thead><tr><th><%= t('portal.month') %></th><th class="num"><%= t('portal.amount') %></th><th class="num hide-sm"><%= t('portal.paid') %></th><th><%= t('common.status') %></th></tr></thead>
+    <tbody><% invoices.forEach(function (i) { var net = Number(i.total_amount) - Number(i.discount); %>
+      <tr><td><%= fmtPeriod(i.period) %></td><td class="num"><%= money(net) %></td><td class="num hide-sm"><%= money(i.paid_amount) %></td>
+        <td><span class="badge <%= i.status === 'paid' ? 'b-green' : (i.status === 'partial' ? 'b-amber' : 'b-red') %>"><%= label('status', i.status) %></span></td></tr>
+    <% }); %></tbody></table>
+  <% } else { %><p class="sub"><%= t('portal.no_invoices') %></p><% } %>
+  <% if (payments.length) { %>
+    <details style="margin-top:.8rem"><summary><%= t('portal.recent_payments') %></summary>
+      <table style="margin-top:.4rem"><tbody><% payments.forEach(function (p) { %>
+        <tr><td><%= fmtDate(p.paid_on) %></td><td><%= p.receipt_no %></td><td class="num"><%= money(p.amount) %></td></tr>
+      <% }); %></tbody></table>
+    </details>
+  <% } %>
+  <% if (due > 0) { %><p class="sub" style="margin-top:.8rem"><%= t('portal.pay_at_office') %></p><% } %>
+</div>
+
+<p style="text-align:center"><a href="/parent">← <%= t('portal.all_children') %></a></p>

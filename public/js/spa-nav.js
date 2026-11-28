@@ -89,7 +89,14 @@
     } else {
       var hasFile = !!f.querySelector('input[type=file]');
       var body = hasFile ? new FormData(f) : new URLSearchParams(new FormData(f));
-      go(u.href, true, { method: 'POST', body: body });
+      // The server checks the security token before it reads the form, and it
+      // cannot read a file-upload form that early. Sending the token as a
+      // header as well lets forms with a file (student photo, notices, Excel
+      // import) through; without it every one of them was refused.
+      var tok = f.querySelector('input[name="_csrf"]');
+      var headers = { 'X-Requested-With': 'spa' };
+      if (tok && tok.value) headers['X-CSRF-Token'] = tok.value;
+      go(u.href, true, { method: 'POST', body: body, headers: headers });
     }
   });
 

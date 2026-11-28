@@ -1,0 +1,92 @@
+<style>
+  .slips{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
+  .slip{border:1.5px dashed var(--a-line);border-radius:10px;padding:.8rem .9rem;background:#fff;break-inside:avoid}
+  .slip h4{margin:0 0 .35rem;font-size:.92rem;color:var(--a-ink)}
+  .slip .pin{font:700 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.18em;color:var(--a-green)}
+  .slip small{display:block;color:var(--a-muted);font-size:.76rem;line-height:1.4}
+  @media print{
+    .sidebar,.topbar,.page-bar .btn,.no-print,.alert{display:none!important}
+    .main{margin:0!important}.content{padding:0!important}
+    .slip{border-color:#999}
+  }
+</style>
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.portal') %></h1><p class="sub"><%= t('a.portal.sub') %></p></div>
+  <% if (result) { %><span class="spacer"></span><button class="btn btn-primary" type="button" onclick="window.print()">⎙ <%= t('a.portal.print_slips') %></button><% } %>
+</div>
+
+<% if (tableMissing) { %><div class="alert alert-info"><%= t('a.portal.table_missing') %> <code>npm run migrate</code></div><% } %>
+
+<% if (result) { %>
+  <div class="alert alert-success no-print"><%= t('a.portal.made', { count: result.slips.length }) %>
+    <% if (result.queued) { %> <%= t(result.testMode ? 'a.portal.sms_test' : 'a.portal.sms_queued', { count: result.queued }) %><% } %></div>
+  <div class="alert alert-info no-print"><%= t('a.portal.shown_once') %></div>
+  <div class="slips">
+    <% result.slips.forEach(function (s) { %>
+    <div class="slip">
+      <h4><%= site.name %> — <%= t('a.portal.slip_title') %></h4>
+      <small><%= t('a.portal.slip_for') %> <b><%= s.kids.join(', ') %></b></small>
+      <small style="margin-top:.4rem"><%= t('a.portal.slip_link') %> <b><%= link %></b></small>
+      <small><%= t('portal.phone') %>: <b><%= s.local %></b></small>
+      <div class="pin"><%= s.pin %></div>
+      <small><%= t('a.portal.slip_keep') %></small>
+    </div>
+    <% }); %>
+  </div>
+  <p class="no-print" style="margin-top:1rem"><a href="/admin/portal">← <%= t('admin.nav.portal') %></a></p>
+
+<% } else { %>
+  <div class="grid g4" style="margin-bottom:1.1rem">
+    <div class="stat-card"><div class="label"><%= t('a.portal.guardians') %></div><div class="value"><%= h.num(stats.guardians) %></div></div>
+    <div class="stat-card blue"><div class="label"><%= t('a.portal.with_pin') %></div><div class="value"><%= h.num(stats.withPin) %></div></div>
+    <div class="stat-card gold"><div class="label"><%= t('a.portal.without_pin') %></div><div class="value"><%= h.num(stats.without) %></div></div>
+    <div class="stat-card red"><div class="label"><%= t('a.portal.bad_phones') %></div><div class="value"><%= h.num(stats.badPhones) %></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.1rem"><div class="card-body" style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+    <span><%= t('a.portal.link_is') %></span><code style="font-size:.95rem"><%= link %></code>
+    <a class="btn btn-light btn-sm" href="/parent" target="_blank"><%= t('common.open') %> ↗</a>
+  </div></div>
+
+  <div class="grid" style="grid-template-columns:1.3fr 1fr;gap:1.1rem;align-items:start">
+    <form class="card" method="post" action="/admin/portal/generate" data-confirm="<%= t('a.portal.confirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="card-head"><h2><%= t('a.portal.give_pins') %></h2></div>
+      <div class="card-body">
+        <div class="form-grid two">
+          <div class="field"><label for="class_id"><%= t('a.portal.which') %></label>
+            <select id="class_id" name="class_id"><option value=""><%= t('a.portal.all_guardians') %></option>
+              <% classes.forEach(function (c) { %><option value="<%= c.id %>"><%= c.name %></option><% }); %></select></div>
+          <div class="field"><label for="phone"><%= t('a.portal.or_one') %></label>
+            <input id="phone" name="phone" type="tel" placeholder="01XXXXXXXXX" value="<%= prefillPhone %>">
+            <span class="hint"><%= t('a.portal.one_hint') %></span></div>
+        </div>
+        <div class="choice-grid" style="margin:.9rem 0">
+          <label class="choice"><input type="radio" name="mode" value="new" checked><strong><%= t('a.portal.mode_new') %></strong><small><%= t('a.portal.mode_new_hint') %></small></label>
+          <label class="choice"><input type="radio" name="mode" value="reset"><strong><%= t('a.portal.mode_reset') %></strong><small><%= t('a.portal.mode_reset_hint') %></small></label>
+        </div>
+        <label class="chk" style="margin-bottom:.6rem"><input type="checkbox" name="send_sms" value="1" checked> <%= t('a.portal.send_sms') %></label>
+        <div class="field"><label for="sms_text"><%= t('a.portal.sms_text') %></label>
+          <textarea id="sms_text" name="sms_text" maxlength="600"><%= defaultSms %></textarea>
+          <span class="hint"><%= t('a.portal.sms_text_hint') %></span></div>
+        <button class="btn btn-primary" type="submit" style="margin-top:.9rem"><%= t('a.portal.make') %></button>
+      </div>
+    </form>
+
+    <div>
+      <div class="card" style="margin-bottom:1.1rem">
+        <div class="card-head"><h2><%= t('a.portal.how') %></h2></div>
+        <div class="card-body"><ol style="margin:0;padding-left:1.1rem;line-height:1.85">
+          <li><%= t('a.portal.how1') %></li><li><%= t('a.portal.how2') %></li><li><%= t('a.portal.how3') %></li></ol></div>
+      </div>
+      <form class="card" method="post" action="/admin/portal/remove" data-confirm="<%= t('a.portal.remove_confirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="card-head"><h2><%= t('a.portal.remove') %></h2></div>
+        <div class="card-body">
+          <div class="field" style="margin-bottom:.7rem"><label for="rphone"><%= t('portal.phone') %></label><input id="rphone" name="phone" type="tel" placeholder="01XXXXXXXXX" required></div>
+          <button class="btn btn-danger" type="submit"><%= t('a.portal.remove_btn') %></button>
+        </div>
+      </form>
+    </div>
+  </div>
+<% } %>

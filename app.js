@@ -219,7 +219,11 @@ app.use(async (req, res, next) => {
 // page itself has everything the layout needs to render.
 app.use((req, res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-  const sent = (req.body && req.body._csrf) || req.get('x-csrf-token');
+  // A file-upload (multipart) form is not read until its route runs, so its
+  // _csrf field is not visible here. Such a form also carries the token in its
+  // action URL (added by the admin layout), which is accepted for multipart only.
+  const multipart = /^multipart\/form-data/i.test(req.get('content-type') || '');
+  const sent = (req.body && req.body._csrf) || req.get('x-csrf-token') || (multipart && req.query && req.query._csrf);
   if (sent && sent === req.session.csrf) return next();
   res.status(403);
   return res.render('error', {
@@ -240,6 +244,7 @@ sms.resumePending();
 // ---------------------------------------------------------------- routes
 app.use('/', require('./routes/public'));
 app.use('/', require('./routes/auth'));
+app.use('/parent', require('./routes/parent'));
 app.use('/admin', require('./routes/admin'));
 
 // হিসাব ও অর্থ মডিউল (jamiah-finance/) — লেজার, রশিদ, দাতা, এতিম

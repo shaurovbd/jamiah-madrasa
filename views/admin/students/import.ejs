@@ -1,0 +1,87 @@
+<div class="page-bar">
+  <div><h1><%= t('a.imp.title') %></h1><p class="sub"><%= t('a.imp.sub') %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" href="/admin/students"><%= t('a.stu.back_all') %></a>
+</div>
+
+<% if (!result) { %>
+<div class="grid" style="grid-template-columns:1fr 1fr;gap:1.1rem;align-items:start">
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.imp.step1') %></h2></div>
+    <div class="card-body">
+      <p style="margin-bottom:.8rem"><%= t('a.imp.step1_text') %></p>
+      <a class="btn btn-light" data-no-spa href="/admin/students/import/template">⬇ <%= t('a.imp.download_template') %></a>
+      <h3 style="font-size:.95rem;margin:1.2rem 0 .5rem"><%= t('a.imp.columns') %></h3>
+      <div class="chips">
+        <% TEMPLATE.forEach(function (c) { var req = c[0] === 'name' || c[0] === 'class'; %>
+          <span class="chip" style="cursor:default;<%= req ? 'background:var(--a-green);color:#fff' : '' %>"><%= c[1] %><%= req ? ' *' : '' %></span>
+        <% }); %>
+      </div>
+      <ul class="hint" style="margin:.9rem 0 0;padding-left:1.1rem;line-height:1.8">
+        <li><%= t('a.imp.rule.required') %></li>
+        <li><%= t('a.imp.rule.class') %></li>
+        <li><%= t('a.imp.rule.adm_no') %></li>
+        <li><%= t('a.imp.rule.dates') %></li>
+        <li><%= t('a.imp.rule.any_order') %></li>
+      </ul>
+    </div>
+  </div>
+  <form class="card" method="post" action="/admin/students/import/preview" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.imp.step2') %></h2></div>
+    <div class="card-body">
+      <p style="margin-bottom:.8rem"><%= t('a.imp.step2_text') %></p>
+      <div class="field" style="margin-bottom:1rem"><label for="file"><%= t('a.imp.file') %></label>
+        <input id="file" name="file" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required>
+        <span class="hint"><%= t('a.imp.file_hint') %></span></div>
+      <button class="btn btn-primary" type="submit"><%= t('a.imp.check') %></button>
+      <p class="hint" style="margin-top:.7rem"><%= t('a.imp.nothing_yet') %></p>
+    </div>
+  </form>
+</div>
+
+<% } else { %>
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label"><%= t('a.imp.ready') %></div><div class="value"><%= h.num(result.ok) %></div><div class="foot"><%= result.file %></div></div>
+  <div class="stat-card red"><div class="label"><%= t('a.imp.with_errors') %></div><div class="value"><%= h.num(result.bad) %></div><div class="foot"><%= t('a.imp.errors_skipped') %></div></div>
+</div>
+<% if (result.unmatched.length) { %>
+  <div class="alert alert-info"><%= t('a.imp.unmatched') %> <strong><%= result.unmatched.join(', ') %></strong></div>
+<% } %>
+<% if (result.bad && result.rows.some(function (r) { return r.errors.indexOf('a.imp.err.class_unknown') !== -1; })) { %>
+  <div class="alert alert-info"><%= t('a.imp.known_classes') %> <strong><%= result.classes.join(', ') %></strong></div>
+<% } %>
+
+<div class="card" style="margin-bottom:1.1rem">
+  <div class="card-body flush"><div class="table-wrap"><table class="data">
+    <thead><tr><th><%= t('a.imp.line') %></th><th><%= t('common.name') %></th><th><%= t('a.print.id') %></th><th><%= t('common.class') %></th><th><%= t('a.print.guardian') %></th><th><%= t('a.imp.check_col') %></th></tr></thead>
+    <tbody>
+      <% result.rows.forEach(function (r) { var d = r.data; %>
+      <tr style="<%= r.errors.length ? 'background:#fdf1f0' : '' %>">
+        <td><%= r.line %></td>
+        <td><strong><%= d.name || '—' %></strong><% if (d.father_name) { %><br><small class="sub"><%= d.father_name %></small><% } %></td>
+        <td><%= d.admission_no || '—' %></td>
+        <td><%= d.class_name || '—' %><%= d.section_name ? ' / ' + d.section_name : '' %></td>
+        <td><%= d.guardian_phone || '—' %></td>
+        <td>
+          <% if (!r.errors.length && !r.warnings.length) { %><span class="badge badge-green">✓ <%= t('a.imp.ok') %></span><% } %>
+          <% r.errors.forEach(function (e) { %><span class="badge badge-red" style="margin:1px"><%= t(e) %></span><% }); %>
+          <% r.warnings.forEach(function (w) { %><span class="badge badge-amber" style="margin:1px"><%= t(w) %></span><% }); %>
+        </td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table></div></div>
+</div>
+
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+  <a class="btn btn-light" href="/admin/students/import">← <%= t('a.imp.another_file') %></a>
+  <% if (result.ok) { %>
+  <form method="post" action="/admin/students/import/commit" data-confirm="<%= t('a.imp.confirm', { count: result.ok }) %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="token" value="<%= result.token %>">
+    <button class="btn btn-primary" type="submit"><%= t('a.imp.add_n', { count: h.num(result.ok) }) %></button>
+  </form>
+  <% } %>
+</div>
+<% } %>

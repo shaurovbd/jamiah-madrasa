@@ -36,3 +36,29 @@
 .promo-table td.chk,.promo-table th.chk{width:36px;text-align:center}
 .promo-table tr.off td{opacity:.45}
 @media (max-width:760px){.promo-flow{grid-template-columns:1fr}.promo-arrow{display:none}}
+
+/* Dashboard charts (lib/charts.js). Series colours follow the accent:
+   s1 = the main accent, s2 = the second accent (billed vs collected);
+   checked with the palette validator: CVD and normal-vision separation pass. */
+.chart-card.wide{grid-column:1/-1}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid{stroke:var(--a-line);stroke-width:1}
+.chart .grid.base{stroke:color-mix(in oklab,var(--a-muted) 45%,var(--a-line))}
+.chart .tick{font:11px var(--sans);fill:var(--a-muted)}
+.chart .val{font:600 12px var(--sans);fill:var(--a-ink)}
+.chart .bar.s1{fill:var(--a-green)}
+.chart .bar.s2{fill:var(--a-accent)}
+.chart .line{fill:none;stroke:var(--a-green);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .area{fill:var(--a-green);opacity:.1}
+.chart .dot{fill:var(--a-green);stroke:#fff;stroke-width:2;opacity:0}
+.chart .dot.end{opacity:1}
+.chart .cross{stroke:var(--a-muted);stroke-width:1;opacity:0}
+.chart .mark:hover .dot,.chart .mark:hover .cross{opacity:1}
+.chart .mark:hover .bar{filter:brightness(.9)}
+.legend{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--a-body)}
+.legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-left:.35rem}
+.legend .sw.s1{background:var(--a-green)}
+.legend .sw.s2{background:var(--a-accent)}
+.chart-table{margin-top:.5rem;font-size:.85rem}
+.chart-table summary{cursor:pointer;color:var(--a-green);font-size:.8rem}
+.chart-table table{margin-top:.4rem}

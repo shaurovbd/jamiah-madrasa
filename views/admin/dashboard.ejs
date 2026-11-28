@@ -68,6 +68,52 @@
   <% } %>
 </div>
 
+<% if (charts && (charts.fees || charts.attendance || charts.hifz)) { %>
+<div class="grid g2 dash-charts" style="align-items:start;margin-bottom:1.1rem">
+  <% if (charts.fees) { %>
+  <div class="card chart-card <%= charts.attendance || charts.hifz ? '' : 'wide' %>">
+    <div class="card-head"><h2><%= t('a.dash.ch.fees') %></h2><span class="spacer"></span>
+      <span class="legend"><i class="sw s2"></i><%= t('a.dash.ch.billed') %> <i class="sw s1"></i><%= t('a.dash.ch.collected') %></span></div>
+    <div class="card-body">
+      <% if (charts.fees.any) { %><%- charts.fees.svg %><% } else { %><div class="empty"><p><%= t('a.dash.ch.no_data') %></p></div><% } %>
+      <details class="chart-table"><summary><%= t('a.dash.ch.table') %></summary>
+        <table class="data compact"><thead><tr><th><%= t('a.dash.ch.month') %></th><th class="num"><%= t('a.dash.ch.billed') %></th><th class="num"><%= t('a.dash.ch.collected') %></th></tr></thead>
+          <tbody><% charts.fees.rows.forEach(function (r) { %><tr><td><%= r.label %></td><td class="num"><%= money(r.billed) %></td><td class="num"><%= money(r.paid) %></td></tr><% }); %></tbody></table>
+      </details>
+    </div>
+  </div>
+  <% } %>
+  <% if (charts.attendance) { %>
+  <div class="card chart-card">
+    <div class="card-head"><h2><%= t('a.dash.ch.attendance') %></h2><span class="spacer"></span>
+      <% if (charts.attendance.avg !== null) { %><span class="sub"><%= t('a.dash.ch.avg', { pct: charts.attendance.avg }) %></span><% } %></div>
+    <div class="card-body">
+      <% if (charts.attendance.any) { %><%- charts.attendance.svg %><% } else { %><div class="empty"><p><%= t('a.dash.ch.no_data') %></p></div><% } %>
+      <% if (charts.attendance.rows.length) { %>
+      <details class="chart-table"><summary><%= t('a.dash.ch.table') %></summary>
+        <table class="data compact"><thead><tr><th><%= t('common.date') %></th><th class="num"><%= t('a.dash.ch.present_pct') %></th></tr></thead>
+          <tbody><% charts.attendance.rows.forEach(function (r) { %><tr><td><%= r.label %></td><td class="num"><%= r.value %>%</td></tr><% }); %></tbody></table>
+      </details>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
+  <% if (charts.hifz) { %>
+  <div class="card chart-card">
+    <div class="card-head"><h2><%= t('a.dash.ch.hifz') %></h2><span class="spacer"></span>
+      <span class="sub"><%= t('a.dash.ch.hifz_done', { count: charts.hifz.done }) %></span></div>
+    <div class="card-body">
+      <% if (charts.hifz.any) { %><%- charts.hifz.svg %><p class="hint" style="margin-top:.2rem"><%= t('a.dash.ch.hifz_axis') %></p><% } else { %><div class="empty"><p><%= t('a.dash.ch.no_data') %></p></div><% } %>
+      <details class="chart-table"><summary><%= t('a.dash.ch.table') %></summary>
+        <table class="data compact"><thead><tr><th><%= t('a.dash.ch.paras') %></th><th class="num"><%= t('a.dash.ch.students') %></th></tr></thead>
+          <tbody><% charts.hifz.rows.forEach(function (r) { %><tr><td><%= r.label %></td><td class="num"><%= r.value %></td></tr><% }); %></tbody></table>
+      </details>
+    </div>
+  </div>
+  <% } %>
+</div>
+<% } %>
+
 <div class="grid g2" style="align-items:start">
   <% if (can('students')) { %>
   <div class="card">

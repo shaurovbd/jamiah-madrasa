@@ -36,7 +36,7 @@
     <nav class="side-nav">
       <a href="/admin" class="<%= currentPath === '/admin' ? 'active' : '' %>"><span class="ic">▣</span> <%= t('admin.dashboard') %></a>
 
-      <% if (any('students','admissions','staff','promotion','print','sms')) { %>
+      <% if (any('students','admissions','staff','promotion','print','sms','portal')) { %>
       <div class="side-group"><%= t('admin.group.people') %></div>
       <% if (can('students')) { %><a href="/admin/students" class="<%= on('/admin/students') && !currentPath.startsWith('/admin/students/promote') ? 'active' : '' %>"><span class="ic">☗</span> <%= t('admin.nav.students') %></a><% } %>
       <% if (can('admissions')) { %><a href="/admin/admissions" class="<%= on('/admin/admissions') %>"><span class="ic">✎</span> <%= t('admin.nav.admissions') %></a><% } %>
@@ -44,6 +44,7 @@
       <% if (can('promotion')) { %><a href="/admin/students/promote" class="<%= on('/admin/students/promote') %>"><span class="ic">⇧</span> <%= t('admin.nav.promotion') %></a><% } %>
       <% if (can('print')) { %><a href="/admin/print" class="<%= on('/admin/print') %>"><span class="ic">⎙</span> <%= t('admin.nav.print') %></a><% } %>
       <% if (can('sms')) { %><a href="/admin/sms" class="<%= on('/admin/sms') %>"><span class="ic">✆</span> <%= t('admin.nav.sms') %></a><% } %>
+      <% if (can('portal')) { %><a href="/admin/portal" class="<%= on('/admin/portal') %>"><span class="ic">⌂</span> <%= t('admin.nav.portal') %></a><% } %>
       <% } %>
 
       <% if (any('academics','routine','attendance','exams','hifz')) { %>
@@ -100,11 +101,12 @@
       <% if (can('messages')) { %><a href="/admin/messages" class="<%= on('/admin/messages') %>"><span class="ic">✉</span> <%= t('admin.nav.messages') %></a><% } %>
       <% } %>
 
-      <% if (any('users','settings','logs')) { %>
+      <% if (any('users','settings','logs','backup')) { %>
       <div class="side-group"><%= t('admin.group.system') %></div>
       <% if (can('users')) { %><a href="/admin/users" class="<%= on('/admin/users') %>"><span class="ic">☘</span> <%= t('admin.nav.users') %></a><% } %>
       <% if (can('settings')) { %><a href="/admin/settings" class="<%= on('/admin/settings') %>"><span class="ic">⚙</span> <%= t('admin.nav.settings') %></a><% } %>
       <% if (can('logs')) { %><a href="/admin/logs" class="<%= on('/admin/logs') %>"><span class="ic">☰</span> <%= t('admin.nav.logs') %></a><% } %>
+      <% if (can('backup')) { %><a href="/admin/backup" class="<%= on('/admin/backup') %>"><span class="ic">⛁</span> <%= t('admin.nav.backup') %></a><% } %>
       <% } %>
 
       <div class="side-group">&nbsp;</div>
@@ -153,6 +155,13 @@
   (function () {
     var t = document.getElementById('sideToggle'), s = document.getElementById('sidebar');
     if (t && s) t.addEventListener('click', function () { s.classList.toggle('open'); });
+    // File-upload forms carry the security token in their address too (see app.js).
+    document.querySelectorAll('form[enctype="multipart/form-data"]').forEach(function (f) {
+      var tok = f.querySelector('input[name="_csrf"]');
+      if (!tok || /[?&]_csrf=/.test(f.getAttribute('action') || '')) return;
+      var a = f.getAttribute('action') || location.pathname;
+      f.setAttribute('action', a + (a.indexOf('?') === -1 ? '?' : '&') + '_csrf=' + encodeURIComponent(tok.value));
+    });
     document.querySelectorAll('form[data-confirm]').forEach(function (f) {
       f.addEventListener('submit', function (e) {
         if (!window.confirm(f.getAttribute('data-confirm'))) e.preventDefault();

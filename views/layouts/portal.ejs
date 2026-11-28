@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= langDir %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title><%= title %> | <%= site.short || site.name %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<% var thm = (typeof theme !== 'undefined' && theme) || {}; %>
+<style>
+  :root{--accent:<%= thm.accent || '#166049' %>;--accent2:<%= thm.accent2 || '#c3952f' %>;--ink:#18211d;--body:#3f4a45;--muted:#6b7570;--line:#e3e8e5;--bg:#f4f6f5;--r:14px}
+  @supports (color: color-mix(in oklab, red 50%, blue)){:root{--wash:color-mix(in oklab,var(--accent) 9%,#fff);--bg:color-mix(in oklab,var(--accent) 4%,#fafbfb)}}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Inter","Noto Sans Bengali",system-ui,sans-serif;background:var(--bg);color:var(--body);font-size:15px;line-height:1.55}
+  a{color:var(--accent);text-decoration:none}
+  .top{background:linear-gradient(135deg,var(--accent),color-mix(in oklab,var(--accent) 65%,#000));color:#fff;padding:.9rem 1rem 3.2rem}
+  .top-in{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:.7rem}
+  .mark{width:38px;height:38px;border-radius:50%;border:2px solid var(--accent2);display:grid;place-items:center;font:700 1.1rem "Lora",serif;color:var(--accent2);flex:0 0 38px}
+  .brand{flex:1;min-width:0;line-height:1.2}
+  .brand b{display:block;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand small{opacity:.8;font-size:.78rem}
+  .top a.tl{color:#fff;opacity:.9;font-size:.85rem;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:.25rem .7rem;white-space:nowrap}
+  .wrap{max-width:880px;margin:-2.4rem auto 2rem;padding:0 1rem}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:0 6px 20px -14px rgba(0,0,0,.25);padding:1.1rem 1.2rem;margin-bottom:1rem}
+  .card h2{font-size:1.02rem;color:var(--ink);margin:0 0 .8rem}
+  h1{color:var(--ink);font-size:1.25rem;margin:0 0 .2rem}
+  .sub{color:var(--muted);font-size:.86rem}
+  .alert{border-radius:10px;padding:.7rem .9rem;margin-bottom:1rem;font-size:.92rem}
+  .alert-error{background:#fdecea;color:#8c2016}.alert-success{background:#e3f3ea;color:#145c3a}.alert-info{background:#e8f0fb;color:#1b4a85}
+  label{display:block;font-size:.85rem;font-weight:600;color:var(--ink);margin-bottom:.3rem}
+  input{width:100%;padding:.75rem .85rem;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:1.05rem;color:var(--ink);background:#fff}
+  input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .btn{display:inline-block;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:.75rem 1.1rem;font:600 1rem inherit;font-family:inherit;cursor:pointer;text-align:center}
+  .btn.block{width:100%}
+  .btn.light{background:var(--wash,#eef3f0);color:var(--accent)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem}
+  .stat{background:var(--wash,#eef3f0);border-radius:10px;padding:.6rem .75rem}
+  .stat .l{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .stat .v{font:700 1.3rem "Lora","Noto Sans Bengali",serif;color:var(--ink)}
+  .stat.red .v{color:#a52a20}
+  .kid{display:flex;gap:.9rem;align-items:center}
+  .avatar{width:54px;height:54px;border-radius:50%;background:var(--wash,#eef3f0);display:grid;place-items:center;font:700 1.3rem "Lora",serif;color:var(--accent);flex:0 0 54px;overflow:hidden}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:.5rem .4rem;border-bottom:1px solid var(--line)}
+  th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  td.num,th.num{text-align:right;white-space:nowrap}
+  .badge{display:inline-block;border-radius:999px;padding:.1rem .55rem;font-size:.74rem;font-weight:600}
+  .b-green{background:#e3f3ea;color:#145c3a}.b-red{background:#fdecea;color:#8c2016}.b-amber{background:#fdf3dd;color:#7a5a08}.b-grey{background:#eef1f0;color:#5a6762}.b-blue{background:#e8f0fb;color:#1b4a85}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:.82rem}
+  .cal .dow{color:var(--muted);font-size:.7rem;font-weight:600;padding:.2rem 0}
+  .cal .d{aspect-ratio:1;border-radius:8px;display:grid;place-items:center;background:#f3f5f4;color:var(--muted)}
+  .cal .present{background:#d9efe2;color:#145c3a;font-weight:600}.cal .late{background:#fdf3dd;color:#7a5a08;font-weight:600}
+  .cal .absent{background:#fbd9d5;color:#8c2016;font-weight:700}.cal .leave{background:#e8f0fb;color:#1b4a85;font-weight:600}
+  .legend{display:flex;flex-wrap:wrap;gap:.7rem;font-size:.78rem;margin-top:.6rem;color:var(--body)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:.3rem;vertical-align:-1px}
+  .monthnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+  .progress{height:10px;background:#eef1f0;border-radius:999px;overflow:hidden}
+  .progress span{display:block;height:100%;background:var(--accent);border-radius:999px}
+  .tabs{display:flex;gap:.4rem;overflow-x:auto;margin-bottom:1rem;padding-bottom:.2rem}
+  .tabs a{white-space:nowrap;background:#fff;border:1px solid var(--line);border-radius:999px;padding:.35rem .85rem;font-size:.85rem;color:var(--body)}
+  .tabs a.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .lang{display:flex;gap:.3rem}
+  .lang a,.lang span{font-size:.78rem;color:#fff;opacity:.85;padding:.15rem .45rem;border-radius:999px}
+  .lang span{background:rgba(255,255,255,.22);opacity:1}
+  .foot{text-align:center;color:var(--muted);font-size:.8rem;margin:1.5rem 0}
+  details summary{cursor:pointer;color:var(--accent);font-size:.88rem}
+  @media (max-width:560px){.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="mark">ج</div>
+    <div class="brand"><b><%= site.name %></b><small><%= t('portal.title') %></small></div>
+    <span class="lang">
+      <% languages.forEach(function (l) { %><% if (l.code === lang) { %><span><%= l.native %></span><% } else { %><a href="<%= langSwitchUrl(l.code) %>"><%= l.native %></a><% } %><% }); %>
+    </span>
+    <% if (parent) { %><a class="tl" href="/parent/logout"><%= t('portal.sign_out') %></a><% } %>
+  </div>
+</header>
+<main class="wrap">
+  <% if (flash.success && flash.success.length) { %><div class="alert alert-success"><%= flash.success.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
+  <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
+  <%- body %>
+  <div class="foot"><a href="/"><%= t('portal.back_site') %></a> · <%= site.phone %></div>
+</main>
+</body>
+</html>

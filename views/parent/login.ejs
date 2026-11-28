@@ -1,0 +1,13 @@
+<div class="card" style="max-width:420px;margin:0 auto 1rem">
+  <h1><%= t('portal.login_title') %></h1>
+  <p class="sub" style="margin:.2rem 0 1.1rem"><%= t('portal.login_sub') %></p>
+  <form method="post" action="/parent/login" autocomplete="on">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div style="margin-bottom:.9rem"><label for="phone"><%= t('portal.phone') %></label>
+      <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="01XXXXXXXXX" required value="<%= phone %>"></div>
+    <div style="margin-bottom:1.1rem"><label for="pin"><%= t('portal.pin') %></label>
+      <input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="6" placeholder="••••••" required></div>
+    <button class="btn block" type="submit"><%= t('portal.sign_in') %></button>
+  </form>
+  <p class="sub" style="margin-top:1rem"><%= t('portal.no_pin') %></p>
+</div>
