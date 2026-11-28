@@ -17,6 +17,16 @@ router.use((req, res, next) => {
   next();
 });
 
+// Leave requests waiting for a decision, for the sidebar badge (approvers only).
+router.use(async (req, res, next) => {
+  try {
+    if (roles.can(req.session.user.role, 'leave_approve')) {
+      res.locals.pendingLeave = await db.scalar("SELECT COUNT(*) AS c FROM leave_requests WHERE status = 'pending'").catch(() => 0);
+    }
+    next();
+  } catch (err) { next(err); }
+});
+
 /* ------------------------------------------------------------- dashboard */
 router.get('/', async (req, res, next) => {
   try {
@@ -203,5 +213,7 @@ router.use('/sms',        area('sms'),        require('./sms'));
 router.use('/print',      area('print'),      require('./print'));
 router.use('/backup',     area('backup'),     require('./backup'));
 router.use('/portal',     area('portal'),     require('./portal-admin'));
+router.use('/payroll',    area('payroll'),    require('./payroll'));
+router.use('/leave',      area('leave'),      require('./leave'));
 
 module.exports = router;

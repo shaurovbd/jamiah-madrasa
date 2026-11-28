@@ -50,7 +50,17 @@ app.use(methodOverride((req) => {
   }
   return undefined;
 }));
+// The service worker must never be cached long, or phones keep an old one.
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Service-Worker-Allowed', '/');
+  res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' }));
+
+// Changes on every restart, which is every deploy. Added to CSS and script
+// addresses (?v=…) so browsers fetch the new files instead of week-old copies.
+const ASSET_VERSION = Date.now().toString(36);
 
 // cPanel's AutoSSL proves domain control over http://<domain>/.well-known/... .
 // This app owns the document root, so that directory has to be served from disk
@@ -207,6 +217,7 @@ app.use(async (req, res, next) => {
     res.locals.fmtPeriod = (p) => helpers.fmtPeriod(p, res.locals.lang);
     res.locals.monthShort = (i) => helpers.monthShort(i, res.locals.lang);
     res.locals.currentPath = req.path;
+    res.locals.v = ASSET_VERSION;
     res.locals.query = req.query || {};
     res.locals.title = '';
     next();
@@ -245,10 +256,41 @@ sms.resumePending();
 app.use('/', require('./routes/public'));
 app.use('/', require('./routes/auth'));
 app.use('/parent', require('./routes/parent'));
+app.use('/certificate', require('./routes/certificate'));
 app.use('/admin', require('./routes/admin'));
 
 // হিসাব ও অর্থ মডিউল (jamiah-finance/) — লেজার, রশিদ, দাতা, এতিম
 require('./finance-mount')(app);
+
+// ---------------------------------------------------------------- app install
+// Web-app manifests: the panel opens at /admin, the guardian portal at /parent.
+function manifest(kind) {
+  return async (req, res, next) => {
+    try {
+      const s = await settingsLib.all();
+      const color = /^#[0-9a-f]{6}$/i.test(String(s.accent_color || '')) ? s.accent_color : '#3f35b5';
+      const short = s.site_short || 'Jamiah Scholars';
+      res.type('application/manifest+json').set('Cache-Control', 'no-cache').send(JSON.stringify({
+        name: kind === 'admin' ? `${short} — Management` : `${short} — Guardian portal`,
+        short_name: kind === 'admin' ? short : `${short} Guardian`,
+        start_url: kind === 'admin' ? '/admin' : '/parent',
+        scope: kind === 'admin' ? '/admin' : '/parent',
+        id: kind === 'admin' ? '/admin' : '/parent',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: color,
+        lang: 'bn',
+        icons: [
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+        ]
+      }));
+    } catch (err) { next(err); }
+  };
+}
+app.get('/manifest-admin.webmanifest', manifest('admin'));
+app.get('/manifest-parent.webmanifest', manifest('parent'));
 
 // ---------------------------------------------------------------- health
 app.get('/healthz', (req, res) => res.json({ ok: true, uptime: process.uptime() }));

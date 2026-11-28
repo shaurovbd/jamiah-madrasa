@@ -7,10 +7,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/admin.css">
-<link rel="stylesheet" href="/css/theme-tokens.css">
-<link rel="stylesheet" href="/css/date-picker.css">
-<link rel="stylesheet" href="/css/features.css">
+<link rel="stylesheet" href="/css/admin.css?v=<%= typeof v !== 'undefined' ? v : 1 %>">
+<link rel="stylesheet" href="/css/theme-tokens.css?v=<%= typeof v !== 'undefined' ? v : 1 %>">
+<link rel="stylesheet" href="/css/date-picker.css?v=<%= typeof v !== 'undefined' ? v : 1 %>">
+<link rel="stylesheet" href="/css/features.css?v=<%= typeof v !== 'undefined' ? v : 1 %>">
+<link rel="manifest" href="/manifest-admin.webmanifest">
+<meta name="theme-color" content="<%= (typeof theme !== 'undefined' && theme.accent) || '#3f35b5' %>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="<%= site.short %>">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/icon-192.png">
 <%- typeof style !== 'undefined' ? style : '' %>
 </head>
 <%# The Appearance settings. Named `thm` rather than `t`, which is the
@@ -36,7 +42,7 @@
     <nav class="side-nav">
       <a href="/admin" class="<%= currentPath === '/admin' ? 'active' : '' %>"><span class="ic">▣</span> <%= t('admin.dashboard') %></a>
 
-      <% if (any('students','admissions','staff','promotion','print','sms','portal')) { %>
+      <% if (any('students','admissions','staff','promotion','print','sms','portal','leave')) { %>
       <div class="side-group"><%= t('admin.group.people') %></div>
       <% if (can('students')) { %><a href="/admin/students" class="<%= on('/admin/students') && !currentPath.startsWith('/admin/students/promote') ? 'active' : '' %>"><span class="ic">☗</span> <%= t('admin.nav.students') %></a><% } %>
       <% if (can('admissions')) { %><a href="/admin/admissions" class="<%= on('/admin/admissions') %>"><span class="ic">✎</span> <%= t('admin.nav.admissions') %></a><% } %>
@@ -45,6 +51,7 @@
       <% if (can('print')) { %><a href="/admin/print" class="<%= on('/admin/print') %>"><span class="ic">⎙</span> <%= t('admin.nav.print') %></a><% } %>
       <% if (can('sms')) { %><a href="/admin/sms" class="<%= on('/admin/sms') %>"><span class="ic">✆</span> <%= t('admin.nav.sms') %></a><% } %>
       <% if (can('portal')) { %><a href="/admin/portal" class="<%= on('/admin/portal') %>"><span class="ic">⌂</span> <%= t('admin.nav.portal') %></a><% } %>
+      <% if (can('leave')) { %><a href="/admin/leave" class="<%= on('/admin/leave') %>"><span class="ic">✈</span> <%= t('admin.nav.leave') %><% if (typeof pendingLeave !== 'undefined' && pendingLeave > 0) { %> <span class="badge badge-amber" style="margin-left:auto"><%= pendingLeave %></span><% } %></a><% } %>
       <% } %>
 
       <% if (any('academics','routine','attendance','exams','hifz')) { %>
@@ -56,13 +63,14 @@
       <% if (can('hifz')) { %><a href="/admin/hifz" class="<%= on('/admin/hifz') %>"><span class="ic">❁</span> <%= t('admin.nav.hifz') %></a><% } %>
       <% } %>
 
-      <% if (any('fees','finance')) { %>
+      <% if (any('fees','finance','payroll')) { %>
       <div class="side-group"><%= t('admin.group.finance') %></div>
       <% if (can('fees')) { %>
       <a href="/admin/fees" class="<%= currentPath === '/admin/fees' || currentPath.startsWith('/admin/fees/invoice') || currentPath.startsWith('/admin/fees/generate') ? 'active' : '' %>"><span class="ic">▦</span> <%= t('admin.nav.fees') %></a>
       <a href="/admin/fees/structure" class="<%= on('/admin/fees/structure') %>"><span class="ic">⚙</span> <%= t('admin.nav.fee_setup') %></a>
       <a href="/admin/fees/dues" class="<%= on('/admin/fees/dues') %>"><span class="ic">!</span> <%= t('admin.nav.dues') %></a>
       <% } %>
+      <% if (can('payroll')) { %><a href="/admin/payroll" class="<%= on('/admin/payroll') %>"><span class="ic">৳</span> <%= t('admin.nav.payroll') %></a><% } %>
       <% if (can('finance')) { %>
       <a href="/admin/ledger" class="<%= on('/admin/ledger') %>"><span class="ic">₪</span> <%= t('admin.nav.ledger') %></a>
       <a href="/admin/ledger/day-book" class="<%= on('/admin/ledger/day-book') %>"><span class="ic">▤</span> <%= t('admin.nav.daybook') %></a>
@@ -120,6 +128,7 @@
       <button class="sidebar-toggle" id="sideToggle" aria-label="<%= t('nav.menu') %>">☰</button>
       <span class="page-title"><%= title || t('admin.management') %></span>
       <span class="spacer"></span>
+      <button type="button" class="btn btn-light btn-sm" id="installApp" hidden>⤓ <%= t('pwa.install') %></button>
       <%# data-no-spa: a language switch has to be a full page load, so the
           in-panel navigation script leaves these links alone. %>
       <span class="lang-switch" role="group" aria-label="<%= t('lang.label') %>">
@@ -170,9 +179,19 @@
   })();
 </script>
 <%- typeof script !== 'undefined' ? script : '' %>
-<script src="/js/theme-picker.js" defer></script>
-<script src="/js/spa-nav.js" defer></script>
-<script src="/js/student-form.js" defer></script>
-<script src="/js/date-picker.js" defer></script>
+<script src="/js/theme-picker.js?v=<%= typeof v !== 'undefined' ? v : 1 %>" defer></script>
+<script src="/js/spa-nav.js?v=<%= typeof v !== 'undefined' ? v : 1 %>" defer></script>
+<script src="/js/student-form.js?v=<%= typeof v !== 'undefined' ? v : 1 %>" defer></script>
+<script>
+  // Installable on phones: register the service worker, and offer an
+  // "Install app" button where the browser supports it.
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+  (function () {
+    var btn = document.getElementById('installApp'), ev = null;
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); ev = e; if (btn) btn.hidden = false; });
+    if (btn) btn.addEventListener('click', function () { if (ev) { ev.prompt(); ev = null; btn.hidden = true; } });
+  })();
+</script>
+<script src="/js/date-picker.js?v=<%= typeof v !== 'undefined' ? v : 1 %>" defer></script>
 </body>
 </html>

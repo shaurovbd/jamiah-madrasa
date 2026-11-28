@@ -10,7 +10,7 @@
 <%# Noto Sans Bengali loads in both languages: the language toggle itself is
     always labelled in Bangla, so the glyphs are needed even on English pages. %>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/style.css?v=<%= typeof v !== 'undefined' ? v : 1 %>">
 <%- typeof style !== 'undefined' ? style : '' %>
 </head>
 <body>

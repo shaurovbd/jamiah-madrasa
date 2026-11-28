@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<link rel="manifest" href="/manifest-parent.webmanifest">
+<meta name="theme-color" content="<%= (typeof theme !== 'undefined' && theme.accent) || '#3f35b5' %>">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="<%= site.short %>">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" href="/icons/icon-192.png">
 <title><%= title %> | <%= site.short || site.name %></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +92,18 @@
   <% if (flash.error && flash.error.length) { %><div class="alert alert-error"><%= flash.error.map(function (m) { return tflash(m); }).join(' ') %></div><% } %>
   <%- body %>
   <div class="foot"><a href="/"><%= t('portal.back_site') %></a> · <%= site.phone %></div>
+  <div class="card" id="installCard" hidden style="text-align:center">
+    <p style="margin:0 0 .6rem"><%= t('pwa.portal_install') %></p>
+    <button class="btn" type="button" id="installApp"><%= t('pwa.install') %></button>
+  </div>
 </main>
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+  (function () {
+    var card = document.getElementById('installCard'), btn = document.getElementById('installApp'), ev = null;
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); ev = e; card.hidden = false; });
+    btn.addEventListener('click', function () { if (ev) { ev.prompt(); ev = null; card.hidden = true; } });
+  })();
+</script>
 </body>
 </html>

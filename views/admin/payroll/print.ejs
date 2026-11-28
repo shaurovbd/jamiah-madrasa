@@ -1,0 +1,47 @@
+<style>
+  .slips{display:grid;grid-template-rows:repeat(2,1fr);height:297mm;padding:10mm 14mm;gap:10mm}
+  .ps{border:.4mm solid var(--accent);border-radius:3mm;padding:6mm 7mm;display:flex;flex-direction:column}
+  .ps-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:.3mm solid var(--line);padding-bottom:3mm;margin-bottom:3mm}
+  .ps-head b{font:700 5mm "Lora","Noto Serif Bengali",serif;color:var(--accent);display:block}
+  .ps-head small{color:var(--muted);font-size:3mm}
+  .ps-tag{background:var(--accent);color:#fff;border-radius:1.5mm;padding:1.2mm 3mm;font-weight:700;font-size:3.2mm;white-space:nowrap}
+  .ps-who{display:grid;grid-template-columns:1fr 1fr;gap:1mm 6mm;font-size:3.3mm;margin-bottom:3mm}
+  .ps-who i{font-style:normal;color:var(--muted)}
+  .ps table{width:100%;border-collapse:collapse;font-size:3.3mm}
+  .ps td{padding:1.3mm 2mm;border-bottom:.2mm solid var(--line)}
+  .ps td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .ps tr.net td{font-weight:700;font-size:3.8mm;border-top:.4mm solid var(--ink);border-bottom:none}
+  .ps-cols{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+  .ps-sign{margin-top:auto;display:flex;justify-content:space-between;font-size:3mm;padding-top:8mm}
+  .ps-sign span{border-top:.3mm solid var(--ink);padding-top:1mm;min-width:42mm;text-align:center}
+</style>
+<% for (var p = 0; p < slips.length; p += 2) { %>
+<div class="sheet"><div class="slips">
+  <% slips.slice(p, p + 2).forEach(function (s) {
+       var earn = Number(s.basic) + Number(s.allowance) + Number(s.bonus);
+       var cut = Number(s.absence_deduction) + Number(s.advance_deduction) + Number(s.other_deduction); %>
+  <div class="ps">
+    <div class="ps-head"><div><b><%= site.name %></b><small><%= site.address %></small></div><span class="ps-tag"><%= t('a.pay.payslip') %> · <%= fmtPeriod(run.period) %></span></div>
+    <div class="ps-who">
+      <div><i><%= t('common.name') %>:</i> <b><%= s.name %></b></div><div><i><%= t('a.pay.staff_no') %>:</i> <%= s.staff_no %></div>
+      <div><i><%= t('a.pay.designation') %>:</i> <%= s.designation || '—' %></div><div><i><%= t('a.pay.absent') %>:</i> <%= Number(s.absent_days) + Number(s.unpaid_leave_days) %> / <%= s.days_in_month %></div>
+    </div>
+    <div class="ps-cols">
+      <table><tr><td colspan="2"><b><%= t('a.pay.earnings') %></b></td></tr>
+        <tr><td><%= t('a.pay.basic') %></td><td class="n"><%= money(s.basic) %></td></tr>
+        <tr><td><%= t('a.pay.allowance') %></td><td class="n"><%= money(s.allowance) %></td></tr>
+        <tr><td><%= t('a.pay.bonus') %></td><td class="n"><%= money(s.bonus) %></td></tr>
+        <tr><td><b><%= t('common.total') %></b></td><td class="n"><b><%= money(earn) %></b></td></tr></table>
+      <table><tr><td colspan="2"><b><%= t('a.pay.deductions') %></b></td></tr>
+        <tr><td><%= t('a.pay.absence_cut') %></td><td class="n"><%= money(s.absence_deduction) %></td></tr>
+        <tr><td><%= t('a.pay.advance_cut') %></td><td class="n"><%= money(s.advance_deduction) %></td></tr>
+        <tr><td><%= t('a.pay.other_cut') %></td><td class="n"><%= money(s.other_deduction) %></td></tr>
+        <tr><td><b><%= t('common.total') %></b></td><td class="n"><b><%= money(cut) %></b></td></tr></table>
+    </div>
+    <table style="margin-top:3mm"><tr class="net"><td><%= t('a.pay.net') %></td><td class="n"><%= money(s.net) %></td></tr></table>
+    <% if (s.status === 'paid') { %><p style="font-size:3mm;color:var(--muted);margin:2mm 0 0"><%= t('a.pay.paid_line', { date: fmtDate(s.paid_on), voucher: s.voucher_no || '—' }) %></p><% } %>
+    <div class="ps-sign"><span><%= t('a.pay.sig_receiver') %></span><span><%= t('a.pay.sig_accounts') %></span></div>
+  </div>
+  <% }); %>
+</div></div>
+<% } %>

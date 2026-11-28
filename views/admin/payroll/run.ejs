@@ -1,0 +1,92 @@
+<%
+  var draft = run.status === 'draft';
+  var tk = function (prefix, v) { var key = prefix + v; return t(key); };
+  var vLabel = function (s) { var st = vstatus[s.voucher_id]; return st ? tk('a.pay.v.', st) : ''; };
+%>
+<div class="page-bar">
+  <div><h1><%= t('a.pay.sheet_title', { month: fmtPeriod(run.period) }) %></h1>
+    <p class="sub"><span class="badge badge-<%= draft ? 'amber' : 'green' %>"><%= tk('a.pay.st.', run.status) %></span> · <%= t(draft ? 'a.pay.draft_hint' : 'a.pay.final_hint') %></p></div>
+  <span class="spacer"></span>
+  <a class="btn btn-light" target="_blank" href="/admin/payroll/runs/<%= run.id %>/print">⎙ <%= t('a.pay.print_all') %></a>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: '/admin/payroll' }) %>
+
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label"><%= t('a.pay.gross') %></div><div class="value" style="font-size:1.3rem"><%= money((totals.basic || 0) + (totals.allowance || 0) + (totals.bonus || 0)) %></div></div>
+  <div class="stat-card red"><div class="label"><%= t('a.pay.deductions') %></div><div class="value" style="font-size:1.3rem"><%= money((totals.absence_deduction || 0) + (totals.advance_deduction || 0) + (totals.other_deduction || 0)) %></div></div>
+  <div class="stat-card blue"><div class="label"><%= t('a.pay.net_total') %></div><div class="value" style="font-size:1.3rem"><%= money(totals.net || 0) %></div></div>
+  <div class="stat-card gold"><div class="label"><%= t('a.pay.paid_amount') %></div><div class="value" style="font-size:1.3rem"><%= money(totals.paid || 0) %></div></div>
+</div>
+
+<form method="post" id="sheetForm" action="/admin/payroll/runs/<%= run.id %>/<%= draft ? 'save' : 'pay' %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="card" style="margin-bottom:1.1rem">
+    <div class="card-body flush"><div class="table-wrap"><table class="data compact">
+      <thead><tr>
+        <% if (!draft) { %><th class="chk"><input type="checkbox" id="pickAll" aria-label="<%= t('common.all') %>"></th><% } %>
+        <th><%= t('common.name') %></th><th><%= t('a.pay.head') %></th><th class="num"><%= t('a.pay.basic') %></th>
+        <th class="num"><%= t('a.pay.allowance') %></th><th class="num"><%= t('a.pay.bonus') %></th>
+        <th class="num" title="<%= t('a.pay.absence_title') %>"><%= t('a.pay.absent') %></th>
+        <th class="num"><%= t('a.pay.absence_cut') %></th><th class="num"><%= t('a.pay.advance_cut') %></th>
+        <th class="num"><%= t('a.pay.other_cut') %></th><th class="num"><%= t('a.pay.net') %></th><th><%= t('common.status') %></th></tr></thead>
+      <tbody>
+        <% slips.forEach(function (s) { var k = 'slip[id' + s.id + ']'; %>
+        <tr>
+          <% if (!draft) { %><td class="chk"><% if (s.status === 'unpaid') { %><input type="checkbox" name="ids" value="<%= s.id %>" aria-label="<%= s.name %>"><% } %></td><% } %>
+          <td><strong><%= s.name %></strong><br><small class="sub"><%= s.designation || s.staff_no %></small></td>
+          <td><% if (draft) { %><select name="<%= k %>[expense_head]" style="padding:.3rem;width:auto"><option value="teacher" <%= s.expense_head === 'teacher' ? 'selected' : '' %>><%= t('a.pay.h.teacher') %></option><option value="staff" <%= s.expense_head === 'staff' ? 'selected' : '' %>><%= t('a.pay.h.staff') %></option></select><% } else { %><%= tk('a.pay.h.', s.expense_head) %><% } %></td>
+          <td class="num"><%= money(s.basic) %></td>
+          <% ['allowance','bonus'].forEach(function (f) { %>
+            <td class="num"><% if (draft) { %><input name="<%= k %>[<%= f %>]" type="number" min="0" step="1" value="<%= Number(s[f]) %>" style="width:90px;padding:.3rem;text-align:right"><% } else { %><%= money(s[f]) %><% } %></td>
+          <% }); %>
+          <td class="num"><%= Number(s.absent_days) + Number(s.unpaid_leave_days) %><% if (s.late_days) { %><br><small class="sub"><%= t('a.pay.late_n', { n: s.late_days }) %></small><% } %></td>
+          <td class="num"><%= money(s.absence_deduction) %></td>
+          <td class="num"><%= money(s.advance_deduction) %></td>
+          <td class="num"><% if (draft) { %><input name="<%= k %>[other_deduction]" type="number" min="0" step="1" value="<%= Number(s.other_deduction) %>" style="width:90px;padding:.3rem;text-align:right"><input type="hidden" name="<%= k %>[note]" value="<%= s.note || '' %>"><% } else { %><%= money(s.other_deduction) %><% } %></td>
+          <td class="num"><strong><%= money(s.net) %></strong></td>
+          <td><% if (s.status === 'paid') { %><span class="badge badge-green"><%= t('a.pay.st.paid') %></span><br><small class="sub"><%= s.voucher_no || '' %> <%= vLabel(s) %></small><% } else { %><span class="badge badge-grey"><%= t('a.pay.st.unpaid') %></span><% } %>
+            <br><a class="sub" target="_blank" href="/admin/payroll/runs/<%= run.id %>/print?staff_id=<%= s.staff_id %>"><%= t('a.pay.slip') %></a></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table></div></div>
+  </div>
+
+  <% if (draft) { %>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem">
+      <button class="btn btn-primary" type="submit"><%= t('a.pay.save') %></button>
+      <button class="btn btn-light" type="submit" formaction="/admin/payroll/runs/<%= run.id %>/recalc"><%= t('a.pay.recalc') %></button>
+    </div>
+  <% } else if (slips.some(function (s) { return s.status === 'unpaid'; })) { %>
+    <div class="card"><div class="card-head"><h2><%= t('a.pay.pay_heading') %></h2></div><div class="card-body">
+      <div class="form-grid">
+        <div class="field"><label for="cash_account_id"><%= t('a.pay.pay_from') %></label>
+          <select id="cash_account_id" name="cash_account_id" required><% cashAccounts.forEach(function (a) { %><option value="<%= a.id %>"><%= a.code %> — <%= lang === 'bn' ? a.name_bn : (a.name_en || a.name_bn) %></option><% }); %></select></div>
+        <div class="field"><label for="paid_on"><%= t('a.pay.paid_on') %></label><input id="paid_on" name="paid_on" type="date" value="<%= today %>"></div>
+      </div>
+      <p class="hint" style="margin:.7rem 0"><%= t('a.pay.pay_hint') %></p>
+      <button class="btn btn-primary" type="submit" data-confirm-pay="<%= t('a.pay.pay_confirm') %>"><%= t('a.pay.pay_ticked') %></button>
+    </div></div>
+  <% } %>
+</form>
+
+<% if (draft) { %>
+<div style="display:flex;gap:.6rem;flex-wrap:wrap">
+  <form method="post" action="/admin/payroll/runs/<%= run.id %>/finalize" data-confirm="<%= t('a.pay.finalize_confirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-gold" type="submit">✓ <%= t('a.pay.finalize') %></button></form>
+  <form method="post" action="/admin/payroll/runs/<%= run.id %>" data-confirm="<%= t('a.pay.delete_confirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><input type="hidden" name="_method" value="DELETE"><button class="btn btn-danger" type="submit"><%= t('common.delete') %></button></form>
+</div>
+<% } else if (!slips.some(function (s) { return s.status === 'paid'; })) { %>
+  <form method="post" action="/admin/payroll/runs/<%= run.id %>/reopen"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-light btn-sm" type="submit"><%= t('a.pay.reopen') %></button></form>
+<% } %>
+
+<script>
+(function () {
+  var all = document.getElementById('pickAll');
+  if (all) all.addEventListener('change', function () { document.querySelectorAll('input[name=ids]').forEach(function (b) { b.checked = all.checked; }); });
+  var btn = document.querySelector('[data-confirm-pay]');
+  if (btn) btn.addEventListener('click', function (e) {
+    var n = document.querySelectorAll('input[name=ids]:checked').length;
+    if (!n || !window.confirm(btn.getAttribute('data-confirm-pay').replace('%{count}', n))) e.preventDefault();
+  });
+})();
+</script>

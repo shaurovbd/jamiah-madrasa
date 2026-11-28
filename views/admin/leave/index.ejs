@@ -1,0 +1,105 @@
+<%
+  var typeLabel = function (k) { var key = 'a.leave.type.' + k; return t(key); };
+  var stColor = { pending: 'amber', approved: 'green', rejected: 'red', cancelled: 'grey' };
+  var stLabel = function (s) { var key = 'a.leave.st.' + s; return t(key); };
+  var range = function (l) { var a = fmtDate(l.from_date), b = fmtDate(l.to_date); return a === b ? a : a + ' – ' + b; };
+%>
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.leave') %></h1><p class="sub"><%= t('a.leave.sub') %></p></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 340px;gap:1.1rem;align-items:start">
+  <div>
+    <% if (canDecide) { %>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2><%= t('a.leave.waiting') %> <% if (pending.length) { %><span class="badge badge-amber"><%= pending.length %></span><% } %></h2></div>
+      <div class="card-body flush">
+        <% if (pending.length) { %>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th><%= t('common.name') %></th><th><%= t('a.leave.type') %></th><th><%= t('a.leave.dates') %></th><th class="num"><%= t('a.leave.days') %></th><th><%= t('a.leave.reason') %></th><th class="actions"></th></tr></thead>
+          <tbody><% pending.forEach(function (l) { %>
+            <tr><td><strong><%= l.name %></strong><br><small class="sub"><%= l.designation || '' %></small></td>
+              <td><span class="badge badge-<%= l.leave_type === 'unpaid' ? 'red' : 'blue' %>"><%= typeLabel(l.leave_type) %></span></td>
+              <td><%= range(l) %></td><td class="num"><%= l.days %></td><td style="max-width:240px"><%= l.reason || '—' %></td>
+              <td class="actions" style="white-space:nowrap">
+                <form method="post" action="/admin/leave/<%= l.id %>/approve" style="display:inline"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-primary btn-sm" type="submit"><%= t('a.leave.approve') %></button></form>
+                <form method="post" action="/admin/leave/<%= l.id %>/reject" style="display:inline" data-confirm="<%= t('a.leave.reject_confirm') %>"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-danger btn-sm" type="submit"><%= t('a.leave.reject') %></button></form>
+              </td></tr>
+          <% }); %></tbody>
+        </table></div>
+        <% } else { %><div class="empty"><p><%= t('a.leave.none_waiting') %></p></div><% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (me) { %>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2><%= t('a.leave.mine') %></h2></div>
+      <div class="card-body flush">
+        <% if (mine.length) { %>
+        <div class="table-wrap"><table class="data compact">
+          <tbody><% mine.forEach(function (l) { %>
+            <tr><td><%= range(l) %></td><td><%= typeLabel(l.leave_type) %></td><td class="num"><%= t('a.leave.n_days', { n: l.days }) %></td>
+              <td><span class="badge badge-<%= stColor[l.status] %>"><%= stLabel(l.status) %></span><% if (l.decision_note) { %><br><small class="sub"><%= l.decision_note %></small><% } %></td>
+              <td class="actions"><% if (l.status === 'pending') { %><form method="post" action="/admin/leave/<%= l.id %>/cancel"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-light btn-sm" type="submit"><%= t('common.cancel') %></button></form><% } %></td></tr>
+          <% }); %></tbody>
+        </table></div>
+        <% } else { %><div class="empty"><p><%= t('a.leave.none_mine') %></p></div><% } %>
+      </div>
+    </div>
+    <% if (myBalance.length) { %>
+      <p class="sub"><%= t('a.leave.my_year', { year: year }) %>
+        <% myBalance.forEach(function (b, i) { %><%= i ? ' · ' : '' %><%= typeLabel(b.leave_type) %>: <b><%= b.days %></b><% }); %></p>
+    <% } %>
+    <% } %>
+
+    <% if (canDecide) { %>
+    <div class="card" style="margin-bottom:1.1rem">
+      <div class="card-head"><h2><%= t('a.leave.year_summary', { year: year }) %></h2></div>
+      <div class="card-body flush">
+        <% var names = Object.keys(summary); if (names.length) { %>
+        <div class="table-wrap"><table class="data compact">
+          <thead><tr><th><%= t('common.name') %></th><% TYPES.forEach(function (ty) { %><th class="num"><%= typeLabel(ty) %></th><% }); %></tr></thead>
+          <tbody><% names.forEach(function (n) { %><tr><td><%= n %></td><% TYPES.forEach(function (ty) { %><td class="num"><%= summary[n][ty] || '—' %></td><% }); %></tr><% }); %></tbody>
+        </table></div>
+        <% } else { %><div class="empty"><p><%= t('a.leave.no_leave_year') %></p></div><% } %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2><%= t('a.leave.decided') %></h2></div>
+      <div class="card-body flush">
+        <% if (recent.length) { %>
+        <div class="table-wrap"><table class="data compact"><tbody><% recent.forEach(function (l) { %>
+          <tr><td><strong><%= l.name %></strong></td><td><%= range(l) %></td><td><%= typeLabel(l.leave_type) %></td>
+            <td><span class="badge badge-<%= stColor[l.status] %>"><%= stLabel(l.status) %></span></td><td><small class="sub"><%= l.decided_name || '' %></small></td></tr>
+        <% }); %></tbody></table></div>
+        <% } else { %><div class="empty"><p>—</p></div><% } %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <form class="card" method="post" action="/admin/leave">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.leave.apply') %></h2></div>
+    <div class="card-body">
+      <% if (!me && !canDecide) { %>
+        <p class="hint"><%= t('a.leave.not_linked') %></p>
+      <% } else { %>
+        <% if (canDecide) { %>
+        <div class="field" style="margin-bottom:.7rem"><label for="staff_id"><%= t('a.leave.for_whom') %></label>
+          <select id="staff_id" name="staff_id"><% if (me) { %><option value=""><%= t('a.leave.myself') %></option><% } %><% staff.forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %></option><% }); %></select></div>
+        <% } %>
+        <div class="field" style="margin-bottom:.7rem"><label for="leave_type"><%= t('a.leave.type') %></label>
+          <select id="leave_type" name="leave_type"><% TYPES.forEach(function (ty) { %><option value="<%= ty %>"><%= typeLabel(ty) %></option><% }); %></select></div>
+        <div class="form-grid two" style="margin-bottom:.7rem">
+          <div class="field"><label for="from_date"><%= t('a.log.from') %></label><input id="from_date" name="from_date" type="date" value="<%= today %>" required></div>
+          <div class="field"><label for="to_date"><%= t('a.log.to') %></label><input id="to_date" name="to_date" type="date" value="<%= today %>" required></div>
+        </div>
+        <div class="field" style="margin-bottom:.9rem"><label for="reason"><%= t('a.leave.reason') %></label><textarea id="reason" name="reason" maxlength="500" style="min-height:80px"></textarea></div>
+        <p class="hint" style="margin-bottom:.8rem"><%= t('a.leave.apply_hint') %></p>
+        <button class="btn btn-primary" type="submit"><%= t('a.leave.send') %></button>
+      <% } %>
+    </div>
+  </form>
+</div>

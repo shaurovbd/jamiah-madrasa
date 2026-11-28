@@ -21,6 +21,7 @@ const QRCode = require('qrcode');
 const db = require('../../config/db');
 const h = require('../../lib/helpers');
 const settingsLib = require('../../lib/settings');
+const docVerify = require('../../lib/doc-verify');
 
 const router = express.Router();
 
@@ -177,9 +178,11 @@ router.get('/doc/:id', async (req, res, next) => {
     let data = {};
     try { data = JSON.parse(doc.data || '{}'); } catch (e) { data = {}; }
     const o = await org();
-    const qrImg = await qr(`${o.name}\n${doc.serial_no}\n${student.name} (${student.admission_no})\n${data.issue_date}`);
+    // The QR opens the public check page for this certificate.
+    const checkUrl = docVerify.url(req, doc.serial_no);
+    const qrImg = await qr(checkUrl);
     printView(res, 'admin/print/certificate', {
-      title: doc.serial_no, doc, student, data, org: o, qrImg, docLang: doc.lang
+      title: doc.serial_no, doc, student, data, org: o, qrImg, docLang: doc.lang, checkUrl
     });
   } catch (err) { next(err); }
 });

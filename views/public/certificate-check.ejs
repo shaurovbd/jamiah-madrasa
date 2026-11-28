@@ -1,0 +1,52 @@
+<%
+  var typeKey = doc ? 'cert.type.' + doc.doc_type : '';
+%>
+<div class="page-head">
+  <div class="wrap">
+    <div class="crumb"><a href="/"><%= t('crumb.home') %></a> / <%= t('cert.title') %></div>
+    <h1><%= t('cert.title') %></h1>
+  </div>
+</div>
+
+<section>
+  <div class="wrap" style="max-width:720px">
+    <% if (state === 'valid') { %>
+      <div class="panel" style="border-left:5px solid #1f8a4c">
+        <p style="font-size:1.15rem;font-weight:700;color:#145c3a;margin:0 0 .4rem">✓ <%= t('cert.valid') %></p>
+        <p style="margin:0 0 1rem;color:#5a6762"><%= t('cert.valid_sub', { site: site.name }) %></p>
+        <table style="width:100%;border-collapse:collapse">
+          <% var rows = [
+               [t('cert.document'), t(typeKey)],
+               [t('cert.serial'), doc.serial_no],
+               [t('cert.name'), doc.name],
+               [t('cert.father'), doc.father_name || '—'],
+               [t('cert.class'), data.last_class || doc.class_name || '—'],
+               [t('cert.issued'), fmtDate(data.issue_date || doc.issued_at)]
+             ];
+             if (doc.doc_type === 'tc' && data.leaving_date) rows.push([t('cert.left_on'), fmtDate(data.leaving_date)]);
+             if (doc.doc_type === 'hifz' && data.completion_date) rows.push([t('cert.completed_on'), fmtDate(data.completion_date)]);
+             rows.forEach(function (r) { %>
+            <tr><td style="padding:.55rem .3rem;border-bottom:1px solid #e3e8e5;color:#6b7570;width:40%"><%= r[0] %></td><td style="padding:.55rem .3rem;border-bottom:1px solid #e3e8e5;font-weight:600"><%= r[1] %></td></tr>
+          <% }); %>
+        </table>
+        <p style="margin-top:1rem;font-size:.88rem;color:#6b7570"><%= t('cert.compare') %></p>
+      </div>
+    <% } else { %>
+      <% if (state === 'not_found') { %>
+        <div class="alert alert-error" style="margin-bottom:1.2rem"><%= t('cert.not_found') %></div>
+      <% } %>
+      <div class="panel">
+        <h2 style="margin-bottom:.4rem"><%= t('cert.check_heading') %></h2>
+        <p style="margin-bottom:1rem;color:#6b7570"><%= t('cert.check_sub') %></p>
+        <form method="post" action="/certificate">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-grid">
+            <div class="field"><label for="serial"><%= t('cert.serial') %></label><input id="serial" name="serial" type="text" placeholder="TC-2026-0001" required></div>
+            <div class="field"><label for="admission_no"><%= t('cert.adm_no') %></label><input id="admission_no" name="admission_no" type="text" required></div>
+          </div>
+          <button class="btn btn-primary" type="submit" style="margin-top:1rem"><%= t('cert.check') %></button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</section>

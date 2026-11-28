@@ -1,0 +1,37 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.payroll') %></h1><p class="sub"><%= t('a.pay.adv_sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+<div class="grid" style="grid-template-columns:1fr 340px;gap:1.1rem;align-items:start">
+  <div class="card"><div class="card-body flush">
+    <% if (advances.length) { %>
+    <div class="table-wrap"><table class="data">
+      <thead><tr><th><%= t('common.name') %></th><th><%= t('common.date') %></th><th class="num"><%= t('common.amount') %></th><th class="num"><%= t('a.pay.installment') %></th><th class="num"><%= t('a.pay.recovered') %></th><th class="num"><%= t('a.pay.left') %></th><th><%= t('a.pay.voucher') %></th></tr></thead>
+      <tbody><% advances.forEach(function (a) { var left = Number(a.amount) - Number(a.recovered); %>
+        <tr><td><strong><%= a.name %></strong><% if (a.note) { %><br><small class="sub"><%= a.note %></small><% } %></td><td><%= fmtDate(a.given_on) %></td>
+          <td class="num"><%= money(a.amount) %></td><td class="num"><%= money(a.monthly_installment) %></td><td class="num"><%= money(a.recovered) %></td>
+          <td class="num"><% if (left > 0) { %><strong><%= money(left) %></strong><% } else { %><span class="badge badge-green"><%= t('a.pay.cleared') %></span><% } %></td>
+          <td><small><%= a.voucher_no || '—' %></small></td></tr>
+      <% }); %></tbody>
+    </table></div>
+    <% } else { %><div class="empty"><p><%= t('a.pay.no_advances') %></p></div><% } %>
+  </div></div>
+  <form class="card" method="post" action="/admin/payroll/advances" data-confirm="<%= t('a.pay.adv_confirm') %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.pay.give_advance') %></h2></div>
+    <div class="card-body">
+      <div class="field" style="margin-bottom:.7rem"><label for="staff_id"><%= t('a.pay.staff') %></label>
+        <select id="staff_id" name="staff_id" required><option value=""><%= t('common.select') %></option><% staff.forEach(function (s) { %><option value="<%= s.id %>"><%= s.name %> (<%= s.staff_no %>)</option><% }); %></select></div>
+      <div class="form-grid two" style="margin-bottom:.7rem">
+        <div class="field"><label for="amount"><%= t('common.amount') %></label><input id="amount" name="amount" type="number" min="1" step="1" required></div>
+        <div class="field"><label for="monthly_installment"><%= t('a.pay.installment') %></label><input id="monthly_installment" name="monthly_installment" type="number" min="1" step="1" required></div>
+      </div>
+      <div class="field" style="margin-bottom:.7rem"><label for="cash_account_id"><%= t('a.pay.pay_from') %></label>
+        <select id="cash_account_id" name="cash_account_id" required><% cashAccounts.forEach(function (a) { %><option value="<%= a.id %>"><%= a.code %> — <%= lang === 'bn' ? a.name_bn : (a.name_en || a.name_bn) %></option><% }); %></select></div>
+      <div class="field" style="margin-bottom:.7rem"><label for="given_on"><%= t('common.date') %></label><input id="given_on" name="given_on" type="date" value="<%= today %>"></div>
+      <div class="field" style="margin-bottom:.9rem"><label for="note"><%= t('common.note') %></label><input id="note" name="note" type="text" maxlength="255"></div>
+      <p class="hint" style="margin-bottom:.8rem"><%= t('a.pay.adv_hint') %></p>
+      <button class="btn btn-primary" type="submit"><%= t('a.pay.give_advance') %></button>
+    </div>
+  </form>
+</div>

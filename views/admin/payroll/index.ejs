@@ -1,0 +1,41 @@
+<div class="page-bar">
+  <div><h1><%= t('admin.nav.payroll') %></h1><p class="sub"><%= t('a.pay.sub') %></p></div>
+</div>
+<%- include('../../partials/tabs', { TABS: TABS, currentPath: currentPath }) %>
+
+<% if (tableMissing) { %><div class="alert alert-info"><%= t('a.pay.table_missing') %> <code>npm run migrate</code></div><% } else { %>
+<div class="grid g4" style="margin-bottom:1.1rem">
+  <div class="stat-card"><div class="label"><%= t('a.pay.on_payroll') %></div><div class="value"><%= h.num(staffCount) %></div></div>
+  <div class="stat-card blue"><div class="label"><%= t('a.pay.monthly_total') %></div><div class="value" style="font-size:1.35rem"><%= money(monthly) %></div></div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 320px;gap:1.1rem;align-items:start">
+  <div class="card">
+    <div class="card-head"><h2><%= t('a.pay.months') %></h2></div>
+    <div class="card-body flush">
+      <% if (runs.length) { %>
+      <div class="table-wrap"><table class="data">
+        <thead><tr><th><%= t('a.dash.ch.month') %></th><th><%= t('common.status') %></th><th class="num"><%= t('a.pay.staff') %></th><th class="num"><%= t('a.pay.net_total') %></th><th class="num"><%= t('a.pay.paid_count') %></th><th class="actions"></th></tr></thead>
+        <tbody><% runs.forEach(function (r) { %>
+          <tr><td><strong><%= fmtPeriod(r.period) %></strong></td>
+            <td><span class="badge badge-<%= r.status === 'final' ? 'green' : 'amber' %>"><% var stk = 'a.pay.st.' + r.status; %><%= t(stk) %></span></td>
+            <td class="num"><%= h.num(r.staff) %></td><td class="num"><%= money(r.total) %></td>
+            <td class="num"><%= h.num(r.paid || 0) %>/<%= h.num(r.staff) %></td>
+            <td class="actions"><a class="btn btn-light btn-sm" href="/admin/payroll/runs/<%= r.id %>"><%= t('common.open') %></a></td></tr>
+        <% }); %></tbody>
+      </table></div>
+      <% } else { %><div class="empty"><div class="big">৳</div><p><%= t('a.pay.none_yet') %></p></div><% } %>
+    </div>
+  </div>
+  <form class="card" method="post" action="/admin/payroll/runs">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="card-head"><h2><%= t('a.pay.start') %></h2></div>
+    <div class="card-body">
+      <div class="field" style="margin-bottom:.8rem"><label for="period"><%= t('a.dash.ch.month') %></label>
+        <input id="period" name="period" type="month" value="<%= thisMonth %>" required></div>
+      <p class="hint" style="margin-bottom:.9rem"><%= t('a.pay.start_hint') %></p>
+      <button class="btn btn-primary" type="submit"><%= t('a.pay.make_sheet') %></button>
+    </div>
+  </form>
+</div>
+<% } %>
